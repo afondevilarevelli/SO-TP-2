@@ -7,7 +7,7 @@
   </br>
 </h1>
   
-###CheckPoint 2:
+### CheckPoint 2:
 <h1>
   <br>
    <div class="row">
