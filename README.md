@@ -3,7 +3,7 @@
   <div class="row">
   <div class="column" align = "right"><img src = "https://www.frba.utn.edu.ar/wp-content/uploads/logo-utn.ba-horizontal-e1471367724904.jpg" alt="Logo UTN" width="300"></div>
     <div class="row">
-  <div class="column" align = "left"><img src = " https://www.utnso.com/wp-content/uploads/2017/11/main-logo-utnso.png" alt="Logo UTN" width="200"></div>
+  <div class="column" align = "left"><img src = "https://www.utnso.com/wp-content/uploads/2017/11/main-logo-utnso.png" alt="Logo SO" width="300"></div>
   <div class="column" align= "center">tp-2018-2c-Mi-amor-es-el-Malloc</div>
 </div>
   </br>
