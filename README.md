@@ -12,5 +12,6 @@
 
 ### VER :
 
- | [Enunciado] (https://www.utnso.com/wp-content/uploads/2018/08/2C2018-El-Gran-TP.pdf) |
+|[ENUNCIADO](https://www.utnso.com/wp-content/uploads/2018/08/2C2018-El-Gran-TP.pdf)|
+| :---------:   |  :----------------:   | |
 
