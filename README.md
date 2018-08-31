@@ -14,6 +14,10 @@
 
 
 | [ENUNCIADO] (https://www.utnso.com/wp-content/uploads/2018/08/2C2018-El-Gran-TP.pdf)| [CHECKPOINTS]
-(https://github.com/sisoputnfrba/tp-2018-2c-Mi-amor-es-el-Malloc/blob/master/infoCheckpoints.md)|
+(https://github.com/sisoputnfrba/tp-2018-2c-Mi-amor-es-el-Malloc/blob/master/infoCheckpoints.md)
+| :---------:   |  :----------------:   |
+
+
+| [ESTADO ACTUAL](https://github.com/morsamatias/gdd/blob/master/estadoActual.md)| [ENUNCIADO](https://github.com/morsamatias/gdd/blob/master/Extras/TP/Enunciado.pdf)|
 | :---------:   |  :----------------:   |
 
