@@ -5,8 +5,8 @@
  *      Author: utnso
  */
 
-#ifndef S_AFA_GESTIONARCHCONF_H_
-#define S_AFA_GESTIONARCHCONF_H_
+#ifndef GESTIONARCHCONF_H_
+#define GESTIONARCHCONF_H_
 
 
 #include <commons/config.h>
@@ -29,4 +29,4 @@ int configPoseeKey(char *,char *);
 
 
 
-#endif /* S_AFA_GESTIONARCHCONF_H_ */
+#endif /* GESTIONARCHCONF_H_ */
