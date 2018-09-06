@@ -1,10 +1,3 @@
-/*
- * gestionArchConfing.h
- *
- *  Created on: 3 sep. 2018
- *      Author: utnso
- */
-
 #ifndef GESTIONARCHCONF_H_
 #define GESTIONARCHCONF_H_
 

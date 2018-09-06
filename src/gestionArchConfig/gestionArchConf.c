@@ -24,13 +24,8 @@ int existeArchivoConf(char * path)
 // crea el archivo config
 void crearArchivoConfig(char * path)
 {
-	if(existeArchivoConf(path)){
-		printf("Ya existe el archivo %s",path);
-	}
-	else
-	{
+	if(!existeArchivoConf(path)){
 		txt_open_for_append(path);
-		printf("Se creeo correctamente %s",path);
 	}
 }
 
@@ -51,11 +46,6 @@ void setValue(char * path,char * key,char * value)
 			if(configPoseeKey(path,key))
 			{
 				config_set_value(conf,key,value);
-			}
-			else
-			{
-			printf("No existe en %s la key %s",path,key);
-
 			}
 }
 
@@ -94,13 +84,3 @@ char * obtenerString(char * path,char * key)
 	return 0;
 	}
 }
-
-
-int main(void)
-{
- return 0;
-}
-
-
-
-
