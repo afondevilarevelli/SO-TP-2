@@ -11,7 +11,9 @@
 
 ### VER :
 
-| [ENUNCIADO](https://www.utnso.com/wp-content/uploads/2018/08/2C2018-El-Gran-TP.pdf)| [CHECKPOINTS](https://github.com/sisoputnfrba/tp-2018-2c-Mi-amor-es-el-Malloc/blob/master/infoCheckpoints.md)
-| [LINKS UTILES](https://www.utnso.com/links-utiles/)
-|[PROTOCOLO] (https://docs.google.com/document/d/1YBjAJniU1gD92XQTicZHEe_cn71ZvY2Yd9hZbALnQJ0/edit#)
-|[MANUAL LIBREA SOCKETS] (https://github.com/nahuelpanzarasa/socket-library-c)|
+| [ENUNCIADO](https://www.utnso.com/wp-content/uploads/2018/08/2C2018-El-Gran-TP.pdf)           | [CHECKPOINTS]
+(https://github.com/sisoputnfrba/tp-2018-2c-Mi-amor-es-el-Malloc/blob/master/infoCheckpoints.md)|
+| [LINKS UTILES](https://www.utnso.com/links-utiles/)                                           |
+|[PROTOCOLO] 
+(https://docs.google.com/document/d/1YBjAJniU1gD92XQTicZHEe_cn71ZvY2Yd9hZbALnQJ0/edit#)         |
+|[MANUAL LIBREA SOCKETS] (https://github.com/nahuelpanzarasa/socket-library-c)                  |
