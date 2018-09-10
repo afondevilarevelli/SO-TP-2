@@ -1,4 +1,4 @@
-sources = SAFA.c consolaSAFA.c  
+sources = SAFA.c consolaSAFA.c  libSAFA/libSAFA.c
 sharedLibraries = ../shared/mySocket.c ../shared/buffer.c
 pathLibraries = -lreadline -lcommons #-lpthread 
 

@@ -6,6 +6,7 @@
 #include <string.h>
 #include "consolaSAFA.h"
 #include "../shared/mySocket.h"
+#include "libSAFA/libSAFA.h"
 
 #define IP INADDR_ANY //Toma el ip de la pc
 #define PORT 3067
@@ -13,6 +14,12 @@
 void atenderConexionEntrante(int listener);
 
 int main(void){
+
+	configure_logger();
+
+	read_and_log_config("S-AFA.config");
+
+	close_logger();
 
 	//dejare al coordinador escuchar nuevas conexiones a traves del IP y PUERTO indicados
 	int listener = listenOn(IP, PORT);
