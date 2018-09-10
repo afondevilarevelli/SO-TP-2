@@ -14,7 +14,7 @@ typedef struct {
 	int retardo;
 } t_config_SAFA;
 
-//VARIABLES
+//VARIABLES GLOBALES
 t_log* logger;
 t_config_SAFA* datosConfigSAFA;
 

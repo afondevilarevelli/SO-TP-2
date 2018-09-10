@@ -27,26 +27,24 @@ void read_and_log_config(char* path) {
 		exit(1);
 	}
 
-	t_config_SAFA* _datosSAFA = malloc(sizeof(t_config_SAFA));
+	datosConfigSAFA = malloc(sizeof(t_config_SAFA));
 
-	_datosSAFA->puerto = config_get_int_value(archivo_Config, "S-AFA_PUERTO");
+	datosConfigSAFA->puerto = config_get_int_value(archivo_Config, "S-AFA_PUERTO");
 	char* alg = string_new();
 	string_append(&alg, config_get_string_value(archivo_Config, "ALGORITMO_PLANIF"));
-	_datosSAFA->algoritmoPlanif = alg;
-	_datosSAFA->quantum = config_get_int_value(archivo_Config, "QUANTUM");
-	_datosSAFA->gradoMultiprog = config_get_int_value(archivo_Config, "GRADO_MULTIPROG");
-	_datosSAFA->retardo = config_get_int_value(archivo_Config, "RETARDO");
+	datosConfigSAFA->algoritmoPlanif = alg;
+	datosConfigSAFA->quantum = config_get_int_value(archivo_Config, "QUANTUM");
+	datosConfigSAFA->gradoMultiprog = config_get_int_value(archivo_Config, "GRADO_MULTIPROG");
+	datosConfigSAFA->retardo = config_get_int_value(archivo_Config, "RETARDO");
 
-    //FALTA ESTO!!!!
-	log_info(logger, "	PUERTO: %d", _datosSAFA->puerto);
-	log_info(logger, "	ALGORITMO_PLANIFICACION: %s", _datosSAFA->algoritmoPlanif);
-	log_info(logger, "	QUANTUM: %d", _datosSAFA->quantum);
-	log_info(logger, "	GRADO_MULTIPROGRAMACION: %d", _datosSAFA->gradoMultiprog);
-	log_info(logger, "	RETARDO: %d", _datosSAFA->retardo);
+	log_info(logger, "	PUERTO: %d", datosConfigSAFA->puerto);
+	log_info(logger, "	ALGORITMO_PLANIFICACION: %s", datosConfigSAFA->algoritmoPlanif);
+	log_info(logger, "	QUANTUM: %d", datosConfigSAFA->quantum);
+	log_info(logger, "	GRADO_MULTIPROGRAMACION: %d", datosConfigSAFA->gradoMultiprog);
+	log_info(logger, "	RETARDO: %d", datosConfigSAFA->retardo);
 
 	log_info(logger, "Fin de lectura");
 
 	config_destroy(archivo_Config);
 	free(alg);
-	free(_datosSAFA);
-}
+} // al final de esta funcion me queda la variable datosConfigSAFA con la config de SAFA
