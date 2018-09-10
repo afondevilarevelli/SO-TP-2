@@ -4,7 +4,6 @@
 #include <commons/string.h>
 #include <commons/config.h>
 #include <commons/collections/dictionary.h>
-#include <commons/config.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -15,8 +14,6 @@
 #include "../../sample-socket/socket.h"
 #include "libMDJ.h"
 
-
-#define IP INADDR_ANY
 
 //Globales
 t_dictionary *  fns;	/* Funciones de socket */
@@ -33,15 +30,15 @@ char * getIp();
 
 int main(void) {
           
-       t_config * conf = config_create("MDJ.config");
-          portServer = obtenerInt(conf,"MDJ.config","PUERTO");  /* Puerto de escucha */
-	  fns = dictionary_create();
+     t_config * conf = config_create("MDJ.config");
+     portServer = obtenerInt(conf,"MDJ.config","PUERTO");  /* Puerto de escucha */
+	 fns = dictionary_create();
 	  dictionary_put(fns, "DAM_saludar", &DAM_saludar);
-          setValue(conf,"MDJ.config","IP",getIp());
+      setValue(conf,"MDJ.config","IP",getIp());
         
-         configure_logger();
+        configure_logger();
         read_and_log_config("MDJ.config");
-       close_logger();
+        close_logger();
 
        //Pongo a escuchar el server en el puerto elegido
         if(createListen(portServer, &newClient, fns, &client_connectionClosed, NULL) == -1)
@@ -57,9 +54,13 @@ int main(void) {
 	
 	pthread_mutex_init(&mx_main, NULL);
 	pthread_mutex_lock(&mx_main);
-	pthread_mutex_lock(&mx_main);
+	// aca se realizan cosas con los otros procesos
+
+	//libero memoria para evitar los memory leaks;
+	config_destroy(conf);
+	dictionary_destroy(fns);
+    pthread_mutex_destroy(&mx_main);
        
-  
 	return EXIT_SUCCESS;
 }
 
@@ -101,8 +102,6 @@ char *  getIp()
 
  /* display result */
  return  inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
-
- 
 }
 
 // Funcion que se produce cuando se desconecta un cliente
