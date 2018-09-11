@@ -53,7 +53,7 @@ void obtenerIPyPuertoDeSAFA(t_config * pConf, int * ip, int * puerto)
 
 void atenderConexionEntrante(int listener)
 {
-	void * mensajeAEnviar = "Hola Diego, soy el S-AFA";
+	void * mensajeAEnviar = "Hola Me Presento, soy el S-AFA";
 	void * mensajeARecibir;
 
 	//acepto la conexion
