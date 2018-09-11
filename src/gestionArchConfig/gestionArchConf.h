@@ -13,10 +13,10 @@
 int existeArchivoConf(char *);
 void crearArchivoConfig(char * );
 void  setKey(char *,char *);
-void setValue(char *,char *,char *);
-char * obtenerString(char *,char *);
-int  obtenerInt(char *, char *);
-int configPoseeKey(char *,char *);
+void setValue(t_config *,char *,char *,char *);
+char * obtenerString(t_config *,char *,char *);
+int  obtenerInt(t_config *,char *, char *);
+int configPoseeKey(t_config *,char *,char *);
 
 
 

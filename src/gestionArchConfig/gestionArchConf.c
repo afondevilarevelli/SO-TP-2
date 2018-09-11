@@ -8,24 +8,27 @@
 
 #include "gestionArchConf.h"
 
+
 // determinar si el archivo ya fue creado o no
 int existeArchivoConf(char * path)
 {
 	   FILE * f = fopen(path,"r");
 		if (f){
-		fclose(f);
 		return 1;
         }
 		else {
 		return 0;
 		}
+        fclose(f);
 }
 
 // crea el archivo config
 void crearArchivoConfig(char * path)
 {
+
 	if(!existeArchivoConf(path)){
-		txt_open_for_append(path);
+	     FILE * f =  txt_open_for_append(path);
+               txt_close_file(f);
 	}
 }
 
@@ -36,29 +39,30 @@ void setKey(char * path ,char * key)
    FILE * arch = txt_open_for_append(path);
    char* string = string_from_format("\n%s\n",key);
    txt_write_in_file(arch,string);
+   free(string);
    txt_close_file(arch);
 }
 
-void setValue(char * path,char * key,char * value)
+void setValue(t_config * conf,char * path,char * key,char * value)
 {
-	t_config * conf = config_create(path);
+	           conf = config_create(path);
 
-			if(configPoseeKey(path,key))
+			if(configPoseeKey(conf,path,key))
 			{
 				config_set_value(conf,key,value);
 			}
 }
 
-int configPoseeKey(char * path,char * key){
+int configPoseeKey(t_config * conf,char * path,char * key){
 
-	t_config * conf = config_create(path);
+	conf = config_create(path);
 	return config_has_property(conf,key);
 }
 
-int  obtenerInt(char * path , char * key)
+int  obtenerInt(t_config * conf,char * path , char * key)
 {
-	    t_config * conf = config_create(path);
-		if(configPoseeKey(path,key))
+	       conf = config_create(path);
+		if(configPoseeKey(conf,path,key))
 		{
 		return config_get_int_value(conf,key);
 		}
@@ -71,10 +75,10 @@ int  obtenerInt(char * path , char * key)
 
 
 
-char * obtenerString(char * path,char * key)
+char * obtenerString(t_config * conf,char * path,char * key)
 {
-	t_config * conf = config_create(path);
-	if(configPoseeKey(path,key))
+	 conf = config_create(path);
+	if(configPoseeKey(conf,path,key))
 	{
 	return config_get_string_value(conf,key);
 	}
