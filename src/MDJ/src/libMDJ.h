@@ -18,7 +18,7 @@ typedef struct {
 
 //VARIABLES
 t_log* logger;
-t_config_MDJ * configMDJ;
+
 
 //FUNCIONES
 //LOGS

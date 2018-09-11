@@ -11,7 +11,7 @@ void configure_logger() {
 
 	logger = log_create(nombrePrograma, nombreArchivo, true, LOG_LEVEL_TRACE);
 	log_info(logger, "Se genero log de MDJ");
-        
+     
 }
 
 void close_logger() {
