@@ -1,3 +1,6 @@
+#ifndef libDAM_H_
+#define libDAM_H_
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,12 +24,16 @@ typedef struct {
 //VARIABLES
 t_log* logger;
 t_config_DAM* datosConfigDAM;
+
 int socketSAFA;
+
 
 //FUNCIONES
 //LOGS
 void configure_logger();
+void read_and_log_config(char*);
 void close_logger();
 
 //CONFIG
-void read_and_log_config(char*);
+
+#endif
