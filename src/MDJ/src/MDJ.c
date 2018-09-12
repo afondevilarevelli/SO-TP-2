@@ -57,6 +57,7 @@ int main(void) {
 	
 	pthread_mutex_init(&mx_main, NULL);
 	pthread_mutex_lock(&mx_main);
+	pthread_mutex_lock(&mx_main);
 	// aca se realizan cosas con los otros procesos
 
 	//libero memoria para evitar los memory leaks;
