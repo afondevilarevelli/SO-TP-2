@@ -9,7 +9,7 @@ int main(void) {
 
 	callableRemoteFunctions = dictionary_create();
 
-	dictionary_put(callableRemoteFunctions, "startProcess", &startProcess);
+	dictionary_put(callableRemoteFunctions, "DAM_FM9_handshake", &DAM_FM9_handshake);
 
 	log_info(logger, "Voy a escuchar el puerto: %d", datosConfigFM9->puerto);
 
@@ -20,7 +20,7 @@ int main(void) {
 
 	pthread_mutex_init(&mx_main, NULL);
 	pthread_mutex_lock(&mx_main);
-	//pthread_mutex_lock(&mx_main);
+	pthread_mutex_lock(&mx_main);
 
 	close_logger();
 

@@ -19,16 +19,16 @@ void close_logger() {
 
 //SOCKETS
 void connectionNew(socket_connection* socketInfo) {
-	printf("Se ha conectado un usuario con ip %s en socket n°%d\n",
+	log_info(logger, "Se ha conectado El Diego con ip %s en socket n°%d",
 			socketInfo->ip, socketInfo->socket);
 }
 
 void disconnect(socket_connection* socketInfo) {
-	printf("CPU (socket n°%d) se ha desconectado.\n", socketInfo->socket);
+	log_info(logger, "El Diego(socket n°%d) se ha desconectado.", socketInfo->socket);
 }
 
-void startProcess(socket_connection * connection, char ** args) {
-	log_info(logger, "startProcess");
+void DAM_FM9_handshake(socket_connection * connection, char ** args) {
+	log_info(logger, "Handshake con El Diego");
 }
 
 //CONFIG

@@ -29,7 +29,7 @@ void close_logger();
 //SOCKETS
 void connectionNew(socket_connection*);
 void disconnect(socket_connection*);
-void startProcess(socket_connection *, char **);
+void DAM_FM9_handshake(socket_connection *, char **);
 
 //CONFIG
 t_config_FM9* read_and_log_config(char*);
