@@ -25,13 +25,7 @@ int main(void){
 	}
     printf("Se ha recibido el siguiente mensaje: %s\n", (char*)mensajeARecibir);*/
     
-    //archivo de configuracion y logs
     
-    configure_logger();
-    
-    read_and_log_config("DAM.config");
-
-    close_logger();
     
     
 
