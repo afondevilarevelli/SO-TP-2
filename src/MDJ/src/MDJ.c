@@ -15,10 +15,12 @@
 #include "libMDJ.h"
 
 
+
 //Globales
 t_dictionary *  fns;	/* Funciones de socket */
 pthread_mutex_t mx_main;	/* Semaforo de main */
 int portServer;
+char * path = "MDJ.config";
 
 //prototipos
 
@@ -30,15 +32,16 @@ char * getIp();
 
 int main(void) {
           
-     t_config * conf = config_create("MDJ.config");
-     portServer = obtenerInt(conf,"MDJ.config","PUERTO");  /* Puerto de escucha */
+     t_config * conf = config_create(path);
+     portServer = obtenerInt(conf,path,"PUERTO");  /* Puerto de escucha */
 	 fns = dictionary_create();
 	  dictionary_put(fns, "DAM_saludar", &DAM_saludar);
-      setValue(conf,"MDJ.config","IP",getIp());
+      setValue(conf,path,"IP",getIp());
         
         configure_logger();
         read_and_log_config("MDJ.config");
         close_logger();
+        config_destroy(conf);
 
        //Pongo a escuchar el server en el puerto elegido
         if(createListen(portServer, &newClient, fns, &client_connectionClosed, NULL) == -1)
@@ -54,12 +57,14 @@ int main(void) {
 	
 	pthread_mutex_init(&mx_main, NULL);
 	pthread_mutex_lock(&mx_main);
+	pthread_mutex_lock(&mx_main);
 	// aca se realizan cosas con los otros procesos
 
 	//libero memoria para evitar los memory leaks;
-	config_destroy(conf);
-	dictionary_destroy(fns);
+	
+    dictionary_destroy(fns); // falta destruir los elementos dentro del diccionario antes de destruir el diccionario
     pthread_mutex_destroy(&mx_main);
+
        
 	return EXIT_SUCCESS;
 }

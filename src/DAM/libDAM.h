@@ -3,8 +3,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <commons/log.h>
 #include <commons/config.h>
+#include <commons/collections/dictionary.h>
+#include "../sample-socket/socket.h"
 
 //ESTRUCTURAS
 typedef struct {
@@ -21,6 +24,9 @@ typedef struct {
 //VARIABLES
 t_log* logger;
 t_config_DAM* datosConfigDAM;
+
+int socketSAFA;
+
 
 //FUNCIONES
 //LOGS

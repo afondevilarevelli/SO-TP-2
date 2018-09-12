@@ -48,3 +48,8 @@ void read_and_log_config(char* path) {
 	config_destroy(archivo_Config);
 	free(alg);
 } // al final de esta funcion me queda la variable datosConfigSAFA con la config de SAFA
+
+//CallableRemoteFunctions
+void imprimirMensaje(socket_connection* socketInfo, char** msg){
+	printf("Se ha recibido el siguiente mensaje del socket %d: %s",socketInfo->socket, msg[0]);
+}

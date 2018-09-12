@@ -2,21 +2,21 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../shared/mySocket.h"
+
 #include "libDAM.h"
 
-#define SAFA_IP INADDR_ANY
-#define SAFA_PORT 3067
+void disconnectSAFA();
 
 
 
 int main(void){
-    /* int socket = connectTo(SAFA_IP, SAFA_PORT);
+      int socket = connectTo(SAFA_IP, SAFA_PORT);
+	t_dictionary * fns = dictionary_create();
 
-	//Le envio al coordinador que tipo de proceso soy
-	char* mensajeAEnviar = "Hola S-AFA, soy el Diego";
-    void* mensajeARecibir;
-	sendWithBasicProtocol(socket, (void*)mensajeAEnviar, strlen(mensajeAEnviar)+1);
-    printf("Se ha enviado el siguiente mensaje: %s\n\n", mensajeAEnviar);
+
+	configure_logger();
+	read_and_log_config("DAM.config");
+	close_logger();
 
     if(recvWithBasicProtocol(socket, &mensajeARecibir) == -1)
 	{
@@ -35,5 +35,23 @@ int main(void){
     
     
 
-    return 0;
+  	socketSAFA = connectServer("127.0.0.2", datosConfigDAM->puertoSAFA, fns, &disconnectSAFA, NULL);
+
+
+  	if (socketSAFA == -1) {
+    	printf("no me pude conectar");
+    	return -1;
+  	}
+  
+  	sleep(1);
+  	// este metodo no existe en el protocolo del servidor, por eso va a putear el server
+  	runFunction(socketSAFA, "imprimirMensaje", 1, "Hola Safa, soy el Diego (DAM)");
+
+	free(datosConfigDAM);
+	return 0;
+}
+
+//FUNCIONES
+void disconnectSAFA(){
+  printf("se ha desconectado del SAFA :(\n");
 }
