@@ -3,6 +3,9 @@
 #include <commons/log.h>
 #include <commons/config.h>
 #include <commons/string.h>
+#include <pthread.h>
+#include <commons/collections/dictionary.h>
+#include "../../sample-socket/socket.h"
 
 
 //ESTRUCTURAS
@@ -17,6 +20,8 @@ typedef struct {
 //VARIABLES GLOBALES
 t_log* logger;
 t_config_SAFA* datosConfigSAFA;
+pthread_mutex_t mx_main;
+t_dictionary* fns;
 
 //FUNCIONES
 //LOGS
@@ -25,3 +30,6 @@ void close_logger();
 
 //CONFIG
 void read_and_log_config(char*);
+
+//CallableRemoteFunctions
+void imprimirMensaje(socket_connection* socketInfo, char** msg);

@@ -338,7 +338,7 @@ int connectServer(char * ip, int port, t_dictionary * fns, void (*fn_connectionC
 	if ((socket_server = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
 		perror("socket");
-		return -1;
+		return -1; 
 	}
 
 	//Configuración de dirección de servidor

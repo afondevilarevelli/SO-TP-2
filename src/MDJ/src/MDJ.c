@@ -62,7 +62,7 @@ int main(void) {
 
 	//libero memoria para evitar los memory leaks;
 	
-    dictionary_destroy(fns);
+    dictionary_destroy(fns); // falta destruir los elementos dentro del diccionario antes de destruir el diccionario
     pthread_mutex_destroy(&mx_main);
 
        
