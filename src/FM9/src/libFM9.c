@@ -17,8 +17,22 @@ void close_logger() {
 	log_destroy(logger);
 }
 
+//SOCKETS
+void connectionNew(socket_connection* socketInfo) {
+	log_info(logger, "Se ha conectado El Diego con ip %s en socket n°%d",
+			socketInfo->ip, socketInfo->socket);
+}
+
+void disconnect(socket_connection* socketInfo) {
+	log_info(logger, "El Diego(socket n°%d) se ha desconectado.", socketInfo->socket);
+}
+
+void DAM_FM9_handshake(socket_connection * connection, char ** args) {
+	log_info(logger, "Handshake con El Diego");
+}
+
 //CONFIG
-void read_and_log_config(char* path) {
+t_config_FM9* read_and_log_config(char* path) {
 	log_info(logger, "Voy a leer el archivo FM9.config");
 
 	t_config* archivo_Config = config_create(path);
@@ -48,6 +62,7 @@ void read_and_log_config(char* path) {
 
 	config_destroy(archivo_Config);
 	free(modo);
-	free(_datosFM9);
 
+	return _datosFM9;
 }
+
