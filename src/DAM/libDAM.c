@@ -72,3 +72,9 @@ t_config_DAM* read_and_log_config(char* path) {
 void FM9_DAM_handshake(socket_connection * connection, char ** args){
 	log_info(logger, "Handshake con FM9");
 }
+void SAFA_DAM_handshake(socket_connection * connection, char ** args){
+	log_info(logger, "Handshake con SAFA");
+}
+void MDJ_DAM_handshake(socket_connection * connection, char ** args){
+	log_info(logger, "Handshake con MDJ");
+}

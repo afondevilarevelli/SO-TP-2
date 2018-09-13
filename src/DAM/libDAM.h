@@ -36,6 +36,9 @@ void close_logger();
 
 //TODO ORDENAR:
 void FM9_DAM_handshake(socket_connection *, char **);
+void SAFA_DAM_handshake(socket_connection *, char **);
+void MDJ_DAM_handshake(socket_connection *, char **);
+
 
 //CONFIG
 

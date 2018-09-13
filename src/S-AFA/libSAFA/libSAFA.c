@@ -50,6 +50,7 @@ void read_and_log_config(char* path) {
 } // al final de esta funcion me queda la variable datosConfigSAFA con la config de SAFA
 
 //CallableRemoteFunctions
-void imprimirMensaje(socket_connection* socketInfo, char** msg){
-	printf("Se ha recibido el siguiente mensaje del socket %d: %s",socketInfo->socket, msg[0]);
+void DAM_SAFA_handshake(socket_connection * connection, char ** args) {
+	runFunction(connection->socket,"SAFA_DAM_handshake",0);
+	log_info(logger, "Handshake con El Diego");
 }
