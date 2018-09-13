@@ -28,6 +28,7 @@ void disconnect(socket_connection* socketInfo) {
 }
 
 void DAM_FM9_handshake(socket_connection * connection, char ** args) {
+	runFunction(connection->socket,"FM9_DAM_handshake",0);
 	log_info(logger, "Handshake con El Diego");
 }
 

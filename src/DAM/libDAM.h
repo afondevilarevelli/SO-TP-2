@@ -34,6 +34,9 @@ void configure_logger();
 t_config_DAM* read_and_log_config(char*);
 void close_logger();
 
+//TODO ORDENAR:
+void FM9_DAM_handshake(socket_connection *, char **);
+
 //CONFIG
 
 #endif

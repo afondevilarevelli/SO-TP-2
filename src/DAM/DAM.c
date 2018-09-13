@@ -19,8 +19,10 @@ int main(void){
 	configure_logger();
 	datosConfigDAM =read_and_log_config("DAM.config");
 	
-	t_dictionary *callableRemoteFunctions = dictionary_create();
-	
+	t_dictionary* callableRemoteFunctions = dictionary_create();
+
+	dictionary_put(callableRemoteFunctions, "FM9_DAM_handshake", &FM9_DAM_handshake);
+
 	int socket = connectServer(datosConfigDAM->IPFM9, datosConfigDAM->puertoFM9, callableRemoteFunctions, &disconnect, NULL);
 	
 	if(socket == -1){
@@ -28,11 +30,12 @@ int main(void){
 		return -1;
 	}
 	
-	sleep(4);
-	
+	log_info(logger,"Voy a hacer un handshake con FM9");
+
 	runFunction(socket,"DAM_FM9_handshake",0);
 	
-	
+	//Espero a que me responda memoria
+	sleep(10);
 	
 	
 	

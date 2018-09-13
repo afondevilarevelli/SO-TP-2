@@ -32,27 +32,31 @@ t_config_DAM* read_and_log_config(char* path) {
 
 	_datosDAM = malloc(sizeof(t_config_DAM));
 	
-	char *IPSAFA = string_new() ;
-	char *IPMDJ = string_new() ;
-	char *IPFM9 = string_new() ;
+	char *IPSAFA = string_new();
+	char *IPMDJ = string_new();
+	char *IPFM9 = string_new();
  
      
- 	_datosDAM->puertoEscucha = config_get_int_value(archivo_Config, "DAM_PUERTO");
-	string_append(&IPSAFA, config_get_string_value(archivo_Config, "S-AFA_IP"));
-	_datosDAM->puertoSAFA = config_get_int_value(archivo_Config, "S-AFA_PUERTO");
-	string_append(&IPMDJ, config_get_string_value(archivo_Config, "MDJ_IP"));
-	_datosDAM->puertoMDJ = config_get_int_value(archivo_Config, "MDJ_PUERTO");
-	string_append(&IPFM9, config_get_string_value(archivo_Config, "FM9_IP"));
-	_datosDAM->puertoFM9 = config_get_int_value(archivo_Config, "FM9_PUERTO");
+ 	_datosDAM->puertoEscucha = config_get_int_value(archivo_Config, "PUERTO");
+	string_append(&IPSAFA, config_get_string_value(archivo_Config, "IP_SAFA"));
+	_datosDAM->puertoSAFA = config_get_int_value(archivo_Config, "PUERTO_SAFA");
+	string_append(&IPMDJ, config_get_string_value(archivo_Config, "IP_MDJ"));
+	_datosDAM->puertoMDJ = config_get_int_value(archivo_Config, "PUERTO_MDJ");
+	string_append(&IPFM9, config_get_string_value(archivo_Config, "IP_FM9"));
+	_datosDAM->puertoFM9 = config_get_int_value(archivo_Config, "PUERTO_FM9");
 	_datosDAM->transferSize = config_get_int_value(archivo_Config, "TRANSFER_SIZE");
 
+	//TODO Esto te faltaba marian
+	_datosDAM->IPSAFA = IPSAFA;
+	_datosDAM->IPMDJ = IPMDJ;
+	_datosDAM->IPFM9 = IPFM9;
 
 	log_info(logger, "	PUERTO ESCUCHA: %d", _datosDAM->puertoEscucha);
 	log_info(logger, "	IP DE S-AFA: %s", _datosDAM->IPSAFA);
 	log_info(logger, "	PUERTO DE S-AFA: %d", _datosDAM->puertoSAFA);
-	log_info(logger, "	IP DE MDJ: %d", _datosDAM->IPMDJ);
+	log_info(logger, "	IP DE MDJ: %s", _datosDAM->IPMDJ);
 	log_info(logger, "	PUERTO DE MDJ: %d", _datosDAM->puertoMDJ);
-	log_info(logger, "	IP DE FM9: %d", _datosDAM->IPFM9);
+	log_info(logger, "	IP DE FM9: %s", _datosDAM->IPFM9);
 	log_info(logger, "	PUERTO DE FM9: %d", _datosDAM->puertoFM9);
 	log_info(logger, "	TRANSFER SIZE: %d", _datosDAM->transferSize);
 
@@ -62,4 +66,9 @@ t_config_DAM* read_and_log_config(char* path) {
 	config_destroy(archivo_Config);
 	return _datosDAM;
 
+}
+
+//TODO ORDENAR
+void FM9_DAM_handshake(socket_connection * connection, char ** args){
+	log_info(logger, "Handshake con FM9");
 }
