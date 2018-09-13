@@ -1,8 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 #include "libFM9.h"
 
+void cerrarPrograma() {
+	log_info(logger, "Voy a cerrar FM9");
+
+	close_logger();
+	free(datosConfigFM9);
+	dictionary_destroy(callableRemoteFunctions);
+	pthread_mutex_unlock(&mx_main);
+	pthread_mutex_destroy(&mx_main);
+}
+
 int main(void) {
+	//Esto es para liberar memoria despues de ctrl-c
+	signal(SIGINT, cerrarPrograma);
+
 	configure_logger();
 
 	datosConfigFM9 = read_and_log_config("FM9.config");
@@ -21,13 +35,6 @@ int main(void) {
 	pthread_mutex_init(&mx_main, NULL);
 	pthread_mutex_lock(&mx_main);
 	pthread_mutex_lock(&mx_main);
-
-	close_logger();
-
-	free(datosConfigFM9);
-	dictionary_destroy(callableRemoteFunctions);
-	pthread_mutex_unlock(&mx_main);
-	pthread_mutex_destroy(&mx_main);
 
 	return EXIT_SUCCESS;
 }
