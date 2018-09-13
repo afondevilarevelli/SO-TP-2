@@ -21,7 +21,7 @@ void close_logger() {
 }
 
 //CONFIG
-void read_and_log_config(char* path) {
+t_config_DAM* read_and_log_config(char* path) {
 	log_info(logger, "Voy a leer el archivo DAM.config");
 
 	t_config* archivo_Config = config_create(path);
@@ -30,14 +30,14 @@ void read_and_log_config(char* path) {
 		exit(1);
 	}
 
-	datosConfigDAM = malloc(sizeof(t_config_DAM));
+	_datosDAM = malloc(sizeof(t_config_DAM));
 	
 	char *IPSAFA = string_new() ;
 	char *IPMDJ = string_new() ;
 	char *IPFM9 = string_new() ;
-
-
-	_datosDAM->puertoEscucha = config_get_int_value(archivo_Config, "DAM_PUERTO");
+ 
+     
+ 	_datosDAM->puertoEscucha = config_get_int_value(archivo_Config, "DAM_PUERTO");
 	string_append(&IPSAFA, config_get_string_value(archivo_Config, "S-AFA_IP"));
 	_datosDAM->puertoSAFA = config_get_int_value(archivo_Config, "S-AFA_PUERTO");
 	string_append(&IPMDJ, config_get_string_value(archivo_Config, "MDJ_IP"));
@@ -45,6 +45,7 @@ void read_and_log_config(char* path) {
 	string_append(&IPFM9, config_get_string_value(archivo_Config, "FM9_IP"));
 	_datosDAM->puertoFM9 = config_get_int_value(archivo_Config, "FM9_PUERTO");
 	_datosDAM->transferSize = config_get_int_value(archivo_Config, "TRANSFER_SIZE");
+
 
 	log_info(logger, "	PUERTO ESCUCHA: %d", _datosDAM->puertoEscucha);
 	log_info(logger, "	IP DE S-AFA: %s", _datosDAM->IPSAFA);
@@ -59,5 +60,6 @@ void read_and_log_config(char* path) {
 	log_info(logger, "Fin de lectura");
 
 	config_destroy(archivo_Config);
+	return _datosDAM;
 
 }

@@ -23,7 +23,7 @@ typedef struct {
 
 //VARIABLES
 t_log* logger;
-t_config_DAM* datosConfigDAM;
+t_config_DAM* _datosDAM;
 
 int socketSAFA;
 
@@ -31,7 +31,7 @@ int socketSAFA;
 //FUNCIONES
 //LOGS
 void configure_logger();
-void read_and_log_config(char*);
+t_config_DAM* read_and_log_config(char*);
 void close_logger();
 
 //CONFIG
