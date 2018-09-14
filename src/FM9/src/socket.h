@@ -2,6 +2,7 @@
 #define SOCKET_H_
 
 	#include <commons/collections/dictionary.h>
+	#include <pthread.h>
 
 	typedef struct
 	{
@@ -18,6 +19,8 @@
 		t_dictionary * fns_receipts;
 		void(*fn_connectionClosed)();
 	} args_receiptMessage;
+
+	pthread_t th_listenClient;
 
 	void receiptMessage(void * arguments);
 
@@ -44,5 +47,7 @@
 	void listenClients(void * arguments);
 
 	int createListen(int port, void (*fn_newClient)(), t_dictionary * fns, void (*fn_connectionClosed)(), void * data);
+
+	void freeThings();
 
 #endif

@@ -11,6 +11,7 @@ void cerrarPrograma() {
 	dictionary_destroy(callableRemoteFunctions);
 	pthread_mutex_unlock(&mx_main);
 	pthread_mutex_destroy(&mx_main);
+	freeThings();
 }
 
 int main(void) {

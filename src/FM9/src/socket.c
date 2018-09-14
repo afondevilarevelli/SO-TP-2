@@ -25,6 +25,11 @@
 // máximo número de bytes que se pueden leer de una vez
 #define MAXDATASIZE 50000
 
+socket_connection * connection;
+
+args_receiptMessage *args_rm;
+
+args_listenClients *argunmentos;
 
 //Recibe y procesa un mensaje recibido
 void receiptMessage(void * arguments)
@@ -367,7 +372,7 @@ int connectServer(char * ip, int port, t_dictionary * fns, void (*fn_connectionC
 	}
 
 	// Creo estructura connection
-	socket_connection * connection = malloc(sizeof(socket_connection));
+	connection = malloc(sizeof(socket_connection)); //TODO
 	connection->socket = socket_server;
 	connection->ip = ip;
 	connection->port = port;
@@ -375,7 +380,7 @@ int connectServer(char * ip, int port, t_dictionary * fns, void (*fn_connectionC
 	connection->run_fn_connectionClosed = true;
 
 	// Creo receptor de mensajes
-	args_receiptMessage *args_rm = malloc(sizeof(args_receiptMessage));
+	args_rm = malloc(sizeof(args_receiptMessage)); //TODO
 	args_rm->connection = connection;
 	args_rm->fns_receipts = fns;
 	args_rm->fn_connectionClosed = fn_connectionClosed;
@@ -408,7 +413,7 @@ void listenClients(void * arguments) {
 		}
 
 		// Creo estructura connection
-		socket_connection * connection = malloc(sizeof(socket_connection));
+		connection = malloc(sizeof(socket_connection)); //TODO
 		connection->socket = newConnection;
 		connection->ip = string_duplicate(inet_ntoa(addr_client.sin_addr));
 		connection->port = args->port;
@@ -421,7 +426,7 @@ void listenClients(void * arguments) {
 		}
 
 		// creo receptor de mensajes
-		args_receiptMessage *args_rm = malloc(sizeof(args_receiptMessage));
+		args_rm = malloc(sizeof(args_receiptMessage)); //TODO
 		args_rm->connection = connection;
 		args_rm->fns_receipts = args->fns_receipts;
 		args_rm->fn_connectionClosed = args->fn_connectionClosed;
@@ -488,17 +493,23 @@ int createListen(int port, void (*fn_newClient)(), t_dictionary * fns, void (*fn
 	}
 
 	// Preparo argumentos para crear el listen
-	args_listenClients *args = malloc(sizeof(args_listenClients));
-	args->port = port;
-	args->socket_client = socket_client;
-	args->fn_newClient = fn_newClient;
-	args->fns_receipts = fns;
-	args->fn_connectionClosed = fn_connectionClosed;
-	args->data = data;
+	argunmentos = malloc(sizeof(args_listenClients));
+	argunmentos->port = port;
+	argunmentos->socket_client = socket_client;
+	argunmentos->fn_newClient = fn_newClient;
+	argunmentos->fns_receipts = fns;
+	argunmentos->fn_connectionClosed = fn_connectionClosed;
+	argunmentos->data = data;
 
 	// Creo el hilo listen
 	pthread_t th_listenClient;
-	pthread_create(&th_listenClient, NULL, (void*)listenClients, args);
+	pthread_create(&th_listenClient, NULL, (void*)listenClients, argunmentos);
 
 	return 1;
+}
+
+void freeThings(){
+	free(connection);
+	free(args_rm);
+	free(argunmentos);
 }
