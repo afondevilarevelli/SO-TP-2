@@ -22,8 +22,10 @@ int main(void) {
 	datosConfigFM9 = read_and_log_config("FM9.config");
 
 	callableRemoteFunctions = dictionary_create();
+	
 
 	dictionary_put(callableRemoteFunctions, "DAM_FM9_handshake", &DAM_FM9_handshake);
+	
 
 	log_info(logger, "Voy a escuchar el puerto: %d", datosConfigFM9->puerto);
 
@@ -32,6 +34,9 @@ int main(void) {
 
 	log_info(logger, "Estoy escuchando el puerto: %d", datosConfigFM9->puerto);
 
+	//conexion al servidor-----------------------------
+	
+	
 	pthread_mutex_init(&mx_main, NULL);
 	pthread_mutex_lock(&mx_main);
 	pthread_mutex_lock(&mx_main);
