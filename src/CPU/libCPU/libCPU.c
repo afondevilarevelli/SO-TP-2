@@ -16,8 +16,12 @@ void close_logger() {
 }
 
 //CONFIG
-void read_and_log_config(char* path) {
-	log_info(logger, "Voy a leer el archivo CPU.config");
+t_config_CPU* read_and_log_config(char* path) {
+
+	char* ipS;
+	char* ipD;
+
+	log_info(logger, "Verificando que exista el archivo CPU.config");
         archivo_Config  = config_create(path);
 	if (archivo_Config == NULL) {
 		log_error(logger, "No existe archivo de configuracion");
@@ -26,16 +30,17 @@ void read_and_log_config(char* path) {
       {
        log_info(logger,"Se verifico que existe CPU.config"); }
 
+
+	log_info(logger, "Voy a leer del archivo CPU.config");
     datosCPU = malloc(sizeof(t_config_CPU));
 
-    char* ipS = string_new();
+    ipS = string_new();
     string_append(&ipS,  config_get_string_value(archivo_Config,"IP_SAFA"));
     datosCPU->ipS = ipS;
-	//datosCPU->ipS = config_get_int_value(archivo_Config,"IP_SAFA");
 
 	datosCPU->puertoS = config_get_int_value(archivo_Config,"S-AFA_PUERTO");
 
-	char* ipD = string_new();
+	ipD = string_new();
 	string_append(&ipD,  config_get_string_value(archivo_Config,"IP_DAM"));
 	datosCPU->ipD = ipD;
 
@@ -43,6 +48,7 @@ void read_and_log_config(char* path) {
 
 	datosCPU->retardo= config_get_int_value(archivo_Config,"RETARDO");
 
+	log_info(logger, "Voy a cargar los datos");
 	log_info(logger, "IP_SAFA: %s", datosCPU->ipS);
 	log_info(logger, "S-AFA_PUERTO: %d", datosCPU->puertoS);
 	log_info(logger, "IP_DAM: %s", datosCPU->ipD);
@@ -51,8 +57,46 @@ void read_and_log_config(char* path) {
 	log_info(logger, "Todos los Datos Fueron Cargados");
 
 	config_destroy(archivo_Config);
-	free(datosCPU);
+	return datosCPU;
 
+}
+
+void* intentandoConexionConSAFA(int* socket){
+
+printf("\nEl Socket SAFA Dio : %d \n",*socket);
+if(*socket == -1){
+	saliendo_por_error(*socket, "No Se Pudo Conectar Con SAFA", NULL);
+}
+
+log_info(logger,"Voy a hacer un handshake con SAFA");
+
+runFunction(*socket,"CPU_SAFA_handshake",0);
+
+sleep(5);
+
+}
+
+void* intentandoConexionConDAM(int* socket){
+
+printf("\nEl Socket DAM Dio : %d \n",*socket);
+if(*socket == -1){
+	saliendo_por_error(*socket, "No Se Pudo Conectar Con DAM", NULL);
+}
+
+log_info(logger,"Voy a hacer un handshake con DAM");
+
+runFunction(*socket,"CPU_DAM_handshake",0);
+
+sleep(5);
+
+}
+
+void SAFA_CPU_handshake(socket_connection * connection, char ** args) {
+	log_info(logger, "Handshake con SAFA");
+}
+
+void DAM_CPU_handshake(socket_connection * connection, char ** args) {
+	log_info(logger, "Handshake con DAM");
 }
 
 void saliendo_por_error(int socket, char* error, void* buffer)
@@ -63,40 +107,23 @@ void saliendo_por_error(int socket, char* error, void* buffer)
 	}
 
 	log_error(logger, error);
-	close(socket);
 	exit_gracefully(1);
 
 }
 
-void enviando_mensaje(int socket, char* mensaje) {
-
-  log_info(logger, "Enviando Mensaje");
-
-  sendWithBasicProtocol(socket, (void *)mensaje, strlen(mensaje) + 1 );
-
-  log_info(logger,"El Mensaje: %s Fue Enviado Sin Problemas", mensaje);
-  }
 
 
-void  esperando_respuesta(int socket) {
+void disconnect(){
+  log_info(logger,"..Desconectado..");
+}
 
-    char * buffer = malloc(sizeof(char*));
-
-    int result_recv = recvWithBasicProtocol(socket,(void *) &buffer);
-
-    if(result_recv < 0)
-    {
-    	saliendo_por_error(socket, "No se pudo recibir el mensaje", buffer);
-    }
-
-    log_info(logger, "Mensaje Recibido: '%s'", buffer);
-    free(buffer);
-
-  }
 
 void exit_gracefully(int return_nr) {
 
+	free(datosCPU);
+	disconnect();
 	log_destroy(logger);
+
 	exit(return_nr);
 
 }

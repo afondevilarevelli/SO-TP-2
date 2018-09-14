@@ -11,12 +11,12 @@ void elementoDestructorDiccionario();
 int main(void){
 	fns = dictionary_create();
 	dictionary_put(fns, "DAM_SAFA_handshake", &DAM_SAFA_handshake);
+    dictionary_put(fns, "CPU_SAFA_handshake", &CPU_SAFA_handshake);
 
 	configure_logger();
 	read_and_log_config("S-AFA.config");
 	
-
-	printf("Escuchando puerto 8080 \n");
+	log_info(logger, "Voy a escuchar por mi puerto: %d", datosConfigSAFA->puerto);
 	createListen(datosConfigSAFA->puerto, &connectionNew, fns, &disconnect, NULL);
 	printf("paso por aca \n");
   	// bloqueo el thread, dejando la coneccion abierta

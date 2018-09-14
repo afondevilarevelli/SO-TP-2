@@ -33,5 +33,6 @@ void read_and_log_config(char*);
 
 //CallableRemoteFunctions
 void DAM_SAFA_handshake(socket_connection* socketInfo, char** msg);
+void CPU_SAFA_handshake(socket_connection* socketInfo, char** msg);
 
 

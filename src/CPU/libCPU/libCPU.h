@@ -3,16 +3,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
-#include <arpa/inet.h>
 #include <commons/log.h>
 #include <commons/config.h>
 #include <commons/string.h>
-#include <sys/socket.h>
+#include <commons/collections/dictionary.h>
+#include "../../sample-socket/socket.h"
 
-
-#define IP INADDR_ANY //MACRO
 
 //ESTRUCTURA
 typedef struct {
@@ -27,15 +24,23 @@ typedef struct {
 t_log* logger;
 t_config* archivo_Config;
 t_config_CPU* datosCPU;
+t_dictionary * callableRemoteFunctionsCPU;
 
 //FUNCIONES
 
 void configure_logger();
-void read_and_log_config(char*);
-void saliendo_por_error(int , char* , void* );
-void esperando_respuesta(int );
-void enviando_mensaje(int , char* );
-void exit_gracefully(int );
+t_config_CPU* read_and_log_config(char*);
 void close_logger();
+
+void* intentandoConexionConSAFA(int* );
+void* intentandoConexionConDAM(int* );
+
+void SAFA_CPU_handshake(socket_connection *, char **);
+void DAM_CPU_handshake(socket_connection *, char **);
+
+void saliendo_por_error(int , char* , void* );
+void disconnect();
+void exit_gracefully(int );
+
 
 #endif
