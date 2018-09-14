@@ -14,16 +14,17 @@ int main(void){
 
 	configure_logger();
 	read_and_log_config("S-AFA.config");
-	close_logger();
+	
 
-	printf("Escuchando puerto 8080");
+	printf("Escuchando puerto 8080 \n");
 	createListen(datosConfigSAFA->puerto, &connectionNew, fns, &disconnect, NULL);
-
+	printf("paso por aca \n");
   	// bloqueo el thread, dejando la coneccion abierta
  	pthread_mutex_init(&mx_main, NULL);
 	pthread_mutex_lock(&mx_main);
 	pthread_mutex_lock(&mx_main);
 
+	close_logger();
 	dictionary_destroy_and_destroy_elements(fns, &elementoDestructorDiccionario);
     return 0;
 }
