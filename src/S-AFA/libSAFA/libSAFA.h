@@ -32,4 +32,6 @@ void close_logger();
 void read_and_log_config(char*);
 
 //CallableRemoteFunctions
-void imprimirMensaje(socket_connection* socketInfo, char** msg);
+void DAM_SAFA_handshake(socket_connection* socketInfo, char** msg);
+
+

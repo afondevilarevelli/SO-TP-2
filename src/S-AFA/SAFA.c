@@ -10,7 +10,7 @@ void elementoDestructorDiccionario();
 
 int main(void){
 	fns = dictionary_create();
-	dictionary_put(fns, "imprimirMensaje", &imprimirMensaje);
+	dictionary_put(fns, "DAM_SAFA_handshake", &DAM_SAFA_handshake);
 
 	configure_logger();
 	read_and_log_config("S-AFA.config");
