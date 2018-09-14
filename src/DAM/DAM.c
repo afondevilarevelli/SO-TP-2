@@ -12,7 +12,7 @@ void disconnect();
 int main(void){
      
 	
-	
+	//GITHUB DEL OJETE NO ME CUENTA LOS COMMITS
 	
 	t_config_DAM* datosConfigDAM;
    
