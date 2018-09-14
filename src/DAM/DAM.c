@@ -19,13 +19,18 @@ int main(void){
 	configure_logger();
 	datosConfigDAM =read_and_log_config("DAM.config");
 	
+	//diccionarios
 	t_dictionary* callableRemoteFunctionsFM9 = dictionary_create();
 	t_dictionary* callableRemoteFunctionsSAFA = dictionary_create();
+	
+	//--------------------------------------------------------------------
 	
 	dictionary_put(callableRemoteFunctionsFM9, "FM9_DAM_handshake", &FM9_DAM_handshake);
 	dictionary_put(callableRemoteFunctionsSAFA, "SAFA_DAM_handshake", &SAFA_DAM_handshake);
 	//dictionary_put(callableRemoteFunctions, "MDJ_DAM_handshake", &MDJ_DAM_handshake);
-
+	
+	
+	//coneccion al servidor----------------------------------
 	int socket2 = connectServer(datosConfigDAM->IPSAFA,datosConfigDAM->puertoSAFA, callableRemoteFunctionsSAFA, &disconnect, NULL);
 	int socket = connectServer(datosConfigDAM->IPFM9, datosConfigDAM->puertoFM9, callableRemoteFunctionsFM9, &disconnect, NULL);
 	/*int socketSAFA = connectServer(datosConfigDAM->IPSAFA, datosConfigDAM->puertoSAFA, callableRemoteFunctions, &disconnect, NULL);
