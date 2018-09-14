@@ -22,6 +22,7 @@ int main(void){
 	//diccionarios
 	t_dictionary* callableRemoteFunctionsFM9 = dictionary_create();
 	t_dictionary* callableRemoteFunctionsSAFA = dictionary_create();
+	t_dictionary* callableRemoteFunctionsCPU = dictionary_create();
 	
 	//--------------------------------------------------------------------
 	
@@ -29,6 +30,16 @@ int main(void){
 	dictionary_put(callableRemoteFunctionsSAFA, "SAFA_DAM_handshake", &SAFA_DAM_handshake);
 	//dictionary_put(callableRemoteFunctions, "MDJ_DAM_handshake", &MDJ_DAM_handshake);
 	
+	callableRemoteFunctionsCPU = dictionary_create();
+		
+
+    dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_handshake", &CPU_DAM_handshake);
+		
+
+		log_info(logger, "Voy a escuchar el puerto: %d", datosConfigDAM->puertoEscucha);
+
+		createListen(datosConfigDAM->puertoEscucha, &connectionNew,
+				callableRemoteFunctionsCPU, &disconnect, NULL);
 	
 	//coneccion al servidor----------------------------------
 	int socket2 = connectServer(datosConfigDAM->IPSAFA,datosConfigDAM->puertoSAFA, callableRemoteFunctionsSAFA, &disconnect, NULL);

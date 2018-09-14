@@ -78,3 +78,13 @@ void SAFA_DAM_handshake(socket_connection * connection, char ** args){
 void MDJ_DAM_handshake(socket_connection * connection, char ** args){
 	log_info(logger, "Handshake con MDJ");
 }
+void CPU_DAM_handshake(socket_connection * connection, char ** args) {
+	runFunction(connection->socket,"DAM_CPU_handshake",0);
+	log_info(logger, "Handshake con CPU");
+}
+void connectionNew(socket_connection* socketInfo) {
+	log_info(logger, "Se ha conectado CPU con ip %s en socket n°%d",
+			socketInfo->ip, socketInfo->socket);
+}
+
+
