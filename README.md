@@ -17,6 +17,6 @@
 
 [LINKS UTILES](https://www.utnso.com/links-utiles/)  
 
-[PROTOCOLO](https://docs.google.com/document/d/1YBjAJniU1gD92XQTicZHEe_cn71ZvY2Yd9hZbALnQJ0/edit#)   
+[PROTOCOLO](https://docs.google.com/spreadsheets/d/1B2ZG_4U5QOJADfveciToI5q6tHMHdljOOqSCwWwBzwU/edit#gid=0)   
 
 [MANUAL LIBREA SOCKETS](https://github.com/nahuelpanzarasa/socket-library-c)                  
