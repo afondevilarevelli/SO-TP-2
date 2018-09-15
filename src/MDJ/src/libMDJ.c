@@ -1,7 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h>
+#include <net/if.h>
+#include <arpa/inet.h>
+#include "../../sample-socket/socket.h"
 #include "libMDJ.h"
-#define IP INADDR_ANY
+
 
 
 void configure_logger() {
@@ -19,8 +26,37 @@ void close_logger() {
 	log_destroy(logger);
 }
 
+
+//SOCKETS
+
+void connectionNew(socket_connection* socketInfo) {
+	log_info(logger, "Se ha conectado  con ip %s  en socket n  %d",socketInfo->ip, socketInfo->socket);
+}
+
+void disconnect(socket_connection* socketInfo) {
+	log_info(logger, "socket n  %d  se ha desconectado.", socketInfo->socket);
+}
+
+void DAM_MDJ_handshake(socket_connection * connection, char ** args) {
+	runFunction(connection->socket,"MDJ_DAM_handshake",0);
+	log_info(logger, "Handshake con El Diego");
+}
+
+char *  getIp(){
+int fd;
+ struct ifreq ifr;
+ fd =socket(AF_INET, SOCK_STREAM, 0);
+ ifr.ifr_addr.sa_family = AF_INET;
+strncpy(ifr.ifr_name, "docker0", IFNAMSIZ-1);
+ ioctl(fd, SIOCGIFADDR, &ifr);
+close(fd);
+ return  (inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
+}
+
+
+
 //CONFIG
-void read_and_log_config(char* path) {
+t_config_MDJ *  read_and_log_config(char* path) {
 	log_info(logger, "Voy a leer el archivo MDJ.config");
         t_config* archivo_Config  = config_create(path);
 	if (existeArchivoConf(path) == 0) {
@@ -45,10 +81,9 @@ void read_and_log_config(char* path) {
 	log_info(logger, "	RETARDO: %d", datosMDJ->retardo);
 	log_info(logger, "Fin de lectura");
 
-	config_destroy(archivo_Config);
-	free(ip);
+       config_destroy(archivo_Config);
+       free(ip);
        free(ptoMontaje);
-	free(datosMDJ);
+       return datosMDJ;
 
 }
-

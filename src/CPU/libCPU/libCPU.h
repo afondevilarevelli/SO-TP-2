@@ -9,6 +9,7 @@
 #include <commons/string.h>
 #include <commons/collections/dictionary.h>
 #include "../../sample-socket/socket.h"
+#include "../../gestionArchConfig/gestionArchConf.h"
 
 
 //ESTRUCTURA

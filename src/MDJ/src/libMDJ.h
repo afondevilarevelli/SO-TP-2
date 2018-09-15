@@ -4,6 +4,7 @@
 #include <commons/config.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include "../../sample-socket/socket.h"
 #include  "../../gestionArchConfig/gestionArchConf.h"
 
 
@@ -20,11 +21,21 @@ typedef struct {
 t_log* logger;
 
 
+
 //FUNCIONES
-//LOGS
 void configure_logger();
 void close_logger();
+void DAM_MDJ_handshake(socket_connection * , char ** );
+void cerrarPrograma();
+void elementoDestructorDiccionario(void *);
 
 //CONFIG
 
-void read_and_log_config(char*);
+t_config_MDJ *  read_and_log_config(char*);
+
+//SOCKETS
+
+void DAM_MDJ_handshake(socket_connection * , char **) ;
+void disconnect(socket_connection *);
+void connectionNew(socket_connection* );
+char * getIp();

@@ -1,5 +1,5 @@
-sources = DAM.c	libDAM.c
-socketLibraries	= ../sample-socket/socket.c
+sources = src/DAM.c	 src/libDAM.c
+socketLibraries	=  ../sample-socket/socket.c   ../gestionArchConfig/gestionArchConf.c
 pathLibraries	= -lreadline -lcommons -lpthread				
 DAM: $(sources)	
 	gcc -g -o DAM $(sources) $(socketLibraries) $(pathLibraries)		
