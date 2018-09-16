@@ -1,4 +1,4 @@
-sources = src/CPU.c   libCPU.c
+sources = src/CPU.c   src/libCPU.c
 sharedLibraries = ../sample-socket/socket.c
 pathLibraries = -lreadline -lcommons -lpthread 
 
