@@ -1,4 +1,4 @@
-#include "libCPU/libCPU.h"
+#include "libCPU.h"
 
 int main() {
 
