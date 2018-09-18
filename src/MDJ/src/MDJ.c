@@ -6,16 +6,7 @@
 #include <commons/collections/dictionary.h>
 #include <signal.h>
 #include "libMDJ.h"
-
-
-//Globales
-t_dictionary *  fns;	/* Funciones de socket */
-pthread_mutex_t mx_main;	/* Semaforo de main */
-int portServer;
 char * path = "MDJ.config";
-t_config * conf;
-t_config_MDJ  *   datosConfMDJ;
-
 
 
 int main(void) {
@@ -26,6 +17,7 @@ int main(void) {
      portServer = datosConfMDJ->puerto;
      fns = dictionary_create();
       dictionary_put(fns, "DAM_MDJ_handshake", &DAM_MDJ_handshake);
+         dictionary_put(fns, "identificarProceso", &identificarProceso);
       setValue(conf,path,"IP",getIp());
         
 

@@ -1,5 +1,5 @@
-sources = src/MDJ.c src/libMDJ.c  
-sharedLibraries = ../sample-socket/socket.c ../gestionArchConfig/gestionArchConf.c
+sources = src/MDJ.c  src/libMDJ.c  
+sharedLibraries = ../sample-socket/socket.c  ../Utils/gestionArchConf.c  ../Utils/gestionProcesos.c
 pathLibraries = -lreadline -lcommons -lpthread 
 
 MDJ: $(sources)

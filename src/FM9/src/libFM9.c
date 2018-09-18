@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "libFM9.h"
+#include <string.h>
+
 
 //LOG
 void configure_logger() {
@@ -17,11 +19,8 @@ void close_logger() {
 	log_destroy(logger);
 }
 
+
 //SOCKETS
-void connectionNew(socket_connection* socketInfo) {
-	log_info(logger, "Se ha conectado El Diego con ip %s en socket n°%d",
-			socketInfo->ip, socketInfo->socket);
-}
 
 void disconnect(socket_connection* socketInfo) {
 	log_info(logger, "El Diego(socket n°%d) se ha desconectado.", socketInfo->socket);
@@ -67,3 +66,11 @@ t_config_FM9* read_and_log_config(char* path) {
 	return _datosFM9;
 }
 
+
+void identificarProceso(socket_connection * connection ,char** args)
+{
+     proc * pro = malloc(sizeof(proc));
+     pro->proceso = args[0];
+     log_info (logger,"Se conecto %s en el socket nro %d  cib ip %s  puerto %d", pro->proceso,connection->socket,connection->ip,connection-> port);
+     free(pro);
+}

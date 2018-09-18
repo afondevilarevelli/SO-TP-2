@@ -61,3 +61,5 @@ void CPU_SAFA_handshake(socket_connection * connection, char ** args) {
 	runFunction(connection->socket,"SAFA_CPU_handshake",0);
 	log_info(logger, "Handshake con La CPU");
 }
+
+

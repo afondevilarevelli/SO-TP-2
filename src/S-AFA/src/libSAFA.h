@@ -6,10 +6,12 @@
 #include <pthread.h>
 #include <commons/collections/dictionary.h>
 #include  "../../sample-socket/socket.h"
-#include  "../../gestionArchConfig/gestionArchConf.h"
+# include "../../Utils/gestionArchConf.h"
+#include   "../../Utils/gestionProcesos.h"
 
 
 //ESTRUCTURAS
+
 typedef struct {
 	int puerto;
 	char* algoritmoPlanif;
@@ -18,18 +20,31 @@ typedef struct {
 	int retardo;
 } t_config_SAFA;
 
+//--------------------------------------//
+
+
+
 //VARIABLES GLOBALES
+
 t_log* logger;
 t_config_SAFA* datosConfigSAFA;
 pthread_mutex_t mx_main;
 t_dictionary* fns;
+//--------------------------------------------//
 
-//FUNCIONES
 //LOGS
 void configure_logger();
 void close_logger();
 t_config_SAFA * read_and_log_config(char*);
+
+//--------------------------------------------//
+
+
+//PROTOTIPOS
 void cerrarPrograma();
+void identificarDAM( socket_connection* socketInfo, char** msg);
+
+//--------------------------------------------//
 
 
 

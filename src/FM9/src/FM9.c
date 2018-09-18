@@ -3,6 +3,8 @@
 #include <signal.h>
 #include "libFM9.h"
 
+proc *   pro ;
+
 void cerrarPrograma() {
 	log_info(logger, "Voy a cerrar FM9");
 
@@ -22,15 +24,20 @@ int main(void) {
 	datosConfigFM9 = read_and_log_config("FM9.config");
 
 	callableRemoteFunctions = dictionary_create();
-	
+
+          
 
 	dictionary_put(callableRemoteFunctions, "DAM_FM9_handshake", &DAM_FM9_handshake);
-	
+	 dictionary_put(callableRemoteFunctions,"identificarProceso",&identificarProceso);
+       
+
+pro = malloc(sizeof(proc));
+
 
 	log_info(logger, "Voy a escuchar el puerto: %d", datosConfigFM9->puerto);
 
-	createListen(datosConfigFM9->puerto, &connectionNew,
-			callableRemoteFunctions, &disconnect, NULL);
+	createListen(datosConfigFM9->puerto,NULL,
+			callableRemoteFunctions, &disconnect, pro);
 
 	log_info(logger, "Estoy escuchando el puerto: %d", datosConfigFM9->puerto);
 
@@ -40,7 +47,6 @@ int main(void) {
 	pthread_mutex_init(&mx_main, NULL);
 	pthread_mutex_lock(&mx_main);
 	pthread_mutex_lock(&mx_main);
-
 	return EXIT_SUCCESS;
 }
 

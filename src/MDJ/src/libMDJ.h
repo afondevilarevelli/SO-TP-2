@@ -5,8 +5,10 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include "../../sample-socket/socket.h"
-#include  "../../gestionArchConfig/gestionArchConf.h"
-
+#include "../../Utils/gestionArchConf.h"
+#include   "../../Utils/gestionProcesos.h"
+#include <commons/string.h>
+#include <string.h>
 
 
 //ESTRUCTURAS
@@ -19,6 +21,11 @@ typedef struct {
 
 //VARIABLES
 t_log* logger;
+t_dictionary *  fns;	/* Funciones de socket */
+pthread_mutex_t mx_main;	/* Semaforo de main */
+int portServer;
+t_config * conf;
+t_config_MDJ  *   datosConfMDJ;
 
 
 

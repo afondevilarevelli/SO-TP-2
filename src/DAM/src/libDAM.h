@@ -10,7 +10,8 @@
 #include <commons/config.h>
 #include <commons/collections/dictionary.h>
 #include "../../sample-socket/socket.h"
-#include "../../gestionArchConfig/gestionArchConf.h"
+#include "../../Utils/gestionArchConf.h"
+#include   "../../Utils/gestionProcesos.h"
 
 //ESTRUCTURAS
 typedef struct {
@@ -24,30 +25,45 @@ typedef struct {
     int transferSize;
 } t_config_DAM;
 
+
+
+
+
+//----------------------------//
+
 //VARIABLES
 t_log* logger;
 t_config_DAM* _datosDAM;
+t_dictionary* callableRemoteFunctionsSAFA;
+t_dictionary* callableRemoteFunctionsFM9;
+t_dictionary* callableRemoteFunctionsMDJ;
+t_dictionary* callableRemoteFunctionsCPU;
+pthread_mutex_t mx_main;	/* Semaforo de main */
+t_config_DAM*  datosConfigDAM;
 
 
-int socketSAFA;
+//----------------------------//
 
 
-//FUNCIONES
 //LOGS
 void configure_logger();
 t_config_DAM* read_and_log_config(char*);
 void close_logger();
+
+//----------------------------//
+
+
+//PROTOTIPOS
 void cerrarPrograma();
 void elementoDestructorDiccionario(void *);
+void connectionNew(socket_connection* socketInfo);
 
 
-//TODO ORDENAR:
+//diccionarios
 void FM9_DAM_handshake(socket_connection *, char **);
 void SAFA_DAM_handshake(socket_connection *, char **);
 void MDJ_DAM_handshake(socket_connection *, char **);
-
 void CPU_DAM_handshake(socket_connection * connection, char ** args);
-void connectionNew(socket_connection* socketInfo);
-//CONFIG
+
 
 #endif

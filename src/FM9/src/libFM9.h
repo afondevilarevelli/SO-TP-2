@@ -4,7 +4,8 @@
 #include <commons/config.h>
 #include <commons/collections/dictionary.h>
 #include <pthread.h>
-#include "socket.h"
+#include  "../../sample-socket/socket.h"
+#include "../../Utils/gestionProcesos.h"
 
 //ESTRUCTURAS
 typedef struct {
@@ -14,6 +15,7 @@ typedef struct {
 	int maximoLinea;
 	int tamanioPagina;
 } t_config_FM9;
+
 
 //VARIABLES
 t_log* logger;
@@ -30,6 +32,7 @@ void close_logger();
 void connectionNew(socket_connection*);
 void disconnect(socket_connection*);
 void DAM_FM9_handshake(socket_connection *, char **);
+void identificarProceso(socket_connection * con,char** args);
 
 //CONFIG
 t_config_FM9* read_and_log_config(char*);
