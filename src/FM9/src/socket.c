@@ -29,7 +29,13 @@ socket_connection * connection;
 
 args_receiptMessage *args_rm;
 
-args_listenClients *argunmentos;
+socket_connection * connection2;
+
+args_receiptMessage *args_rm2;
+
+args_listenClients *argumentos;
+
+pthread_t th_listenClient;
 
 //Recibe y procesa un mensaje recibido
 void receiptMessage(void * arguments)
@@ -413,24 +419,24 @@ void listenClients(void * arguments) {
 		}
 
 		// Creo estructura connection
-		connection = malloc(sizeof(socket_connection)); //TODO
-		connection->socket = newConnection;
-		connection->ip = string_duplicate(inet_ntoa(addr_client.sin_addr));
-		connection->port = args->port;
-		connection->data = args->data;
-		connection->run_fn_connectionClosed = true;
+		connection2 = malloc(sizeof(socket_connection)); //TODO
+		connection2->socket = newConnection;
+		connection2->ip = string_duplicate(inet_ntoa(addr_client.sin_addr));
+		connection2->port = args->port;
+		connection2->data = args->data;
+		connection2->run_fn_connectionClosed = true;
 
 		// aviso que se conecto un socket
 		if(args->fn_newClient != NULL) {
-			args->fn_newClient(connection);
+			args->fn_newClient(connection2);
 		}
 
 		// creo receptor de mensajes
-		args_rm = malloc(sizeof(args_receiptMessage)); //TODO
-		args_rm->connection = connection;
-		args_rm->fns_receipts = args->fns_receipts;
-		args_rm->fn_connectionClosed = args->fn_connectionClosed;
-		pthread_create(&th_receiptMessage, NULL, (void*) receiptMessage, args_rm);
+		args_rm2 = malloc(sizeof(args_receiptMessage)); //TODO
+		args_rm2->connection = connection2;
+		args_rm2->fns_receipts = args->fns_receipts;
+		args_rm2->fn_connectionClosed = args->fn_connectionClosed;
+		pthread_create(&th_receiptMessage, NULL, (void*) receiptMessage, args_rm2);
 	}
 
 	// Libero memoria
@@ -493,23 +499,25 @@ int createListen(int port, void (*fn_newClient)(), t_dictionary * fns, void (*fn
 	}
 
 	// Preparo argumentos para crear el listen
-	argunmentos = malloc(sizeof(args_listenClients));
-	argunmentos->port = port;
-	argunmentos->socket_client = socket_client;
-	argunmentos->fn_newClient = fn_newClient;
-	argunmentos->fns_receipts = fns;
-	argunmentos->fn_connectionClosed = fn_connectionClosed;
-	argunmentos->data = data;
+	argumentos = malloc(sizeof(args_listenClients));
+	argumentos->port = port;
+	argumentos->socket_client = socket_client;
+	argumentos->fn_newClient = fn_newClient;
+	argumentos->fns_receipts = fns;
+	argumentos->fn_connectionClosed = fn_connectionClosed;
+	argumentos->data = data;
+
+
 
 	// Creo el hilo listen
-	pthread_t th_listenClient;
-	pthread_create(&th_listenClient, NULL, (void*)listenClients, argunmentos);
+	pthread_create(&th_listenClient, NULL, (void*)listenClients, argumentos);
 
 	return 1;
 }
 
 void freeThings(){
-	free(connection);
-	free(args_rm);
-	free(argunmentos);
+	//free(connection2);
+	free(argumentos);
+	pthread_join(&th_listenClient, NULL);
+	pthread_cancel(pthread_self());
 }
