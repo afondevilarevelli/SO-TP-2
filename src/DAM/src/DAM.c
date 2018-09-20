@@ -53,7 +53,6 @@ int main(void){
        }
        else  {
         log_info(logger,"voy a hacer un handshake con  FM9");
-         runFunction(socketFM9,"identificarProceso",1,"DAM");
          runFunction(socketFM9,"DAM_FM9_handshake",0);
          }
       
