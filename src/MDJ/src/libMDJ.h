@@ -11,6 +11,7 @@
 #include <string.h>
 
 
+
 //ESTRUCTURAS
 typedef struct {
 	int puerto;
