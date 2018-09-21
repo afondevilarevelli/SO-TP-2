@@ -9,6 +9,7 @@
 #include   "../../Utils/gestionProcesos.h"
 #include <commons/string.h>
 #include <string.h>
+#include "consolaMDJ.h"
 
 
 

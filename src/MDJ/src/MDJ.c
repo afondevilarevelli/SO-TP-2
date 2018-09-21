@@ -6,13 +6,13 @@
 #include <commons/collections/dictionary.h>
 #include <signal.h>
 #include "libMDJ.h"
+
 char * path = "MDJ.config";
 
 
 int main(void) {
       
      signal(SIGINT, cerrarPrograma);
-     //consolaMDJ();
      configure_logger();
      datosConfMDJ =  read_and_log_config(path);
      portServer = datosConfMDJ->puerto;
@@ -20,6 +20,7 @@ int main(void) {
       dictionary_put(fns, "DAM_MDJ_handshake", &DAM_MDJ_handshake);
          dictionary_put(fns, "identificarProceso", &identificarProceso);
       setValue(conf,path,"IP",getIp());
+            consolaMDJ();
 
        //Pongo a escuchar el server en el puerto elegido
         int listener = createListen(5001, &connectionNew ,fns, &disconnect ,NULL);

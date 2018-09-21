@@ -1,18 +1,22 @@
 #include "consolaMDJ.h"
 #define MAXDIR 100
 
-char bufferDirAct[150];
+  char bufferDirAct[150];
+   char hostname [150];
+ 
 
-
-void consolaMDJ(/* mas adelante ver si lleva parametros*/){
+void consolaMDJ(){
 	char* linea=NULL;
 	char espaBlan[4]=" \n\t";
 	int debeContinuar = 1; //TRUE
+        getlogin_r( hostname,sizeof( hostname ));
+        getcwd( bufferDirAct, sizeof( bufferDirAct));
 
 	do{
 
 		free(linea);
-		linea = readline(">");
+               printf("%s",hostname);
+		linea = readline(" >");
 		char* p1 = strtok(linea,espaBlan);    // token que apunta al primer parametro ( la palabra reservada )
 		char* p2 = strtok(NULL,espaBlan);	 // token que apunta al segundo parametro
 
@@ -21,7 +25,6 @@ void consolaMDJ(/* mas adelante ver si lleva parametros*/){
 		else if(strcmp(p1,"ls") == 0)
 		{
                  if (p2 != NULL){
-                  getcwd( bufferDirAct, sizeof( bufferDirAct));
                     printf( "%s:",bufferDirAct);
 		     ls(p2);
                   printf("\n");
@@ -36,6 +39,7 @@ void consolaMDJ(/* mas adelante ver si lleva parametros*/){
                 }
 		else if(strcmp(p1,"cd") == 0 && p2 != NULL)
 		{
+                printf("%s :" ,hostname);
                 cd(p2);
 		}
 		else if(strcmp(p1,"md5") == 0  && p2 != NULL )
@@ -86,7 +90,7 @@ else if ( ( dir_ptr = opendir( dir_name) ) == NULL ) {
 	}
 else
 {
-	while ( count < 100  && ( dirent_ptr = readdir( dir_ptr ) ) != NULL ) {
+	while ( count < MAXDIR  && ( dirent_ptr = readdir( dir_ptr ) ) != NULL ) {
                 count++;
 		printf( " %s" ,dirent_ptr->d_name );
 	}
@@ -98,7 +102,18 @@ else
 }
 
 void cd(char* pathD){
-
+int retorno = chdir(pathD);
+getcwd( bufferDirAct, sizeof( bufferDirAct));
+if ( strcmp(pathD,".") == 0)  system("cd .");
+if (strcmp(pathD,"..") == 0)  system("cd ..");
+if (retorno == -1)
+{
+printf("No se encontro el directorio %s \n ",pathD );
+}
+else
+{
+printf("%s  \n",bufferDirAct);
+}
 }
 
 void md5(char* pathA){ 
@@ -108,3 +123,4 @@ void md5(char* pathA){
 void cat(char* pathA){
 
 }
+

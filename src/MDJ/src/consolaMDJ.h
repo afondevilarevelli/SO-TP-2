@@ -8,6 +8,7 @@
 #include <readline/readline.h>
 #include <commons/string.h>
 #include <dirent.h>
+#include <unistd.h>
 
 //definicion de funciones
 void consolaMDJ();
