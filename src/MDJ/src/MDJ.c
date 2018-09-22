@@ -20,7 +20,7 @@ int main(void) {
       dictionary_put(fns, "DAM_MDJ_handshake", &DAM_MDJ_handshake);
          dictionary_put(fns, "identificarProceso", &identificarProceso);
       setValue(conf,path,"IP",getIp());
-            consolaMDJ();
+       //consolaMDJ();
 
        //Pongo a escuchar el server en el puerto elegido
         int listener = createListen(5001, &connectionNew ,fns, &disconnect ,NULL);

@@ -1,22 +1,23 @@
 #include "consolaMDJ.h"
-#define MAXDIR 100
+#include <errno.h>
+#define MAXDIR 150
+#define BUZZ_SIZE 1024
+#define MAX_CMD_LEN  128
+#define HISTORY_COUNT 20
 
-  char bufferDirAct[150];
-   char hostname [150];
- 
+ char bufferDirAct[150];
 
 void consolaMDJ(){
 	char* linea=NULL;
 	char espaBlan[4]=" \n\t";
 	int debeContinuar = 1; //TRUE
-        getlogin_r( hostname,sizeof( hostname ));
         getcwd( bufferDirAct, sizeof( bufferDirAct));
 
 	do{
-
-		free(linea);
-               printf("%s",hostname);
-		linea = readline(" >");
+               free(linea);
+               printf("%s",bufferDirAct);
+		linea = readline(">");
+           
 		char* p1 = strtok(linea,espaBlan);    // token que apunta al primer parametro ( la palabra reservada )
 		char* p2 = strtok(NULL,espaBlan);	 // token que apunta al segundo parametro
 
@@ -25,21 +26,19 @@ void consolaMDJ(){
 		else if(strcmp(p1,"ls") == 0)
 		{
                  if (p2 != NULL){
-                    printf( "%s:",bufferDirAct);
-		     ls(p2);
+                 printf( "%s>",bufferDirAct);
+		  ls(p2);
                   printf("\n");
                   }
              else 
                 { 
-                getcwd( bufferDirAct, sizeof( bufferDirAct));
-                 printf("%s:",bufferDirAct);           
-                 ls(""); 
-               printf("\n");
+                printf("%s>",bufferDirAct);           
+                ls(""); 
+                printf("\n");
                 }
                 }
 		else if(strcmp(p1,"cd") == 0 && p2 != NULL)
 		{
-                printf("%s :" ,hostname);
                 cd(p2);
 		}
 		else if(strcmp(p1,"md5") == 0  && p2 != NULL )
@@ -50,19 +49,20 @@ void consolaMDJ(){
 		{	
             cat(p2);
 		}
+             else if (strcmp(p1,"clear") ==  0)
+                {
+                system("clear");
+                }
 		else
 		{
 			debeContinuar = strcmp(linea, "exit");
-			if(debeContinuar) printf("comando no reconocido\n");
+			if(debeContinuar) printf("%s>comando no reconocido\n",bufferDirAct);
 		}
 
 	}while(debeContinuar);
-
-	free(linea);
-
-	exit(0);
-
-	return;
+	  free(linea);
+           exit(0);
+           return;
 }
 
 void ls(char * pathD){
@@ -85,14 +85,14 @@ if (string_is_empty(pathD) == 1)
 ls(".");
 }
 else if ( ( dir_ptr = opendir( dir_name) ) == NULL ) {
-		printf( "No existe o no se pudo abrir el directorio '%s'\n", dir_name );
+		printf( "No existe  el directorio '%s'\n",dir_name );
 		return -1;
 	}
 else
 {
 	while ( count < MAXDIR  && ( dirent_ptr = readdir( dir_ptr ) ) != NULL ) {
                 count++;
-		printf( " %s" ,dirent_ptr->d_name );
+		printf( " \e[96m %s \e[0m" ,dirent_ptr->d_name );
 	}
 }
 /* cierra el directorio */
@@ -102,25 +102,88 @@ else
 }
 
 void cd(char* pathD){
+char bufferDirAnt[MAXDIR];
 int retorno = chdir(pathD);
 getcwd( bufferDirAct, sizeof( bufferDirAct));
-if ( strcmp(pathD,".") == 0)  system("cd .");
-if (strcmp(pathD,"..") == 0)  system("cd ..");
+getcwd( bufferDirAnt, sizeof( bufferDirAct) - 1);
+if ( strcmp(pathD,".") == 0)  chdir(bufferDirAct);
+if (strcmp(pathD,"..") == 0)  chdir(bufferDirAnt);
 if (retorno == -1)
 {
-printf("No se encontro el directorio %s \n ",pathD );
-}
-else
-{
-printf("%s  \n",bufferDirAct);
+printf("%s>No se encontro el directorio %s \n ", bufferDirAct,pathD );
 }
 }
 
 void md5(char* pathA){ 
-
+unsigned char result[MD5_DIGEST_LENGTH];
+int file_descript;
+unsigned long file_size;
+char* file_buffer;
+file_descript = open(pathA, O_RDONLY);
+ if(file_descript < 0) printf("%s>No se pudo generar md5 de %s\n",bufferDirAct,pathA);
+file_size = get_size_by_fd(file_descript);
+file_buffer = mmap(0, file_size, PROT_READ, MAP_SHARED, file_descript, 0);
+MD5((unsigned char*) file_buffer, file_size, result);
+munmap(file_buffer, file_size); 
+printf("%s>MD5:",bufferDirAct);
+print_md5_sum(result);
+printf("\n");
 }
+
 
 void cat(char* pathA){
 
+   char *buffer = NULL;
+   int string_size, read_size;
+   FILE * handler = fopen(pathA, "r");
+   
+   if (handler)
+   {
+       fseek(handler, 0, SEEK_END);
+       // Offset from the first to the last byte, or in other words, filesize
+       string_size = ftell(handler);
+       // go back to the start of the file
+       rewind(handler);
+
+       // Allocate a string that can hold it all
+       buffer = (char*) malloc(sizeof(char) * (string_size + 1) );
+
+       // Read it all in one operation
+       read_size = fread(buffer, sizeof(char), string_size, handler);
+
+       // fread doesn't set it so put a \0 in the last position
+       // and buffer is now officially a string
+       buffer[string_size] = '\0';
+
+       if (string_size != read_size)
+       {
+           // Something went wrong, throw away the memory and set
+           // the buffer to NULL
+           free(buffer);
+           buffer = NULL;
+       }
+       fclose(handler);
+    }
+  else
+   {
+    printf("%s>No pudo leerse el archivo %s \n ", bufferDirAct, pathA);
+    return -1;
+    }
+    printf("\e[1m\e[37m%s\e[0m\e[0m", buffer);
+    return 0;
 }
 
+
+
+void print_md5_sum(unsigned char* md) {
+    int i;
+    for(i=0; i <MD5_DIGEST_LENGTH; i++) {
+            printf("\e[33m%02x\e[0m",md[i]);
+    }
+}
+
+unsigned long get_size_by_fd(int fd) {
+    struct stat statbuf;
+    if(fstat(fd, &statbuf) < 0) exit(-1);
+    return statbuf.st_size;
+}
