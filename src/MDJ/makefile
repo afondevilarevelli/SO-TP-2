@@ -1,6 +1,6 @@
-sources = src/MDJ.c  src/libMDJ.c  
+sources = src/MDJ.c  src/libMDJ.c   src/consolaMDJ.c
 sharedLibraries = ../sample-socket/socket.c  ../Utils/gestionArchConf.c  ../Utils/gestionProcesos.c
-pathLibraries = -lreadline -lcommons -lpthread 
+pathLibraries = -lreadline -lcommons -lpthread -lssl -lcrypto
 
 MDJ: $(sources)
 	gcc -g -o MDJ $(sources) $(sharedLibraries) $(pathLibraries)
