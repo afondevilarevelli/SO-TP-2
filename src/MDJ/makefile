@@ -6,5 +6,4 @@ MDJ: $(sources)
 	gcc -g -o MDJ $(sources) $(sharedLibraries) $(pathLibraries)
 
 clean:
-	rm MDJ
-	
+	rm MDJ  *.log

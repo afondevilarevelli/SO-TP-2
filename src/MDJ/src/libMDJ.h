@@ -2,13 +2,21 @@
 #include <stdlib.h>
 #include <commons/log.h>
 #include <commons/config.h>
+#include <commons/string.h>
+#include <commons/config.h>
+#include <commons/collections/dictionary.h>
+#include <pthread.h>
+#include <signal.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <sys/types.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h>
+#include <net/if.h>
+#include <string.h>
 #include "../../sample-socket/socket.h"
 #include "../../Utils/gestionArchConf.h"
 #include   "../../Utils/gestionProcesos.h"
-#include <commons/string.h>
-#include <string.h>
 #include "consolaMDJ.h"
 
 

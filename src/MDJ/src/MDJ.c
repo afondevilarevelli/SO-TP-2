@@ -1,10 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <commons/string.h>
-#include <commons/config.h>
-#include <commons/collections/dictionary.h>
-#include <signal.h>
 #include "libMDJ.h"
 
 char * path = "MDJ.config";
@@ -38,12 +31,6 @@ int main(void) {
 	pthread_mutex_init(&mx_main, NULL);
 	pthread_mutex_lock(&mx_main);
 	pthread_mutex_lock(&mx_main);
-
-	// aca se realizan cosas con los otros procesos
-
-
-
-	//libero memoria para evitar los memory leaks;
 
   
 	return EXIT_SUCCESS;
