@@ -1,10 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <commons/log.h>
 #include <commons/config.h>
 #include <commons/string.h>
+#include <semaphore.h>
 #include <pthread.h>
 #include <commons/collections/dictionary.h>
+#include <commons/collections/queue.h>
+#include <commons/collections/list.h>
 #include  "../../sample-socket/socket.h"
 # include "../../Utils/gestionArchConf.h"
 #include   "../../Utils/gestionProcesos.h"
@@ -20,16 +24,38 @@ typedef struct {
 	int retardo;
 } t_config_SAFA;
 
+typedef struct{
+	int id;
+	char* rutaScript;
+	int PC; //program counter
+	int flagInicializado;
+	t_list* archivosAbiertos;
+	status_t status;
+}DTB;
+
+typedef enum {NEW, READY, BLOCKED, RUNNING, FINISHED } status_t;
 //--------------------------------------//
 
 
 
 //VARIABLES GLOBALES
+sem_t entradaGDT; //semaforo para controlar el grado de multiprogramacion
+sem_t cantProcesosEnReady;
+pthead_mutex_t m_colaReady;
+pthead_mutex_t m_colaBloqueados;
 
 t_log* logger;
 t_config_SAFA* datosConfigSAFA;
 pthread_mutex_t mx_main;
 t_dictionary* fns;
+
+t_queue* colaReady;
+t_queue* colaBloqueados;
+t_queue* colaFinalizados;
+
+int generadorDeIds;
+
+t_list* hilos;
 //--------------------------------------------//
 
 //LOGS

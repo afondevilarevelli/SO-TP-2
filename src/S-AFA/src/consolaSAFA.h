@@ -6,10 +6,13 @@
 #include <string.h>
 #include <unistd.h>
 #include <readline/readline.h>
+#include <semaphore.h>
+#include "libSAFA.h"
+#include "planificadores.h"
 
 //definicion de funciones
 void consolaSAFA();
-void ejecutar(char* rutaScript);
+void ejecutar(char* rutaScript, int id);
 void status(int idGDT);
 void finalizar(int idGDT);
 void metricas();

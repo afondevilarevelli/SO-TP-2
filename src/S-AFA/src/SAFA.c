@@ -7,12 +7,8 @@
 
 void connectionNew(socket_connection* socketInfo);
 void disconnect(socket_connection* socketInfo);
-void elementoDestructorDiccionario();
-
-
 
 int main(void){
-
         //senial para que al cortar el flujo, se libere memoria
         signal(SIGINT, cerrarPrograma);
 
@@ -22,22 +18,43 @@ int main(void){
      dictionary_put(fns,"identificarProceso",&identificarProceso);
      dictionary_put(fns, "CPU_SAFA_handshake", &CPU_SAFA_handshake);
 
-  
+        colaReady = queue_create();
+        colaBloqueados = queue_create();
+        colaFinalizados = queue_create();
+        hilos = list_create();
+
+        pthread_t hiloPCP, hiloConsola;
+        list_add(hilos, hiloPCP);
+        list_add(hilos, hiloConsola);
 
 
         //configuracion de loggers
 	configure_logger();
         read_and_log_config("S-AFA.config");
 	log_info(logger, "Voy a escuchar por mi puerto: %d", datosConfigSAFA->puerto);
+
+        sem_init(&entradaGDT, 0, datosConfigSAFA->gradoMultiprog);
+        sem_init(&cantProcesosEnReady, 0, 0);
+        pthread_mutex_init(&m_colaReady, NULL);
+	pthread_mutex_init(&m_colaBloqueados, NULL);
+
+        pthread_create(&hiloPCP, NULL, (void*)&planificarSegunRR, &datosConfigSAFA->quantum);
+        pthread_create(&hiloConsola, NULL, (void*)&consolaSAFA, NULL);
+
           
         //pongo a escuchar el server
 	createListen(datosConfigSAFA->puerto, NULL, fns, &disconnect, NULL);
 
 
+        
   	// bloqueo el thread, dejando la coneccion abierta
  	pthread_mutex_init(&mx_main, NULL);
 	pthread_mutex_lock(&mx_main);
 	pthread_mutex_lock(&mx_main);
+
+        dictionary_destroy_and_destroy_elements(fns, (void*) free);
+        pthread_mutex_destroy(&m_colaReady);
+        pthread_mutex_destroy(&m_colaBloqueados);
 
     return EXIT_SUCCESS;
 }
@@ -45,20 +62,14 @@ int main(void){
 
 
 void disconnect(socket_connection* socketInfo) {
-  printf("socket n° %d se ha desconectado.\n", socketInfo->socket);
+  log_info(logger,"socket n° %d se ha desconectado.\n", socketInfo->socket);
 }
-
-void elementoDestructorDiccionario(void* data){
-	free(data);
-}
-
-
 
 void cerrarPrograma() {
     log_info(logger, "Voy a cerrar SAFA");
     close_logger();
-     dictionary_destroy(fns); 
-     free(datosConfigSAFA);
+    dictionary_destroy_and_destroy_elements(fns, (void*) free); 
+    free(datosConfigSAFA);
     pthread_mutex_unlock(&mx_main);
     pthread_mutex_destroy(&mx_main);
 }

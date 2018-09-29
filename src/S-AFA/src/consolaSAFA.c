@@ -1,6 +1,7 @@
 #include "consolaSAFA.h"
 
 void consolaSAFA(/* mas adelante ver si lleva parametros*/){
+	generadorDeIds = 1;
 	char* linea=NULL;
 	char espaBlan[4]=" \n\t";
 	int debeContinuar = 1; //TRUE
@@ -64,11 +65,16 @@ void consolaSAFA(/* mas adelante ver si lleva parametros*/){
 }
 
 void ejecutar(char* rutaScript){
-
+	pthread_t hiloPLP;
+	pthread_create(&hiloPLP, NULL, (void*)&planificadorLargoPlazo, rutaScript);
+// creo que esto es para liberar memoria, por las dudas lo comento
+	//pthread_join(hiloPLP, NULL);	
+	//pthread_join(hiloPLP, NULL); 
 }
 
 void finalizar(int inGDT){
-
+	//ALGO
+	sem_post(&entradaGDT);
 }
 
 void status(int idGDT){ 

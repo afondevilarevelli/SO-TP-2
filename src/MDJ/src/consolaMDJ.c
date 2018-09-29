@@ -62,69 +62,71 @@ void consolaMDJ(){
 }
 
 void ls(char * pathD){
-//nombre del directorio
-const char * dir_name;
-//puntero al prox direc
-DIR * dir_ptr = NULL;
-//estructura de directorios
-struct dirent * dirent_ptr;
-//inicializo maxima cant de directorios a mostrar
-int count = 0;
-//nombre del directorio
-dir_name =pathD;
+        //nombre del directorio
+        const char * dir_name;
+        //puntero al prox direc
+        DIR * dir_ptr = NULL;
+        //estructura de directorios
+        struct dirent * dirent_ptr;
+        //inicializo maxima cant de directorios a mostrar
+        int count = 0;
+        //nombre del directorio
+        dir_name =pathD;
 
-
-//recursividad papa
-// si no recibe parametro ,muestra el  contenido del directorio actual
-if (string_is_empty(pathD) == 1)
-{
-ls(".");
-}
-else if ( ( dir_ptr = opendir( dir_name) ) == NULL ) {
+        //recursividad papa
+        // si no recibe parametro ,muestra el  contenido del directorio actual
+        if (string_is_empty(pathD) == 1)
+        {
+                ls(".");
+        }
+        else if ( ( dir_ptr = opendir( dir_name) ) == NULL ) {
 		printf( " No existe  el directorio '%s'\n",dir_name );
 		return -1;
-	}
-else
-{
-	while ( count < MAXDIR  && ( dirent_ptr = readdir( dir_ptr ) ) != NULL ) {
-                count++;
-		printf( "\e[96m %s \e[0m" ,dirent_ptr->d_name );
-	}
-}
-/* cierra el directorio */
+	     }
+             else
+             {
+	        while ( count < MAXDIR  && ( dirent_ptr = readdir( dir_ptr ) ) != NULL ) {
+                        count++;
+		        printf( "\e[96m %s \e[0m" ,dirent_ptr->d_name );
+	        }
+             }
+        /* cierra el directorio */
 	if ( dir_ptr != NULL ) closedir( dir_ptr );
         return 0;
 }
 
 void cd(char* pathD){
-char bufferDirAnt[MAXDIR];
-int retorno = chdir(pathD);
-getcwd( bufferDirAct, sizeof( bufferDirAct));
-getcwd( bufferDirAnt, sizeof( bufferDirAct) - 1);
-strcat(bufferDirAct,">");
-strcat(bufferDirAnt,">");
-if ( strcmp(pathD,".") == 0)  chdir(bufferDirAct);  
-if (strcmp(pathD,"..") == 0)  chdir(bufferDirAnt);
-if (retorno == -1)
-{
-printf("%s>No se encontro el directorio %s \n ",bufferDirAct, pathD );
-}
+        char bufferDirAnt[MAXDIR];
+        int retorno = chdir(pathD);
+        getcwd( bufferDirAct, sizeof( bufferDirAct));
+        getcwd( bufferDirAnt, sizeof( bufferDirAct) - 1);
+        strcat(bufferDirAct,">");
+        strcat(bufferDirAnt,">");
+        if ( strcmp(pathD,".") == 0)  chdir(bufferDirAct);  
+        if (strcmp(pathD,"..") == 0)  chdir(bufferDirAnt);
+        if (retorno == -1)
+        {
+                printf("%s>No se encontro el directorio %s \n ",bufferDirAct, pathD );
+        }
 }
 
 void md5(char* pathA){ 
-unsigned char result[MD5_DIGEST_LENGTH];
-int file_descript;
-unsigned long file_size;
-char* file_buffer;
-file_descript = open(pathA, O_RDONLY);
- if(file_descript < 0) { printf("%s>No se pudo generar md5 de %s\n",bufferDirAct,pathA);  consolaMDJ();}
-file_size = get_size_by_fd(file_descript);
-file_buffer = mmap(0, file_size, PROT_READ, MAP_SHARED, file_descript, 0);
-MD5((unsigned char*) file_buffer, file_size, result);
-munmap(file_buffer, file_size); 
-printf("%s>MD5 %s:",bufferDirAct,pathA);
-print_md5_sum(result);
-printf("\n");
+        unsigned char result[MD5_DIGEST_LENGTH];
+        int file_descript;
+        unsigned long file_size;
+        char* file_buffer;
+        file_descript = open(pathA, O_RDONLY);
+        if(file_descript < 0) { 
+                printf("%s>No se pudo generar md5 de %s\n",bufferDirAct,pathA);
+                consolaMDJ();
+        }
+        file_size = get_size_by_fd(file_descript);
+        file_buffer = mmap(0, file_size, PROT_READ, MAP_SHARED, file_descript, 0);
+        MD5((unsigned char*) file_buffer, file_size, result);
+        munmap(file_buffer, file_size); 
+        printf("%s>MD5 %s:",bufferDirAct,pathA);
+        print_md5_sum(result);
+        printf("\n");
 }
 
 

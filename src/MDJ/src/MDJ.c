@@ -36,16 +36,11 @@ int main(void) {
 	return EXIT_SUCCESS;
 }
 
-void elementoDestructorDiccionario(void* data){
-	free(data);
-}
-
 void cerrarPrograma() {
     log_info(logger, "Voy a cerrar MDJ");
     close_logger();
-     dictionary_destroy(fns); 
-     free(datosConfMDJ);
-   // dictionary_destroy_and_destroy_elements(fns);
+    dictionary_destroy_and_destroy_elements(fns, (void*)free); 
+    free(datosConfMDJ);
     pthread_mutex_unlock(&mx_main);
     pthread_mutex_destroy(&mx_main);
 }
