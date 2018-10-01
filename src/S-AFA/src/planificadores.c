@@ -11,22 +11,27 @@ void planificadorLargoPlazo(char* rutaSc){
     list_create(dtb->archivosAbiertos);
     dtb->status = NEW;
 
-    sem_wait(entradaGDT);
-    queue_push();
-    sem_post(cantProcesosEnReady);
+    encolarDTB(colaNew, dtb, m_colaNew);
+    sem_wait(&entradaGDT);
+
+    desencolarDTB(colaNew, m_colaNew);
+    encolarDTB(colaReady, dtb, m_colaReady);
+
+    sem_post(&cantProcesosEnReady);
 }
 
 void planificarSegunRR(int quantum){
     DTB* dtbAEjecutar;
         while(1){
 			if(queue_size(colaReady) == 0){
-				log_trace(pLog, "Se espera a que haya GDT's en la cola Ready");
+				log_trace(logger, "Se espera a que haya GDT's en la cola Ready");
 			}
-			sem_wait(cantProcesosEnReady);
+			sem_wait(&cantProcesosEnReady);
 			sleep(1);
 
 			dtbAEjecutar = obtenerDTBAEjecutarSegunRR();
-			log_trace(pLog, "Segun RR el DTB a ejecutar ahora es el de id = %d", dtbAEjecutar->id);
+			log_trace(logger, "Segun RR el DTB a ejecutar ahora es el de id = %d", dtbAEjecutar->id);
+            //hacer lo que tenga que hacer...
 					
 	}
 
@@ -38,9 +43,6 @@ void planificarSegunVRR(int quantum){
 }
 
 DTB* obtenerDTBAEjecutarSegunRR(){ // como FIFO
-    DTB* dtb;
-    pthread_mutex_lock(&m_colaReady);
-    dtb = queue_pop(colaReady);
-    pthread_mutex_unlock(&m_colaReady);
+    DTB* dtb = desencolarDTB(colaReady, m_colaReady);
     return dtb;
 }

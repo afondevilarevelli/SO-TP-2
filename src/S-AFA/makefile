@@ -1,4 +1,4 @@
-sources = src/SAFA.c  src/consolaSAFA.c  src/libSAFA.c
+sources = src/SAFA.c  src/consolaSAFA.c  src/libSAFA.c src/planificadores.c
 socketLibraries = ../sample-socket/socket.c   ../Utils/gestionArchConf.c   ../Utils/gestionProcesos.c
 pathLibraries = -lreadline -lcommons -lpthread 
 

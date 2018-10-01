@@ -2,6 +2,19 @@
 #include <stdlib.h>
 #include "libSAFA.h"
 
+void encolarDTB(t_queue* c, DTB* d, pthread_mutex_t m){
+	pthread_mutex_lock(&m);
+    queue_push(c, d);
+    pthread_mutex_unlock(&m);
+}
+
+DTB* desencolarDTB(t_queue* c, pthread_mutex_t m){
+	pthread_mutex_lock(&m);
+    DTB* d = queue_pop(c);
+    pthread_mutex_unlock(&m);
+	return d;
+}
+
 //LOG
 void configure_logger() {
 

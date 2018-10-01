@@ -1,3 +1,6 @@
+#ifndef LIB_SAFA_H
+#define LIB_SAFA_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -15,6 +18,7 @@
 
 
 //ESTRUCTURAS
+typedef enum {NEW, READY, BLOCKED, RUNNING, FINISHED } status_t;
 
 typedef struct {
 	int puerto;
@@ -33,22 +37,25 @@ typedef struct{
 	status_t status;
 }DTB;
 
-typedef enum {NEW, READY, BLOCKED, RUNNING, FINISHED } status_t;
 //--------------------------------------//
 
 
 
 //VARIABLES GLOBALES
+
+//semaforos
 sem_t entradaGDT; //semaforo para controlar el grado de multiprogramacion
 sem_t cantProcesosEnReady;
-pthead_mutex_t m_colaReady;
-pthead_mutex_t m_colaBloqueados;
+pthread_mutex_t m_colaReady;
+pthread_mutex_t m_colaBloqueados;
+pthread_mutex_t m_colaNew;
 
 t_log* logger;
 t_config_SAFA* datosConfigSAFA;
 pthread_mutex_t mx_main;
 t_dictionary* fns;
 
+t_queue* colaNew;
 t_queue* colaReady;
 t_queue* colaBloqueados;
 t_queue* colaFinalizados;
@@ -57,6 +64,10 @@ int generadorDeIds;
 
 t_list* hilos;
 //--------------------------------------------//
+
+//FUNCIONES UTILES
+void encolarDTB(t_queue* c, DTB* d, pthread_mutex_t m);
+DTB* desencolarDTB(t_queue* c, pthread_mutex_t m);
 
 //LOGS
 void configure_logger();
@@ -78,4 +89,4 @@ void identificarDAM( socket_connection* socketInfo, char** msg);
 void DAM_SAFA_handshake(socket_connection* socketInfo, char** msg);
 void CPU_SAFA_handshake(socket_connection* socketInfo, char** msg);
 
-
+#endif

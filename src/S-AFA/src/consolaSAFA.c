@@ -18,14 +18,14 @@ void consolaSAFA(/* mas adelante ver si lleva parametros*/){
 		else
 		if(strcmp(p1,"ejecutar") == 0 && p2 != NULL)
 		{
-			printf("Se va a ejecutar el script escriptorio de la ruta = %s\n", p2);
+			log_trace(logger,"Se va a ejecutar el script escriptorio de la ruta %s\n", p2);
 			ejecutar(p2);
 		}
 		else
 		if(strcmp(p1,"finalizar") == 0 && p2 != NULL)
 		{
             int id = atoi(p2); //convertir p2 a int
-			printf("se ha finalizado el G.DT con id = %d\n", id);
+			log_trace(logger,"se ha finalizado el G.DT con id = %d\n", id);
 			finalizar(id);
 		}
 		else
@@ -34,25 +34,25 @@ void consolaSAFA(/* mas adelante ver si lleva parametros*/){
             int id;
             if(p2 == NULL){
                 id = 0;
-                printf("Estado de las colas:\n");
+                log_trace(logger,"Estado de las colas:\n");
                 status(0);
             }
             else{
                 id = atoi(p2);	//convertir p2 a int
-			    printf("Datos del DTB del G.DT de id = %d\n", id);
+			    log_trace(logger,"Datos del DTB del G.DT de id = %d\n", id);
 			    status(id);
             }
 		}
 		else
 		if(strcmp(p1,"metricas") == 0 && p2 == NULL)
 		{
-			printf("Se detallaran las metricas del sistema:\n");
+			log_trace(logger,"Se detallaran las metricas del sistema:\n");
             metricas();
 		}
 		else
 		{
 			debeContinuar = strcmp(linea, "salir");
-			if(debeContinuar) printf("comando no reconocido\n");
+			if(debeContinuar) log_trace(logger,"comando no reconocido\n");
 		}
 
 	}while(debeContinuar);

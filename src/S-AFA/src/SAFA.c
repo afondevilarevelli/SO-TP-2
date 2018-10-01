@@ -21,25 +21,28 @@ int main(void){
         colaReady = queue_create();
         colaBloqueados = queue_create();
         colaFinalizados = queue_create();
+        colaNew = queue_create();
         hilos = list_create();
 
         pthread_t hiloPCP, hiloConsola;
-        list_add(hilos, hiloPCP);
-        list_add(hilos, hiloConsola);
+        list_add(hilos, &hiloPCP);
+        list_add(hilos, &hiloConsola);
 
 
         //configuracion de loggers
 	configure_logger();
         read_and_log_config("S-AFA.config");
-	log_info(logger, "Voy a escuchar por mi puerto: %d", datosConfigSAFA->puerto);
+	log_info(logger, "Voy a escuchar por el puerto: %d", datosConfigSAFA->puerto);
 
         sem_init(&entradaGDT, 0, datosConfigSAFA->gradoMultiprog);
         sem_init(&cantProcesosEnReady, 0, 0);
         pthread_mutex_init(&m_colaReady, NULL);
 	pthread_mutex_init(&m_colaBloqueados, NULL);
+        pthread_mutex_init(&m_colaNew, NULL);
 
-        pthread_create(&hiloPCP, NULL, (void*)&planificarSegunRR, &datosConfigSAFA->quantum);
         pthread_create(&hiloConsola, NULL, (void*)&consolaSAFA, NULL);
+        pthread_create(&hiloPCP, NULL, (void*)&planificarSegunRR, &datosConfigSAFA->quantum);
+       
 
           
         //pongo a escuchar el server
@@ -55,6 +58,9 @@ int main(void){
         dictionary_destroy_and_destroy_elements(fns, (void*) free);
         pthread_mutex_destroy(&m_colaReady);
         pthread_mutex_destroy(&m_colaBloqueados);
+        pthread_mutex_destroy(&m_colaNew);
+        
+        //cerrar hilos, no se como se hace
 
     return EXIT_SUCCESS;
 }

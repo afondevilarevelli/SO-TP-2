@@ -6,6 +6,6 @@
 void planificadorLargoPlazo(char* rutaSc);
 void planificarSegunRR(int quantum);
 void planificarSegunVRR(int quantum);
-DTB* obtenerDTBAEjecutarSegunRR()
+DTB* obtenerDTBAEjecutarSegunRR();
 
 #endif

@@ -12,7 +12,7 @@
 
 //definicion de funciones
 void consolaSAFA();
-void ejecutar(char* rutaScript, int id);
+void ejecutar(char* rutaScript);
 void status(int idGDT);
 void finalizar(int idGDT);
 void metricas();
