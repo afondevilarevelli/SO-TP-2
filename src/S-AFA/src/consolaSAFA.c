@@ -64,17 +64,28 @@ void consolaSAFA(/* mas adelante ver si lleva parametros*/){
 	return;
 }
 
-void ejecutar(char* rutaScript){
-	pthread_t hiloPLP;
-	pthread_create(&hiloPLP, NULL, (void*)&planificadorLargoPlazo, rutaScript);
-// creo que esto es para liberar memoria, por las dudas lo comento
-	//pthread_join(hiloPLP, NULL);	
-	//pthread_join(hiloPLP, NULL); 
+void ejecutar(char* rutaSc){
+	if(estadoCorrupto){
+		log_error(logger, "S-AFA en estado corrupto, no acepta ingreso de Scripts a ejecutar");
+	}
+	else{ 
+		DTB* dtb = malloc(sizeof(DTB));
+    	dtb->id = generadorDeIds;
+    	generadorDeIds++;
+    	dtb->rutaScript = malloc(strlen(rutaSc)+1);
+    	strcpy(dtb->rutaScript, rutaSc);
+    	dtb->PC = 0;
+    	dtb->flagInicializado = 0;
+    	list_create(dtb->archivosAbiertos);
+    	dtb->status = NEW;
+
+		encolarDTB(colaNew, dtb, m_colaNew);
+		sem_post(&cantProcesosEnNew);
+	}
 }
 
 void finalizar(int inGDT){
-	//ALGO
-	sem_post(&entradaGDT);
+	
 }
 
 void status(int idGDT){ 

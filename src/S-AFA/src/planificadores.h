@@ -3,7 +3,7 @@
 
 #include "libSAFA.h"
 
-void planificadorLargoPlazo(char* rutaSc);
+void planificadorLargoPlazo();
 void planificarSegunRR(int quantum);
 void planificarSegunVRR(int quantum);
 DTB* obtenerDTBAEjecutarSegunRR();

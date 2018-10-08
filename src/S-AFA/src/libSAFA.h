@@ -1,6 +1,7 @@
 #ifndef LIB_SAFA_H
 #define LIB_SAFA_H
 
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -18,7 +19,6 @@
 
 
 //ESTRUCTURAS
-
 typedef enum {NEW, READY, BLOCKED, RUNNING, FINISHED } status_t;
 
 typedef struct {
@@ -29,6 +29,15 @@ typedef struct {
 	int retardo;
 } t_config_SAFA;
 
+typedef struct{
+	int id;
+	char* rutaScript;
+	int PC; //program counter
+	int flagInicializado;
+	t_list* archivosAbiertos;
+	status_t status;
+}DTB;
+
 
 //--------------------------------------//
 
@@ -37,8 +46,8 @@ typedef struct {
 //VARIABLES GLOBALES
 
 //semaforos
-sem_t entradaGDT; //semaforo para controlar el grado de multiprogramacion
 sem_t cantProcesosEnReady;
+sem_t cantProcesosEnNew;
 pthread_mutex_t m_colaReady;
 pthread_mutex_t m_colaBloqueados;
 pthread_mutex_t m_colaNew;
@@ -53,9 +62,9 @@ t_queue* colaReady;
 t_queue* colaBloqueados;
 t_queue* colaFinalizados;
 
-int generadorDeIds;
-
 t_list* hilos;
+
+bool estadoCorrupto; //NO SE COMO HACER PARA QUE DEJE EL ESTADO CORURPTO, algun runFunction de otro proceso?
 //--------------------------------------------//
 
 //FUNCIONES UTILES

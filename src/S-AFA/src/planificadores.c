@@ -1,23 +1,12 @@
 #include "planificadores.h"
 
-void planificadorLargoPlazo(char* rutaSc){
-    DTB* dtb = malloc(sizeof(DTB));
-    dtb->id = generadorDeIds;
-    generadorDeIds++;
-    dtb->rutaScript = malloc(strlen(rutaSc)+1);
-    strcpy(dtb->rutaScript, rutaSc);
-    dtb->PC = 0;
-    dtb->flagInicializado = 0;
-    list_create(dtb->archivosAbiertos);
-    dtb->status = NEW;
-
-    encolarDTB(colaNew, dtb, m_colaNew);
-    sem_wait(&entradaGDT);
-
-    desencolarDTB(colaNew, m_colaNew);
-    encolarDTB(colaReady, dtb, m_colaReady);
-
-    sem_post(&cantProcesosEnReady);
+void planificadorLargoPlazo(){
+    while(1){
+        sem_wait(&cantProcesosEnNew);
+        DTB* dtb = desencolarDTB(colaNew, m_colaNew);
+        encolarDTB(colaReady, dtb, m_colaReady);
+        sem_post(&cantProcesosEnReady);
+    }
 }
 
 void planificarSegunRR(int quantum){
@@ -31,9 +20,9 @@ void planificarSegunRR(int quantum){
 
 			dtbAEjecutar = obtenerDTBAEjecutarSegunRR();
 			log_trace(logger, "Segun RR el DTB a ejecutar ahora es el de id = %d", dtbAEjecutar->id);
-            //hacer lo que tenga que hacer...
+            //hacer lo que tenga que hacer...( runFunction de alguna funcion de CPU ) 
 					
-	}
+	    }
 
 }
 

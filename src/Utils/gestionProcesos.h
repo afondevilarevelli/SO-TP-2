@@ -17,27 +17,11 @@
 #include  "../sample-socket/socket.h"
 # include "gestionArchConf.h"
 
-
-
-
-
 typedef struct {
 char *  proceso;
 }proc;
 
-typedef enum {NEW, READY, BLOCKED, RUNNING, FINISHED } status_t;
-
-typedef struct{
-	int id;
-	char* rutaScript;
-	int PC; //program counter
-	int flagInicializado;
-	t_list* archivosAbiertos;
-	status_t status;
-}DTB;
-
-
-void identificarProceso(socket_connection * connection ,char** args);
+char* identificarProceso(socket_connection * connection ,char** args);
 proc * pro;
 t_log* logger;
 

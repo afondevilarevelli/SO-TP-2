@@ -10,6 +10,8 @@
 #include "libSAFA.h"
 #include "planificadores.h"
 
+int generadorDeIds;
+
 //definicion de funciones
 void consolaSAFA();
 void ejecutar(char* rutaScript);

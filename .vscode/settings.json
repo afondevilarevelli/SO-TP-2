@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "queue.h": "c",
-        "dictionary.h": "c"
+        "dictionary.h": "c",
+        "planificadores.h": "c"
     }
 }
