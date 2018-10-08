@@ -18,6 +18,7 @@
 
 
 //ESTRUCTURAS
+
 typedef enum {NEW, READY, BLOCKED, RUNNING, FINISHED } status_t;
 
 typedef struct {
@@ -28,14 +29,6 @@ typedef struct {
 	int retardo;
 } t_config_SAFA;
 
-typedef struct{
-	int id;
-	char* rutaScript;
-	int PC; //program counter
-	int flagInicializado;
-	t_list* archivosAbiertos;
-	status_t status;
-}DTB;
 
 //--------------------------------------//
 

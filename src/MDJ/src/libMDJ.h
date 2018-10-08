@@ -3,17 +3,19 @@
 #include <commons/log.h>
 #include <commons/config.h>
 #include <commons/string.h>
-#include <commons/config.h>
+#include <commons/bitarray.h>
 #include <commons/collections/dictionary.h>
 #include <pthread.h>
 #include <signal.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <sys/types.h>
+#include </usr/include/sys/types.h>
 #include <sys/ioctl.h>
 #include <netinet/in.h>
 #include <net/if.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/mman.h>
 #include "../../sample-socket/socket.h"
 #include "../../Utils/gestionArchConf.h"
 #include   "../../Utils/gestionProcesos.h"
@@ -28,6 +30,22 @@ typedef struct {
 	char * ptoMontaje;
 	int  retardo;
 } t_config_MDJ;
+
+typedef struct {
+size_t tamanio_bloques;
+int cantidad_bloques;
+char * magic_number;
+}t_metadata_filesystem;
+
+typedef struct{
+t_bitarray estado_bloques; //  1 ocupado , 0 libre
+}t_metadata_bitmap;
+
+typedef struct{
+size_t  tamanio_archivo_enBytes;
+int * bloques;
+}t_metadata_filemetadata;
+
 
 //VARIABLES
 t_log* logger;
