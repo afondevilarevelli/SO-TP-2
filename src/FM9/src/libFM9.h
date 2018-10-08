@@ -31,6 +31,7 @@ void close_logger();
 void connectionNew(socket_connection*);
 void disconnect(socket_connection*);
 void DAM_FM9_handshake(socket_connection *, char **);
+void CPU_FM9_handshake(socket_connection *, char **);
 
 //CONFIG
 t_config_FM9* read_and_log_config(char*);

@@ -50,7 +50,7 @@ int main(void){
         pthread_detach(hiloPCP);
         pthread_detach(hiloPLP);
 
-        estadoCorrupto = true;
+        estadoCorrupto = false;//true;
         //pongo a escuchar el server
 	createListen(datosConfigSAFA->puerto, NULL, fns, &disconnect, NULL);
 

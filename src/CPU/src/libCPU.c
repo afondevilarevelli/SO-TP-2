@@ -20,6 +20,7 @@ t_config_CPU* read_and_log_config(char* path) {
 
 	char* ipS;
 	char* ipD;
+	char* ipF;
 
 	log_info(logger, "Verificando que exista el archivo CPU.config");
         archivo_Config  = config_create(path);
@@ -46,6 +47,12 @@ t_config_CPU* read_and_log_config(char* path) {
 
 	datosCPU->puertoD = config_get_int_value(archivo_Config,"DAM_PUERTO");
 
+	ipF = string_new();
+	string_append(&ipF,  config_get_string_value(archivo_Config,"IP_FM9"));
+	datosCPU->ipF = ipF;
+
+	datosCPU->puertoF = config_get_int_value(archivo_Config,"FM9_PUERTO");
+
 	datosCPU->retardo= config_get_int_value(archivo_Config,"RETARDO");
 
 	log_info(logger, "Voy a cargar los datos");
@@ -53,6 +60,8 @@ t_config_CPU* read_and_log_config(char* path) {
 	log_info(logger, "S-AFA_PUERTO: %d", datosCPU->puertoS);
 	log_info(logger, "IP_DAM: %s", datosCPU->ipD);
 	log_info(logger, "DAM_PUERTO: %d", datosCPU->puertoD);
+	log_info(logger, "IP_FM9: %s", datosCPU->ipF);
+	log_info(logger, "FM9_PUERTO: %d", datosCPU->puertoF);
 	log_info(logger, "RETARDO: %d", datosCPU->retardo);
 	log_info(logger, "Todos los Datos Fueron Cargados");
 
@@ -91,12 +100,31 @@ sleep(5);
 
 }
 
+void* intentandoConexionConFM9(int* socket){
+
+printf("\nEl Socket FM9 Dio : %d \n",*socket);
+if(*socket == -1){
+	saliendo_por_error(*socket, "No Se Pudo Conectar Con FM9", NULL);
+}
+
+log_info(logger,"Voy a hacer un handshake con FM9");
+
+runFunction(*socket,"CPU_FM9_handshake",0);
+
+sleep(5);
+
+}
+
 void SAFA_CPU_handshake(socket_connection * connection, char ** args) {
 	log_info(logger, "Handshake con SAFA");
 }
 
 void DAM_CPU_handshake(socket_connection * connection, char ** args) {
 	log_info(logger, "Handshake con DAM");
+}
+
+void FM9_CPU_handshake(socket_connection * connection, char ** args) {
+	log_info(logger, "Handshake con FM9");
 }
 
 void saliendo_por_error(int socket, char* error, void* buffer)

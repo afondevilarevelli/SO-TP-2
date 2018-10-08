@@ -25,6 +25,7 @@ int main(void) {
 
 	dictionary_put(callableRemoteFunctions, "DAM_FM9_handshake", &DAM_FM9_handshake);
 
+	dictionary_put(callableRemoteFunctions, "CPU_FM9_handshake", &CPU_FM9_handshake);
 
 	log_info(logger, "Voy a escuchar el puerto: %d", datosConfigFM9->puerto);
 

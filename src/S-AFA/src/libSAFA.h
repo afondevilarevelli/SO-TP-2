@@ -91,4 +91,9 @@ void identificarDAM( socket_connection* socketInfo, char** msg);
 void DAM_SAFA_handshake(socket_connection* socketInfo, char** msg);
 void CPU_SAFA_handshake(socket_connection* socketInfo, char** msg);
 
+//Funciones Para La Funcion De Status
+void mostrarInformacionDTB(DTB*);
+void* buscarIdGdtAsociado(int);
+void* buscarDTBEnColas(int, t_queue*);
+static inline char *stringFromState(status_t);
 #endif

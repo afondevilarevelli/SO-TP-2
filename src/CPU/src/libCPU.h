@@ -19,6 +19,8 @@ typedef struct {
 	int puertoS;
 	char*  ipD;
 	int puertoD;
+	char* ipF;
+	int puertoF;
 	int retardo;
 } t_config_CPU;
 
@@ -36,9 +38,11 @@ void close_logger();
 
 void* intentandoConexionConSAFA(int* );
 void* intentandoConexionConDAM(int* );
+void* intentandoConexionConFM9(int* );
 
 void SAFA_CPU_handshake(socket_connection *, char **);
 void DAM_CPU_handshake(socket_connection *, char **);
+void FM9_CPU_handshake(socket_connection *, char **);
 
 void saliendo_por_error(int , char* , void* );
 void disconnect();

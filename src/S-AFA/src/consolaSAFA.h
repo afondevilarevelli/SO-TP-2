@@ -19,6 +19,7 @@ void status(int idGDT);
 void finalizar(int idGDT);
 void metricas();
 
+
 //  A medida que avanzamos puede que necesitemos cambiarles los
 //  parametros a las funciones o no.
 

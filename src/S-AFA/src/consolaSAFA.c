@@ -89,12 +89,27 @@ void finalizar(int inGDT){
 }
 
 void status(int idGDT){ 
-    if(idGDT == 0){ // funcion status sin parametro
 
-    }
-    else{ //funcion status con parametro
+	if(idGDT == 0){ // funcion status sin parametro
+		int index;
+	    DTB* datoDTB;
 
-    }
+	    log_trace(logger,"La Info De Los DTB En Cada Cola Son:\n");
+	    log_trace(logger,"Cola New:\n");
+		buscarDTBEnColas(idGDT, colaNew);
+		log_trace(logger,"Cola Ready:\n");
+		buscarDTBEnColas(idGDT, colaReady);
+		log_trace(logger,"Cola Blocked:\n");
+		buscarDTBEnColas(idGDT, colaBloqueados);
+		log_trace(logger,"Cola Finished:\n");
+		buscarDTBEnColas(idGDT, colaFinalizados);
+
+	    }
+	    else{ //funcion status con parametro
+
+	    	buscarIdGdtAsociado(idGDT);
+	    	return 0;
+	    }
 }
 
 void metricas(){
