@@ -75,7 +75,7 @@ void ejecutar(char* rutaSc){
     	dtb->rutaScript = malloc(strlen(rutaSc)+1);
     	strcpy(dtb->rutaScript, rutaSc);
     	dtb->PC = 0;
-    	dtb->flagInicializado = 0;
+    	dtb->flagInicializado = 1;
     	list_create(dtb->archivosAbiertos);
     	dtb->status = NEW;
 
