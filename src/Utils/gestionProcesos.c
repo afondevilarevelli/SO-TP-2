@@ -3,7 +3,7 @@
 #include "gestionProcesos.h"
 
 
-char* identificarProceso(socket_connection * connection ,char** args)
+char* identificarProceso(t_log* logger, socket_connection * connection ,char** args)
 {
      proc * pro = malloc(sizeof(proc));
      pro->proceso = args[0];

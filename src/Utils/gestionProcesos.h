@@ -18,12 +18,11 @@
 # include "gestionArchConf.h"
 
 typedef struct {
-char *  proceso;
+    char *  proceso;
 }proc;
 
-char* identificarProceso(socket_connection * connection ,char** args);
 proc * pro;
-t_log* logger;
 
+char* identificarProceso(t_log* logger, socket_connection * connection ,char** args);
 
 #endif /* GESTIONPROCESOS_H_ */

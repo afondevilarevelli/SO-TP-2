@@ -11,6 +11,7 @@
 #include "../../sample-socket/socket.h" 
 #include "../../Utils/gestionArchConf.h"
 #include "../../Utils/gestionProcesos.h"
+#include "parser.h"
 
 
 //ESTRUCTURA
@@ -23,6 +24,20 @@ typedef struct {
 	int puertoF;
 	int retardo;
 } t_config_CPU;
+
+typedef enum{
+	ABRIR, 
+	CONCENTRAR, 
+	ASIGNAR, 
+	WAIT, 
+	SIGNAL, 
+	FLUSH, 
+	CLOSE, 
+	CREAR, 
+	BORRAR, 
+	NUMERAL, //para comentarios
+	BLANCO  //para señalar fin de programa
+}t_palabraReservada;
 
 //VARIABLES GLOBALES
 t_log* logger;
