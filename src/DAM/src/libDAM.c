@@ -5,6 +5,9 @@
 #include <commons/config.h>
 #include "libDAM.h"
 
+typedef enum {existente,inexistente} estadoArchivo;
+int estado;
+
 //LOG
 void configure_logger() {
 
@@ -85,6 +88,21 @@ void connectionNew(socket_connection* socketInfo) {
 			socketInfo->ip, socketInfo->socket);
 }
 
+void MDJ_DAM_existeArchivo(socket_connection* socketInf,char ** args){
+estado =atoi( args[0]);
+if(estado ==  existente)
+{
+log_info(logger," El MDJ informa archivo existente");
+}
+else
+{
+log_info(logger,"El MDJ informa archivo inexistente");
+}
+}
 
+void existeArchivo(char * pathFile){
+ runFunction(socketMDJ,"validarArchivo",1,pathFile);
+
+}
 
 

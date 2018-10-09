@@ -25,10 +25,6 @@ typedef struct {
     int transferSize;
 } t_config_DAM;
 
-
-
-
-
 //----------------------------//
 
 //VARIABLES
@@ -64,6 +60,7 @@ void FM9_DAM_handshake(socket_connection *, char **);
 void SAFA_DAM_handshake(socket_connection *, char **);
 void MDJ_DAM_handshake(socket_connection *, char **);
 void CPU_DAM_handshake(socket_connection * connection, char ** args);
-
+void MDJ_DAM_existeArchivo(socket_connection*,char ** );
+void existeArchivo(char * pathFile);
 
 #endif

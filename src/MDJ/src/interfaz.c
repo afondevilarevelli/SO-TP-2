@@ -1,15 +1,18 @@
 #include  "Interfaz.h"
 
-int validarArchivo(char * path){
-int fileState = open(path,O_RDONLY);
+
+void  validarArchivo(socket_connection * connection, char ** args){
+char strEstado[10];
+int estado;
+int fileState = open(args[0],O_RDONLY);
 if(fileState == -1){
-return 0;
-log_error(logger,"No se econtro el archivo solicitado");
+estado =0;
 }
 else{
-return 1;
-log_info(logger,"Se encontro el archivo solicitado");
+estado =1;
 }
+sprintf(strEstado, "%i", estado);
+runFunction(connection->socket,"MDJ_DAM_existeArchivo",1,strEstado);
 }
 
 void crearArchivo(char * path,size_t *   sizeText)
@@ -17,7 +20,7 @@ void crearArchivo(char * path,size_t *   sizeText)
 
 }
 
-long  obtenerDatos(char * path,off_t  * offset,size_t  * size){
+size_t  obtenerDatos(char * path,off_t  * offset,size_t  * size){
 
 }
 
@@ -29,5 +32,6 @@ void borrarArchivo(char * path){
 
 
 }
+
 
 

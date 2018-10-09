@@ -1,4 +1,3 @@
-
 #include "libMDJ.h"
 
 
@@ -33,6 +32,8 @@ void DAM_MDJ_handshake(socket_connection * connection, char ** args) {
 	runFunction(connection->socket,"MDJ_DAM_handshake",0);
 	log_info(logger, "Handshake con El Diego");
 }
+
+
 
 char *  getIp(){
 int fd;

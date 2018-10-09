@@ -3,6 +3,7 @@
 char * path = "MDJ.config";
 
 
+void validarExistencia(socket_connection * , char ** );
 int main(void) {
       
      signal(SIGINT, cerrarPrograma);
@@ -11,13 +12,13 @@ int main(void) {
      portServer = datosConfMDJ->puerto;
      fns = dictionary_create();
       dictionary_put(fns, "DAM_MDJ_handshake", &DAM_MDJ_handshake);
-         dictionary_put(fns, "identificarProceso", &identificarProceso);
+      dictionary_put(fns, "identificarProceso", &identificarProceso);
+      dictionary_put(fns,"validarArchivo",&validarArchivo);
       setValue(conf,path,"IP",getIp());
        //consolaMDJ();
 
        //Pongo a escuchar el server en el puerto elegido
-        int listener = createListen(5001, &connectionNew ,fns, &disconnect ,NULL);
-        log_info(logger,"Escuchando puerto %d " , portServer);
+         int listener = createListen(5001, &connectionNew ,fns, &disconnect ,NULL);
         if(listener == -1)
 	{ 
                log_error(logger,"Error al crear escucha en puerto %d.\n", portServer);
@@ -39,9 +40,11 @@ int main(void) {
 void cerrarPrograma() {
     log_info(logger, "Voy a cerrar MDJ");
     close_logger();
-    dictionary_destroy(fns); 
+    dictionary_destroy(fns);
     free(datosConfMDJ);
     pthread_mutex_unlock(&mx_main);
     pthread_mutex_destroy(&mx_main);
 }
+
+
 

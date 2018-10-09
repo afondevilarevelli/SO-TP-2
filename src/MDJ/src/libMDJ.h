@@ -20,6 +20,7 @@
 #include "../../Utils/gestionArchConf.h"
 #include   "../../Utils/gestionProcesos.h"
 #include "consolaMDJ.h"
+#include "Interfaz.h"
 
 
 
@@ -62,7 +63,9 @@ void configure_logger();
 void close_logger();
 void DAM_MDJ_handshake(socket_connection * , char ** );
 void cerrarPrograma();
-void elementoDestructorDiccionario(void *);
+void validarExistencia(socket_connection * connection, char ** args);
+
+
 
 //CONFIG
 

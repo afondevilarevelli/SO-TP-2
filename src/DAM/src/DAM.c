@@ -5,11 +5,7 @@
 
 #include "libDAM.h"
 
-
 void disconnect();
-
-
-
 
 int main(void){
      
@@ -29,7 +25,8 @@ int main(void){
 	dictionary_put(callableRemoteFunctionsFM9, "FM9_DAM_handshake", &FM9_DAM_handshake);
 	dictionary_put(callableRemoteFunctionsSAFA, "SAFA_DAM_handshake", &SAFA_DAM_handshake);
 	dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_handshake", &MDJ_DAM_handshake);
-        dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_handshake", &CPU_DAM_handshake);
+      dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_existeArchivo", &MDJ_DAM_existeArchivo);
+      dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_handshake", &CPU_DAM_handshake);
 
           
 
@@ -62,7 +59,7 @@ int main(void){
         }
        else {
        log_info(logger,"voy a hacer un handshake con  MDJ");
-          runFunction(socketMDJ,"identificarProceso",1,"DAM");
+        //runFunction(socketMDJ,"identificarProceso",1,"DAM");
         runFunction(socketMDJ,"DAM_MDJ_handshake",0);
        }
       free(pro);
@@ -82,7 +79,6 @@ int main(void){
 void disconnect(){
   log_info(logger,"se ha desconectado :(");
 }
-
 
 
 void cerrarPrograma() {
