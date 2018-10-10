@@ -10,7 +10,7 @@
 #include <commons/config.h>
 #include <commons/collections/dictionary.h>
 #include "../../sample-socket/socket.h"
-#include "../../Utils/gestionArchConf.h"
+
 
 //ESTRUCTURAS
 typedef struct {
@@ -51,10 +51,13 @@ void close_logger();
 //PROTOTIPOS
 void cerrarPrograma();
 void elementoDestructorDiccionario(void *);
+void existeArchivo(socket_connection* , char * );
+void verificarArchivoCreado(socket_connection* , char *);
+void verificameSiArchivoFueBorrado(socket_connection*,char *);
 
 //diccionarios
-void identificarProceso(socket_connection * connection ,char** args);
 void MDJ_DAM_existeArchivo(socket_connection*,char ** );
-void existeArchivo(socket_connection* socketMDJ, char * pathFile);
+void MDJ_DAM_verificarArchivoCreado(socket_connection*,char **);
+void MDJ_DAM_verificameSiArchivoFueBorrado(socket_connection*,char **);
 
 #endif

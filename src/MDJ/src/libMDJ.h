@@ -9,7 +9,6 @@
 #include <signal.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include </usr/include/sys/types.h>
 #include <sys/ioctl.h>
 #include <netinet/in.h>
 #include <net/if.h>
@@ -17,9 +16,8 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include "../../sample-socket/socket.h"
-#include "../../Utils/gestionArchConf.h"
 #include "consolaMDJ.h"
-#include "Interfaz.h"
+#include "interfaz.h"
 
 
 
@@ -71,5 +69,3 @@ t_config_MDJ *  read_and_log_config(char*);
 
 //SOCKETS
 void disconnect(socket_connection *);
-void identificarProceso(socket_connection * connection ,char** args);
-char * getIp();

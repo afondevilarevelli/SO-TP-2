@@ -5,7 +5,7 @@
 #include <commons/config.h>
 #include "libDAM.h"
 
-typedef enum {existente,inexistente} estadoArchivo;
+
 int estado;
 
 //LOG
@@ -69,26 +69,67 @@ t_config_DAM* read_and_log_config(char* path) {
 	return _datosDAM;
 }
 
-//TODO ORDENAR
-void identificarProceso(socket_connection * connection ,char** args){	
-    log_info(logger,"Se ha conectado %s en el socket NRO %d  con IP %s,  PUERTO %d\n", args[0],connection->socket,connection->ip,connection-> port);   
-}
 
 void MDJ_DAM_existeArchivo(socket_connection* socketInf,char ** args){
 estado =atoi( args[0]);
-if(estado ==  existente)
+if(estado ==  1)
 {
 log_info(logger," El MDJ informa archivo existente");
 }
-else
+else if (estado ==  0)
 {
 log_info(logger,"El MDJ informa archivo inexistente");
 }
+else 
+{
+log_error(logger,"Ocurrio un error al verificar si existe el archivo");
 }
+}
+
+void MDJ_DAM_verificarArchivoCreado(socket_connection* conenction,char ** args){
+estado =atoi( args[0]);
+if(estado ==  1)
+{
+log_info(logger," El MDJ informa que se creo el archivo");
+}
+else if ( estado == 0)
+{
+log_info(logger,"El MDJ informa que el archivo ya estaba creado");
+}
+else
+{
+log_error(logger,"Ocurrio un error al querer crear el archivo");
+}
+}
+
+void MDJ_DAM_verificameSiArchivoFueBorrado(socket_connection * connection,char ** args){
+estado =atoi( args[0]);
+if(estado ==  1)
+{
+log_info(logger," El MDJ informa que se borro el archivo");
+}
+else if ( estado == 0)
+{
+log_info(logger,"El MDJ informa que el archivo no existia,por lo que no se podia borrar");
+}
+else
+{
+log_error(logger,"Ocurrio un error al querer borrar un archivo");
+}
+}
+
 
 void existeArchivo(socket_connection* socketMDJ, char * pathFile){
  runFunction(socketMDJ,"validarArchivo",1,pathFile);
-
 }
 
+void verificarArchivoCreado(socket_connection* socketMDJ, char * pathFile)
+{
+ runFunction(socketMDJ,"crearArchivo",1,pathFile);
+}
+
+void verificameSiArchivoFueBorrado(socket_connection* socketMDJ, char * pathFile)
+{
+runFunction(socketMDJ,"borrarArchivo",1,pathFile);
+}
 

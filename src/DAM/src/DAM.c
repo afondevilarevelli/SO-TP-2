@@ -23,14 +23,14 @@ int main(void){
 	//--------------------------------------------------------------------
 	
       dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_existeArchivo", &MDJ_DAM_existeArchivo);
-      dictionary_put(callableRemoteFunctionsCPU, "identificarProcesoEnDAM", &identificarProceso);
+      //dictionary_put(callableRemoteFunctionsCPU, "identificarProcesoEnDAM", &identificarProcesoEnDAM);
 
           
 
 
 	int socketSAFA = connectServer("172.17.0.1", 8001,callableRemoteFunctionsSAFA, &disconnect, NULL);
   //CUANDO ME CONECTO AL SAFA LE DIGO QUE SOY EL PROCESO DAM (para manejar estadoCorrupto)
-  runFunction(socketSAFA,"identificarNuevaConexion",1,"DAM"); 
+        runFunction(socketSAFA,"identificarNuevaConexion",1,"DAM"); 
 	int socketFM9 = connectServer("172.17.0.1",8003, callableRemoteFunctionsFM9, &disconnect, NULL);
 	int socketMDJ = connectServer("172.17.0.1", 5001, callableRemoteFunctionsMDJ, &disconnect, NULL);
          
@@ -57,13 +57,11 @@ int main(void){
         }
        else {
        log_info(logger,"me conecto al MDJ");
-        //runFunction(socketMDJ,"identificarProceso",1,"DAM");
-        runFunction(socketFM9,"identificarProcesoEnMDJ",1,"DAM");
        }
       
 
         log_info(logger,"voy a escuchar el puerto %d ",datosConfigDAM->puertoEscucha);
-	      createListen(datosConfigDAM->puertoEscucha, NULL,callableRemoteFunctionsCPU, &disconnect, NULL);
+	  createListen(datosConfigDAM->puertoEscucha, NULL,callableRemoteFunctionsCPU, &disconnect, NULL);
        
  	pthread_mutex_init(&mx_main, NULL);
 	pthread_mutex_lock(&mx_main);

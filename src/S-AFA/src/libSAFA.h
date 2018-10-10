@@ -37,6 +37,13 @@ typedef struct{
 	status_t status;
 }DTB;
 
+typedef struct {
+    char *  proceso;
+}proc;
+proc * pro;
+
+void  identificarProceso(socket_connection * connection ,char** args);
+
 
 //--------------------------------------//
 

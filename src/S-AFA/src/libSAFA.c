@@ -66,9 +66,6 @@ t_config_SAFA * read_and_log_config(char* path) {
 } // al final de esta funcion me queda la variable datosConfigSAFA con la config de SAFA
 
 //CallableRemoteFunctions
-void identificarProceso(socket_connection * connection ,char** args){	
-    log_info(logger,"Se ha conectado %s en el socket NRO %d  con IP %s,  PUERTO %d\n", args[0],connection->socket,connection->ip,connection-> port);   
-}
 
 //es llamada por CPU y DAM cuando se conectan, para poder manejar el estado corrupto
 void newConnection(socket_connection* socketInfo, char** msg){
@@ -85,6 +82,15 @@ void newConnection(socket_connection* socketInfo, char** msg){
 		}
 	}	
 }
+
+void  identificarProceso(socket_connection * connection ,char** args)
+{
+     proc * pro = malloc(sizeof(proc));
+     pro->proceso = args[0];
+     printf("Se conecto %s en el socket NRO %d  con IP %s  PUERTO %d", pro->proceso,connection->socket,connection->ip,connection-> port);
+     free(pro);
+} 
+
 
 static inline char *stringFromState(status_t status) { //Agarra un estado del enum y retorna el valor como String
     static const char *strings[] = { "NEW", "READY", "BLOCKED", "RUNNING", "FINISHED"};
