@@ -1,7 +1,7 @@
 #include "libCPU.h"
 
 int main() {
-
+  
   configure_logger();
   datosCPU = read_and_log_config("CPU.config");
 
@@ -22,7 +22,7 @@ int main() {
   int socketFM9 = connectServer(datosCPU->ipF, datosCPU->puertoF, callableRemoteFunctionsCPU, &disconnect, NULL);
 
   intentandoConexionConFM9(&socketFM9);
-
+  
   exit_gracefully(1);
 
 }

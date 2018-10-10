@@ -11,8 +11,6 @@
 #include "../../sample-socket/socket.h" 
 #include "../../Utils/gestionArchConf.h"
 #include "../../Utils/gestionProcesos.h"
-#include "parser.h"
-
 
 //ESTRUCTURA
 typedef struct {
@@ -24,6 +22,19 @@ typedef struct {
 	int puertoF;
 	int retardo;
 } t_config_CPU;
+
+//EJEMPLOS DE SENTENCIAS
+/*
+-abrir /equipos/Racing.txt
+-concentrar
+-asignar /equipos/Racing.txt 9 GustavoBou
+-wait Conmebol
+-signal Conmebol
+-flush /equipos/Racing.txt
+-close /equipos/Racing.txt
+-crear /equipos/Racing.txt 11
+-borrar /equipos/Racing.txt
+*/
 
 typedef enum{
 	ABRIR, 
@@ -37,7 +48,14 @@ typedef enum{
 	BORRAR, 
 	NUMERAL, //para comentarios
 	BLANCO  //para señalar fin de programa
-}t_palabraReservada;
+}palabraReservada_t;
+
+typedef struct{   
+    palabraReservada_t palabraReservada; //concentrar
+    char* p1; //abrir, wait, signal, flush, close, borrar
+    char* p2; //crear
+    char* p3; //asignar
+}operacion_t;
 
 //VARIABLES GLOBALES
 t_log* logger;
@@ -62,6 +80,9 @@ void FM9_CPU_handshake(socket_connection *, char **);
 void saliendo_por_error(int , char* , void* );
 void disconnect();
 void exit_gracefully(int );
+
+//PARSER
+operacion_t parse(char* line);
 
 
 #endif
