@@ -21,23 +21,12 @@ void close_logger() {
 
 
 //SOCKETS
-void connectionNew(socket_connection* socketInfo) {
-	log_info(logger, "Se ha conectado El Ip %s en socket n°%d",
-			socketInfo->ip, socketInfo->socket);
+void identificarProceso(socket_connection * connection ,char** args){	
+    log_info(logger,"Se ha conectado %s en el socket NRO %d  con IP %s,  PUERTO %d\n", args[0],connection->socket,connection->ip,connection-> port);   
 }
 
 void disconnect(socket_connection* socketInfo) {
 	log_info(logger, "El socket n°%d se ha desconectado.", socketInfo->socket);
-}
-
-void DAM_FM9_handshake(socket_connection * connection, char ** args) {
-	runFunction(connection->socket,"FM9_DAM_handshake",0);
-	log_info(logger, "Handshake con El Diego");
-}
-
-void CPU_FM9_handshake(socket_connection * connection, char ** args) {
-	runFunction(connection->socket,"FM9_CPU_handshake",0);
-	log_info(logger, "Handshake con La CPU");
 }
 
 

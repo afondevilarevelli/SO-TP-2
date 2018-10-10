@@ -11,7 +11,6 @@
 #include <commons/collections/dictionary.h>
 #include "../../sample-socket/socket.h"
 #include "../../Utils/gestionArchConf.h"
-#include   "../../Utils/gestionProcesos.h"
 
 //ESTRUCTURAS
 typedef struct {
@@ -52,15 +51,10 @@ void close_logger();
 //PROTOTIPOS
 void cerrarPrograma();
 void elementoDestructorDiccionario(void *);
-void connectionNew(socket_connection* socketInfo);
-
 
 //diccionarios
-void FM9_DAM_handshake(socket_connection *, char **);
-void SAFA_DAM_handshake(socket_connection *, char **);
-void MDJ_DAM_handshake(socket_connection *, char **);
-void CPU_DAM_handshake(socket_connection * connection, char ** args);
+void identificarProceso(socket_connection * connection ,char** args);
 void MDJ_DAM_existeArchivo(socket_connection*,char ** );
-void existeArchivo(char * pathFile);
+void existeArchivo(socket_connection* socketMDJ, char * pathFile);
 
 #endif

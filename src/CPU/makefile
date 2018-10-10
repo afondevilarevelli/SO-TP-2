@@ -1,5 +1,5 @@
 sources = src/CPU.c  src/libCPU.c  
-sharedLibraries = ../sample-socket/socket.c   ../Utils/gestionArchConf.c   ../Utils/gestionProcesos.c
+sharedLibraries = ../sample-socket/socket.c   ../Utils/gestionArchConf.c  
 pathLibraries = -lreadline -lcommons -lpthread 
 
 CPU: $(sources)

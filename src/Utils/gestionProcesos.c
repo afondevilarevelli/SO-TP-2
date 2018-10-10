@@ -3,11 +3,11 @@
 #include "gestionProcesos.h"
 
 
-char* identificarProceso(t_log* logger, socket_connection * connection ,char** args)
+char* identificarProceso(socket_connection * connection ,char** args)
 {
      proc * pro = malloc(sizeof(proc));
      pro->proceso = args[0];
-     log_info (logger,"Se conecto %s en el socket NRO %d  con IP %s  PUERTO %d", pro->proceso,connection->socket,connection->ip,connection-> port);
+     printf("Se conecto %s en el socket NRO %d  con IP %s  PUERTO %d", pro->proceso,connection->socket,connection->ip,connection-> port);
      free(pro);
      return args[0];
 } 

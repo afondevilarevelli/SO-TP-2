@@ -28,10 +28,8 @@ void configure_logger();
 void close_logger();
 
 //SOCKETS
-void connectionNew(socket_connection*);
+void identificarProceso(socket_connection * connection ,char** args);
 void disconnect(socket_connection*);
-void DAM_FM9_handshake(socket_connection *, char **);
-void CPU_FM9_handshake(socket_connection *, char **);
 
 //CONFIG
 t_config_FM9* read_and_log_config(char*);

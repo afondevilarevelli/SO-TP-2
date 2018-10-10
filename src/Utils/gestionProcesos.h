@@ -23,6 +23,6 @@ typedef struct {
 
 proc * pro;
 
-char* identificarProceso(t_log* logger, socket_connection * connection ,char** args);
+char* identificarProceso(socket_connection * connection ,char** args);
 
 #endif /* GESTIONPROCESOS_H_ */

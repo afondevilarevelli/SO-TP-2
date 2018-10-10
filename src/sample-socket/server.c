@@ -23,6 +23,7 @@ t_dictionary * callableRemoteFunctions;	/* Diccionario de funciones que pueden s
 
 void connectionNew(socket_connection* socketInfo) {
 	printf("Se ha conectado un usuario con ip %s en socket n°%d\n", socketInfo->ip, socketInfo->socket);
+  printf("%s\n",socketInfo->data);
 }
 
 void startProcess(socket_connection * connection, char ** args){

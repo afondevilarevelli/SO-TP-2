@@ -156,12 +156,11 @@ if(*socket == -1){
 	saliendo_por_error(*socket, "No Se Pudo Conectar Con SAFA", NULL);
 }
 
-log_info(logger,"Voy a hacer un handshake con SAFA");
+log_info(logger,"me conecto al SAFA");
 
-runFunction(*socket,"CPU_SAFA_handshake",0);
+runFunction(*socket,"identificarProcesoEnSAFA",1,"CPU");
 
-sleep(5);
-
+sleep(1);
 }
 
 void* intentandoConexionConDAM(int* socket){
@@ -171,12 +170,11 @@ if(*socket == -1){
 	saliendo_por_error(*socket, "No Se Pudo Conectar Con DAM", NULL);
 }
 
-log_info(logger,"Voy a hacer un handshake con DAM");
+log_info(logger,"me conecto al DAM");
 
-runFunction(*socket,"CPU_DAM_handshake",0);
+runFunction(*socket,"identificarProcesoEnDAM",1,"CPU");
 
-sleep(5);
-
+sleep(1);
 }
 
 void* intentandoConexionConFM9(int* socket){
@@ -186,24 +184,11 @@ if(*socket == -1){
 	saliendo_por_error(*socket, "No Se Pudo Conectar Con FM9", NULL);
 }
 
-log_info(logger,"Voy a hacer un handshake con FM9");
+log_info(logger,"me conecto al FM9");
 
-runFunction(*socket,"CPU_FM9_handshake",0);
+runFunction(*socket,"identificarProcesoEnFM9",1,"CPU");
 
-sleep(5);
-
-}
-
-void SAFA_CPU_handshake(socket_connection * connection, char ** args) {
-	log_info(logger, "Handshake con SAFA");
-}
-
-void DAM_CPU_handshake(socket_connection * connection, char ** args) {
-	log_info(logger, "Handshake con DAM");
-}
-
-void FM9_CPU_handshake(socket_connection * connection, char ** args) {
-	log_info(logger, "Handshake con FM9");
+sleep(1);
 }
 
 void saliendo_por_error(int socket, char* error, void* buffer)

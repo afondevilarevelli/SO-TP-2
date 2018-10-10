@@ -15,7 +15,6 @@
 #include <commons/collections/list.h>
 #include  "../../sample-socket/socket.h"
 # include "../../Utils/gestionArchConf.h"
-#include   "../../Utils/gestionProcesos.h"
 
 
 //ESTRUCTURAS
@@ -46,6 +45,7 @@ typedef struct{
 //VARIABLES GLOBALES
 
 //semaforos
+sem_t sem_estadoCorrupto;
 sem_t cantProcesosEnReady;
 sem_t cantProcesosEnNew;
 pthread_mutex_t m_colaReady;
@@ -64,7 +64,11 @@ t_queue* colaFinalizados;
 
 t_list* hilos;
 
-bool estadoCorrupto; //NO SE COMO HACER PARA QUE DEJE EL ESTADO CORURPTO, algun runFunction de otro proceso?
+//booleanos para manejar el estado corrupto
+bool estadoCorrupto; 
+bool damConectado;
+bool unCpuConectado;
+
 //--------------------------------------------//
 
 //FUNCIONES UTILES
@@ -88,8 +92,8 @@ void identificarDAM( socket_connection* socketInfo, char** msg);
 
 
 //CallableRemoteFunctions
-void DAM_SAFA_handshake(socket_connection* socketInfo, char** msg);
-void CPU_SAFA_handshake(socket_connection* socketInfo, char** msg);
+void identificarProceso(socket_connection * connection ,char** args);
+void newConnection(socket_connection* socketInfo, char** msg);
 
 //Funciones Para La Funcion De Status
 void mostrarInformacionDTB(DTB*);

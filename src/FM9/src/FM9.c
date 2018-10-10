@@ -23,13 +23,11 @@ int main(void) {
 
 	callableRemoteFunctions = dictionary_create();
 
-	dictionary_put(callableRemoteFunctions, "DAM_FM9_handshake", &DAM_FM9_handshake);
-
-	dictionary_put(callableRemoteFunctions, "CPU_FM9_handshake", &CPU_FM9_handshake);
+	dictionary_put(callableRemoteFunctions, "identificarProcesoEnFM9", &identificarProceso);
 
 	log_info(logger, "Voy a escuchar el puerto: %d", datosConfigFM9->puerto);
 
-	createListen(datosConfigFM9->puerto,&connectionNew,
+	createListen(datosConfigFM9->puerto,NULL,
 			callableRemoteFunctions, &disconnect, NULL);
 
 	log_info(logger, "Estoy escuchando el puerto: %d", datosConfigFM9->puerto);

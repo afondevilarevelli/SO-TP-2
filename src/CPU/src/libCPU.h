@@ -10,7 +10,6 @@
 #include <commons/collections/dictionary.h>
 #include "../../sample-socket/socket.h" 
 #include "../../Utils/gestionArchConf.h"
-#include "../../Utils/gestionProcesos.h"
 
 //ESTRUCTURA
 typedef struct {
@@ -72,10 +71,6 @@ void close_logger();
 void* intentandoConexionConSAFA(int* );
 void* intentandoConexionConDAM(int* );
 void* intentandoConexionConFM9(int* );
-
-void SAFA_CPU_handshake(socket_connection *, char **);
-void DAM_CPU_handshake(socket_connection *, char **);
-void FM9_CPU_handshake(socket_connection *, char **);
 
 void saliendo_por_error(int , char* , void* );
 void disconnect();

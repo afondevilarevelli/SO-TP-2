@@ -5,7 +5,7 @@
 
 #include "libDAM.h"
 
-void disconnect();
+void disconnect(socket_connection* socketInfo);
 
 int main(void){
      
@@ -22,16 +22,15 @@ int main(void){
 	
 	//--------------------------------------------------------------------
 	
-	dictionary_put(callableRemoteFunctionsFM9, "FM9_DAM_handshake", &FM9_DAM_handshake);
-	dictionary_put(callableRemoteFunctionsSAFA, "SAFA_DAM_handshake", &SAFA_DAM_handshake);
-	dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_handshake", &MDJ_DAM_handshake);
       dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_existeArchivo", &MDJ_DAM_existeArchivo);
-      dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_handshake", &CPU_DAM_handshake);
+      dictionary_put(callableRemoteFunctionsCPU, "identificarProcesoEnDAM", &identificarProceso);
 
           
 
 
 	int socketSAFA = connectServer("172.17.0.1", 8001,callableRemoteFunctionsSAFA, &disconnect, NULL);
+  //CUANDO ME CONECTO AL SAFA LE DIGO QUE SOY EL PROCESO DAM (para manejar estadoCorrupto)
+  runFunction(socketSAFA,"identificarNuevaConexion",1,"DAM"); 
 	int socketFM9 = connectServer("172.17.0.1",8003, callableRemoteFunctionsFM9, &disconnect, NULL);
 	int socketMDJ = connectServer("172.17.0.1", 5001, callableRemoteFunctionsMDJ, &disconnect, NULL);
          
@@ -40,17 +39,16 @@ int main(void){
 	log_error(logger,"no se pudo conectar con SAFA");
 	 }
         else  {
-        log_info(logger,"voy a hacer un handshake con SAFA");
-         runFunction(socketSAFA,"identificarProceso",1,"DAM");
-        runFunction(socketSAFA,"DAM_SAFA_handshake",0);
+        log_info(logger,"me conecto al SAFA");
+         runFunction(socketSAFA,"identificarProcesoEnSAFA",1,"DAM");        
          }
 
      if (socketFM9 == -1) {
       log_error(logger,"no se pudo conectar con FM9");
        }
        else  {
-        log_info(logger,"voy a hacer un handshake con  FM9");
-         runFunction(socketFM9,"DAM_FM9_handshake",0);
+        log_info(logger,"me conecto al FM9");
+         runFunction(socketFM9,"identificarProcesoEnFM9",1,"DAM");
          }
       
 
@@ -58,14 +56,14 @@ int main(void){
         log_error(logger,"no se pudo conectar con MDJ");
         }
        else {
-       log_info(logger,"voy a hacer un handshake con  MDJ");
+       log_info(logger,"me conecto al MDJ");
         //runFunction(socketMDJ,"identificarProceso",1,"DAM");
-        runFunction(socketMDJ,"DAM_MDJ_handshake",0);
+        runFunction(socketFM9,"identificarProcesoEnMDJ",1,"DAM");
        }
-      free(pro);
+      
 
         log_info(logger,"voy a escuchar el puerto %d ",datosConfigDAM->puertoEscucha);
-	int listener = createListen(datosConfigDAM->puertoEscucha, &connectionNew,callableRemoteFunctionsCPU, &disconnect, pro);
+	      createListen(datosConfigDAM->puertoEscucha, NULL,callableRemoteFunctionsCPU, &disconnect, NULL);
        
  	pthread_mutex_init(&mx_main, NULL);
 	pthread_mutex_lock(&mx_main);
@@ -76,8 +74,8 @@ int main(void){
 }
 
 //FUNCIONES
-void disconnect(){
-  log_info(logger,"se ha desconectado :(");
+void disconnect(socket_connection* socketInfo) {
+  log_info(logger,"socket n° %d se ha desconectado.\n", socketInfo->socket);
 }
 
 

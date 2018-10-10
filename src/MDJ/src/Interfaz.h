@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include </usr/include/sys/types.h>
+#include <usr/include/sys/types.h> //Antonio: NO COMPILA AL MENOS EN MI MAQUINA
 #include <sys/mman.h>
 #include <sys/stat.h> 
 #include <fcntl.h>

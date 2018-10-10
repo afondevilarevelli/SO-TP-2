@@ -24,7 +24,7 @@ int main() {
   /* Agregamos las funciones que podrán ser llamadas por mis conexiones */
 	t_dictionary * callableRemoteFunctions = dictionary_create();
 
-  int socket = connectServer("127.0.0.1", 8080, callableRemoteFunctions, &disconnect, NULL);
+  int socket = connectServer("127.0.0.1", 8080, callableRemoteFunctions, &disconnect, "TE SALUDO CD");
 
   if (socket == -1) {
     printf("no me pude conectar");

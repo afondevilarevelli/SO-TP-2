@@ -1,6 +1,7 @@
 #include "planificadores.h"
 
 void planificadorLargoPlazo(){
+    sem_wait(&sem_estadoCorrupto);
     while(1){
         sem_wait(&cantProcesosEnNew);
         DTB* dtb = desencolarDTB(colaNew, m_colaNew);
@@ -22,7 +23,7 @@ void planificarSegunRR(int quantum){
 			dtbAEjecutar = obtenerDTBAEjecutarSegunRR();
 			log_trace(logger, "Segun RR el DTB a ejecutar ahora es el de id = %d", dtbAEjecutar->id);
             //hacer lo que tenga que hacer...( runFunction de alguna funcion de CPU ) 
-			break;
+			
 	    }
 
 }

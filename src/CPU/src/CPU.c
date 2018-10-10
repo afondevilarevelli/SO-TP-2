@@ -7,16 +7,17 @@ int main() {
 
   callableRemoteFunctionsCPU = dictionary_create();
 
-  dictionary_put(callableRemoteFunctionsCPU, "SAFA_CPU_handshake", &SAFA_CPU_handshake);
-  dictionary_put(callableRemoteFunctionsCPU, "DAM_CPU_handshake", &DAM_CPU_handshake);
-  dictionary_put(callableRemoteFunctionsCPU, "FM9_CPU_handshake", &FM9_CPU_handshake);
+  //dictionary_put(callableRemoteFunctionsCPU, "SAFA_CPU_handshake", &SAFA_CPU_handshake);
+  
 
   int socketDAM = connectServer(datosCPU->ipD, datosCPU->puertoD, callableRemoteFunctionsCPU, &disconnect, NULL);
 
   intentandoConexionConDAM(&socketDAM);
 
   int socketSAFA = connectServer(datosCPU->ipS, datosCPU->puertoS, callableRemoteFunctionsCPU, &disconnect, NULL);
-
+  //CUANDO ME CONECTO AL SAFA LE DIGO QUE SOY UN PROCESO CPU
+  runFunction(socketSAFA,"identificarNuevaConexion",1,"CPU");
+  
   intentandoConexionConSAFA(&socketSAFA);
 
   int socketFM9 = connectServer(datosCPU->ipF, datosCPU->puertoF, callableRemoteFunctionsCPU, &disconnect, NULL);

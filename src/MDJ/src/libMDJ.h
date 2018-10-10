@@ -18,7 +18,6 @@
 #include <sys/mman.h>
 #include "../../sample-socket/socket.h"
 #include "../../Utils/gestionArchConf.h"
-#include   "../../Utils/gestionProcesos.h"
 #include "consolaMDJ.h"
 #include "Interfaz.h"
 
@@ -61,7 +60,6 @@ t_config_MDJ  *   datosConfMDJ;
 //FUNCIONES
 void configure_logger();
 void close_logger();
-void DAM_MDJ_handshake(socket_connection * , char ** );
 void cerrarPrograma();
 void validarExistencia(socket_connection * connection, char ** args);
 
@@ -72,8 +70,6 @@ void validarExistencia(socket_connection * connection, char ** args);
 t_config_MDJ *  read_and_log_config(char*);
 
 //SOCKETS
-
-void DAM_MDJ_handshake(socket_connection * , char **) ;
 void disconnect(socket_connection *);
-void connectionNew(socket_connection* );
+void identificarProceso(socket_connection * connection ,char** args);
 char * getIp();

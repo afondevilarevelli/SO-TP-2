@@ -18,7 +18,7 @@ void consolaSAFA(/* mas adelante ver si lleva parametros*/){
 		else
 		if(strcmp(p1,"ejecutar") == 0 && p2 != NULL)
 		{
-			log_trace(logger,"Se va a ejecutar el script escriptorio de la ruta %s\n", p2);
+			log_trace(logger,"Se hace ingreso del script escriptorio de la ruta %s para su futura ejecucion\n", p2);
 			ejecutar(p2);
 		}
 		else
@@ -64,11 +64,7 @@ void consolaSAFA(/* mas adelante ver si lleva parametros*/){
 	return;
 }
 
-void ejecutar(char* rutaSc){
-	if(estadoCorrupto){
-		log_error(logger, "S-AFA en estado corrupto, no acepta ingreso de Scripts a ejecutar");
-	}
-	else{ 
+void ejecutar(char* rutaSc){	 
 		DTB* dtb = malloc(sizeof(DTB));
     	dtb->id = generadorDeIds;
     	generadorDeIds++;
@@ -80,8 +76,7 @@ void ejecutar(char* rutaSc){
     	dtb->status = NEW;
 
 		encolarDTB(colaNew, dtb, m_colaNew);
-		sem_post(&cantProcesosEnNew);
-	}
+		sem_post(&cantProcesosEnNew);	
 }
 
 void finalizar(int inGDT){

@@ -11,14 +11,13 @@ int main(void) {
      datosConfMDJ =  read_and_log_config(path);
      portServer = datosConfMDJ->puerto;
      fns = dictionary_create();
-      dictionary_put(fns, "DAM_MDJ_handshake", &DAM_MDJ_handshake);
-      dictionary_put(fns, "identificarProceso", &identificarProceso);
+      dictionary_put(fns, "identificarProcesoEnMDJ", &identificarProceso);
       dictionary_put(fns,"validarArchivo",&validarArchivo);
       setValue(conf,path,"IP",getIp());
        //consolaMDJ();
 
        //Pongo a escuchar el server en el puerto elegido
-         int listener = createListen(5001, &connectionNew ,fns, &disconnect ,NULL);
+        createListen(5001, NULL ,fns, &disconnect ,NULL);
         if(listener == -1)
 	{ 
                log_error(logger,"Error al crear escucha en puerto %d.\n", portServer);

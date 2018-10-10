@@ -70,22 +70,8 @@ t_config_DAM* read_and_log_config(char* path) {
 }
 
 //TODO ORDENAR
-void FM9_DAM_handshake(socket_connection * connection, char ** args){
-	log_info(logger, "Handshake con FM9");
-}
-void SAFA_DAM_handshake(socket_connection * connection, char ** args){
-	log_info(logger, "Handshake con SAFA");
-}
-void MDJ_DAM_handshake(socket_connection * connection, char ** args){
-	log_info(logger, "Handshake con MDJ");
-}
-void CPU_DAM_handshake(socket_connection * connection, char ** args) {
-	runFunction(connection->socket,"DAM_CPU_handshake",0);
-	log_info(logger, "Handshake con CPU");
-}
-void connectionNew(socket_connection* socketInfo) {
-	log_info(logger, "Se ha conectado CPU con ip %s en socket n°%d",
-			socketInfo->ip, socketInfo->socket);
+void identificarProceso(socket_connection * connection ,char** args){	
+    log_info(logger,"Se ha conectado %s en el socket NRO %d  con IP %s,  PUERTO %d\n", args[0],connection->socket,connection->ip,connection-> port);   
 }
 
 void MDJ_DAM_existeArchivo(socket_connection* socketInf,char ** args){
@@ -100,7 +86,7 @@ log_info(logger,"El MDJ informa archivo inexistente");
 }
 }
 
-void existeArchivo(char * pathFile){
+void existeArchivo(socket_connection* socketMDJ, char * pathFile){
  runFunction(socketMDJ,"validarArchivo",1,pathFile);
 
 }

@@ -66,14 +66,24 @@ t_config_SAFA * read_and_log_config(char* path) {
 } // al final de esta funcion me queda la variable datosConfigSAFA con la config de SAFA
 
 //CallableRemoteFunctions
-void DAM_SAFA_handshake(socket_connection * connection, char ** args) {
-	runFunction(connection->socket,"SAFA_DAM_handshake",0);
-	log_info(logger, "Handshake con El Diego");
+void identificarProceso(socket_connection * connection ,char** args){	
+    log_info(logger,"Se ha conectado %s en el socket NRO %d  con IP %s,  PUERTO %d\n", args[0],connection->socket,connection->ip,connection-> port);   
 }
 
-void CPU_SAFA_handshake(socket_connection * connection, char ** args) {
-	runFunction(connection->socket,"SAFA_CPU_handshake",0);
-	log_info(logger, "Handshake con La CPU");
+//es llamada por CPU y DAM cuando se conectan, para poder manejar el estado corrupto
+void newConnection(socket_connection* socketInfo, char** msg){
+	if(estadoCorrupto){
+		if(strcmp(msg[0], "CPU") == 0 ){
+			unCpuConectado = true;
+		}
+		if(strcmp(msg[0], "DAM") == 0 ){
+			damConectado = true;
+		}
+		estadoCorrupto = !unCpuConectado || !damConectado;
+		if(!estadoCorrupto){
+			sem_post(&sem_estadoCorrupto); //deja de estar en estado corrupto y da la señal
+		}
+	}	
 }
 
 static inline char *stringFromState(status_t status) { //Agarra un estado del enum y retorna el valor como String

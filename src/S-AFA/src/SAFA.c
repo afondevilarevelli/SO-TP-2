@@ -5,19 +5,19 @@
 #include "consolaSAFA.h"
 #include "libSAFA.h"
 
-void connectionNew(socket_connection* socketInfo);
 void disconnect(socket_connection* socketInfo);
 
 int main(void){
 
+        unCpuConectado = false;
+        damConectado = false;
         //señal para que al cortar el flujo, se libere memoria
         signal(SIGINT, cerrarPrograma);
 
      // diccionarios para la funcion runFunction....
      fns = dictionary_create();
-     dictionary_put(fns, "DAM_SAFA_handshake", &DAM_SAFA_handshake);
-     dictionary_put(fns,"identificarProceso",&identificarProceso);
-     dictionary_put(fns, "CPU_SAFA_handshake", &CPU_SAFA_handshake);
+     dictionary_put(fns,"identificarProcesoEnSAFA",&identificarProceso);
+     dictionary_put(fns, "identificarNuevaConexion", &newConnection);
 
         colaReady = queue_create();
         colaBloqueados = queue_create();
@@ -36,6 +36,7 @@ int main(void){
         read_and_log_config("S-AFA.config");
 	log_info(logger, "Voy a escuchar por el puerto: %d", datosConfigSAFA->puerto);
 
+        sem_init(&sem_estadoCorrupto,0 ,0);
         sem_init(&cantProcesosEnNew, 0, 0);
         sem_init(&cantProcesosEnReady, 0, 0);
         pthread_mutex_init(&m_colaReady, NULL);
@@ -50,7 +51,7 @@ int main(void){
         pthread_detach(hiloPCP);
         pthread_detach(hiloPLP);
 
-        estadoCorrupto = false;//true;
+        estadoCorrupto = true;
         //pongo a escuchar el server
 	createListen(datosConfigSAFA->puerto, NULL, fns, &disconnect, NULL);
 
@@ -80,7 +81,7 @@ void cerrarPrograma() {
     pthread_mutex_destroy(&m_colaNew);
 
     close_logger();
-    dictionary_destroy_and_destroy_elements(fns, (void*) free); 
+    dictionary_destroy(fns); 
     free(datosConfigSAFA->algoritmoPlanif);
     free(datosConfigSAFA);
 
