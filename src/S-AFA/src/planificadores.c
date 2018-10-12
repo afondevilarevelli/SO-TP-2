@@ -1,9 +1,9 @@
 #include "planificadores.h"
 
 void planificadorLargoPlazo(){
-    sem_wait(&sem_estadoCorrupto);
     while(1){
         sem_wait(&cantProcesosEnNew);
+        sem_wait(&puedeEntrarAlSistema);
         DTB* dtb = desencolarDTB(colaNew, m_colaNew);
         dtb->status = READY;
         encolarDTB(colaReady, dtb, m_colaReady);
@@ -20,10 +20,15 @@ void planificarSegunRR(int quantum){
 			sem_wait(&cantProcesosEnReady);
 			sleep(1);
 
+            pthread_mutex_lock(&m_puedePlanificar);
 			dtbAEjecutar = obtenerDTBAEjecutarSegunRR();
+            pthread_mutex_unlock(&m_puedePlanificar);
 			log_trace(logger, "Segun RR el DTB a ejecutar ahora es el de id = %d", dtbAEjecutar->id);
             //hacer lo que tenga que hacer...( runFunction de alguna funcion de CPU ) 
 			
+
+            //cuando un dtb va a finalizados...
+            sem_post(&puedeEntrarAlSistema);
 	    }
 
 }

@@ -153,7 +153,7 @@ void* intentandoConexionConSAFA(int* socket){
 
 printf("\nEl Socket SAFA Dio : %d \n",*socket);
 if(*socket == -1){
-	saliendo_por_error(*socket, "No Se Pudo Conectar Con SAFA", NULL);
+	log_error(logger, "No Se Pudo Conectar Con SAFA");
 }
 
 log_info(logger,"me conecto al SAFA");
@@ -167,7 +167,7 @@ void* intentandoConexionConDAM(int* socket){
 
 printf("\nEl Socket DAM Dio : %d \n",*socket);
 if(*socket == -1){
-	saliendo_por_error(*socket, "No Se Pudo Conectar Con DAM", NULL);
+	log_error(logger, "No Se Pudo Conectar Con DAM");
 }
 
 log_info(logger,"me conecto al DAM");
@@ -181,7 +181,7 @@ void* intentandoConexionConFM9(int* socket){
 
 printf("\nEl Socket FM9 Dio : %d \n",*socket);
 if(*socket == -1){
-	saliendo_por_error(*socket, "No Se Pudo Conectar Con FM9", NULL);
+	log_error(logger, "No Se Pudo Conectar Con FM9");
 }
 
 log_info(logger,"me conecto al FM9");
@@ -191,31 +191,7 @@ runFunction(*socket,"identificarProcesoEnFM9",1,"CPU");
 sleep(1);
 }
 
-void saliendo_por_error(int socket, char* error, void* buffer)
-{
-	if(buffer != NULL)
-	{
-		free(buffer);
-	}
-
-	log_error(logger, error);
-	exit_gracefully(1);
-
-}
-
-
 
 void disconnect(){
   log_info(logger,"..Desconectado..");
-}
-
-
-void exit_gracefully(int return_nr) {
-
-	free(datosCPU);
-	disconnect();
-	log_destroy(logger);
-
-	exit(return_nr);
-
 }

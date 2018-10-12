@@ -61,6 +61,7 @@ t_log* logger;
 t_config* archivo_Config;
 t_config_CPU* datosCPU;
 t_dictionary * callableRemoteFunctionsCPU;
+pthread_mutex_t m_main;
 
 //FUNCIONES
 
@@ -72,9 +73,7 @@ void* intentandoConexionConSAFA(int* );
 void* intentandoConexionConDAM(int* );
 void* intentandoConexionConFM9(int* );
 
-void saliendo_por_error(int , char* , void* );
 void disconnect();
-void exit_gracefully(int );
 
 //PARSER
 operacion_t parse(char* line);

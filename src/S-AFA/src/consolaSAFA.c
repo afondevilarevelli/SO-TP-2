@@ -17,8 +17,7 @@ void consolaSAFA(/* mas adelante ver si lleva parametros*/){
 			continue;
 		else
 		if(strcmp(p1,"ejecutar") == 0 && p2 != NULL)
-		{
-			log_trace(logger,"Se hace ingreso del script escriptorio de la ruta %s para su futura ejecucion\n", p2);
+		{		
 			ejecutar(p2);
 		}
 		else
@@ -49,6 +48,14 @@ void consolaSAFA(/* mas adelante ver si lleva parametros*/){
 			log_trace(logger,"Se detallaran las metricas del sistema:\n");
             metricas();
 		}
+		else if(strcmp(p1,"pausar") == 0 && p2 == NULL){
+			pausarPlanificacion();
+			log_trace(logger,"Se ha pausado la planificacion");
+		}
+		else if(strcmp(p1,"continuar") == 0 && p2 == NULL){
+			continuarPlanificacion();
+			log_trace(logger,"Se va a continuar con la planificacion");
+		}
 		else
 		{
 			debeContinuar = strcmp(linea, "salir");
@@ -64,7 +71,19 @@ void consolaSAFA(/* mas adelante ver si lleva parametros*/){
 	return;
 }
 
-void ejecutar(char* rutaSc){	 
+void pausarPlanificacion(){
+	pthread_mutex_trylock(&m_puedePlanificar);
+}
+
+void continuarPlanificacion(){
+	pthread_mutex_unlock(&m_puedePlanificar);
+}
+
+void ejecutar(char* rutaSc){	
+	if(estadoCorrupto) {
+		log_error(logger,"SAFA en estado corrupto, no se admiten nuevos GDT´S");
+	}else{
+		log_trace(logger,"Se hace ingreso del script escriptorio de la ruta %s para su futura ejecucion\n", rutaSc);
 		DTB* dtb = malloc(sizeof(DTB));
     	dtb->id = generadorDeIds;
     	generadorDeIds++;
@@ -76,11 +95,13 @@ void ejecutar(char* rutaSc){
     	dtb->status = NEW;
 
 		encolarDTB(colaNew, dtb, m_colaNew);
-		sem_post(&cantProcesosEnNew);	
+		sem_post(&cantProcesosEnNew);
+	}			
 }
 
 void finalizar(int inGDT){
-	
+	//algo
+	sem_post(&puedeEntrarAlSistema);
 }
 
 void status(int idGDT){ 

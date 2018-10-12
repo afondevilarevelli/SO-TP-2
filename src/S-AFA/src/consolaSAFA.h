@@ -18,6 +18,8 @@ void ejecutar(char* rutaScript);
 void status(int idGDT);
 void finalizar(int idGDT);
 void metricas();
+void pausarPlanificacion();
+void continuarPlanificacion();
 
 
 //  A medida que avanzamos puede que necesitemos cambiarles los

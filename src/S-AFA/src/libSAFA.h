@@ -44,9 +44,10 @@ typedef struct{
 //VARIABLES GLOBALES
 
 //semaforos
-sem_t sem_estadoCorrupto;
+sem_t puedeEntrarAlSistema;
 sem_t cantProcesosEnReady;
 sem_t cantProcesosEnNew;
+pthread_mutex_t m_puedePlanificar;
 pthread_mutex_t m_colaReady;
 pthread_mutex_t m_colaBloqueados;
 pthread_mutex_t m_colaNew;

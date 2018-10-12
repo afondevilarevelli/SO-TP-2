@@ -32,3 +32,194 @@
 
 [INFO] 15:27:00:325 SAFA/(4454:4720): socket n° 6 se ha desconectado.
 
+[INFO] 16:05:22:821 SAFA/(6548:6548): Se genero log de S-AFA
+[INFO] 16:05:22:822 SAFA/(6548:6548): Voy a leer el archivo S-AFA.config
+[INFO] 16:05:22:823 SAFA/(6548:6548): 	PUERTO: 8001
+[INFO] 16:05:22:823 SAFA/(6548:6548): 	ALGORITMO_PLANIFICACION: RR
+[INFO] 16:05:22:823 SAFA/(6548:6548): 	QUANTUM: 3
+[INFO] 16:05:22:823 SAFA/(6548:6548): 	GRADO_MULTIPROGRAMACION: 3
+[INFO] 16:05:22:823 SAFA/(6548:6548): 	RETARDO: 1
+[INFO] 16:05:22:823 SAFA/(6548:6548): Fin de lectura
+[INFO] 16:05:22:823 SAFA/(6548:6548): Voy a escuchar por el puerto: 8001
+[TRACE] 16:05:22:824 SAFA/(6548:6550): Se espera a que haya GDT's en la cola Ready
+[TRACE] 16:05:25:948 SAFA/(6548:6549): comando no reconocido
+
+[TRACE] 16:05:28:645 SAFA/(6548:6549): Estado de las colas:
+
+[TRACE] 16:05:28:646 SAFA/(6548:6549): La Info De Los DTB En Cada Cola Son:
+
+[TRACE] 16:05:28:646 SAFA/(6548:6549): Cola New:
+
+[TRACE] 16:05:28:646 SAFA/(6548:6549): Cola Ready:
+
+[TRACE] 16:05:28:646 SAFA/(6548:6549): Cola Blocked:
+
+[TRACE] 16:05:28:646 SAFA/(6548:6549): Cola Finished:
+
+[TRACE] 16:05:50:406 SAFA/(6548:6549): Se hace ingreso del script escriptorio de la ruta /racing.txt para su futura ejecucion
+
+[TRACE] 16:06:01:730 SAFA/(6548:6549): Se hace ingreso del script escriptorio de la ruta river.txt para su futura ejecucion
+
+[INFO] 16:06:50:26 SAFA/(6704:6704): Se genero log de S-AFA
+[INFO] 16:06:50:28 SAFA/(6704:6704): Voy a leer el archivo S-AFA.config
+[INFO] 16:06:50:29 SAFA/(6704:6704): 	PUERTO: 8001
+[INFO] 16:06:50:30 SAFA/(6704:6704): 	ALGORITMO_PLANIFICACION: RR
+[INFO] 16:06:50:31 SAFA/(6704:6704): 	QUANTUM: 3
+[INFO] 16:06:50:32 SAFA/(6704:6704): 	GRADO_MULTIPROGRAMACION: 3
+[INFO] 16:06:50:33 SAFA/(6704:6704): 	RETARDO: 1
+[INFO] 16:06:50:33 SAFA/(6704:6704): Fin de lectura
+[INFO] 16:06:50:34 SAFA/(6704:6704): Voy a escuchar por el puerto: 8001
+[TRACE] 16:06:50:35 SAFA/(6704:6706): Se espera a que haya GDT's en la cola Ready
+[TRACE] 16:07:39:470 SAFA/(6704:6705): Se hace ingreso del script escriptorio de la ruta river.txt para su futura ejecucion
+
+[TRACE] 16:07:46:317 SAFA/(6704:6705): Se hace ingreso del script escriptorio de la ruta racing.txt para su futura ejecucion
+
+[INFO] 16:07:51:706 SAFA/(6704:6746): Se ha conectado DAM en el socket NRO 5  con IP 10.0.2.15,  PUERTO 8001
+
+[INFO] 16:07:57:655 SAFA/(6704:6761): Se ha conectado CPU en el socket NRO 6  con IP 127.0.0.1,  PUERTO 8001
+
+[TRACE] 16:07:58:655 SAFA/(6704:6706): Segun RR el DTB a ejecutar ahora es el de id = 1
+[TRACE] 16:07:59:655 SAFA/(6704:6706): Segun RR el DTB a ejecutar ahora es el de id = 2
+[TRACE] 16:07:59:656 SAFA/(6704:6706): Se espera a que haya GDT's en la cola Ready
+[INFO] 16:07:59:656 SAFA/(6704:6761): socket n° 6 se ha desconectado.
+
+[TRACE] 16:08:10:482 SAFA/(6704:6705): Se hace ingreso del script escriptorio de la ruta boca.txt para su futura ejecucion
+
+[TRACE] 16:08:18:485 SAFA/(6704:6705): Se hace ingreso del script escriptorio de la ruta vele.txt para su futura ejecucion
+
+[TRACE] 16:08:22:99 SAFA/(6704:6706): Segun RR el DTB a ejecutar ahora es el de id = 3
+[TRACE] 16:08:23:100 SAFA/(6704:6706): Segun RR el DTB a ejecutar ahora es el de id = 4
+[TRACE] 16:08:23:101 SAFA/(6704:6706): Se espera a que haya GDT's en la cola Ready
+[INFO] 16:13:22:833 SAFA/(7109:7109): Se genero log de S-AFA
+[INFO] 16:13:22:834 SAFA/(7109:7109): Voy a leer el archivo S-AFA.config
+[INFO] 16:13:22:835 SAFA/(7109:7109): 	PUERTO: 8001
+[INFO] 16:13:22:835 SAFA/(7109:7109): 	ALGORITMO_PLANIFICACION: RR
+[INFO] 16:13:22:835 SAFA/(7109:7109): 	QUANTUM: 3
+[INFO] 16:13:22:836 SAFA/(7109:7109): 	GRADO_MULTIPROGRAMACION: 3
+[INFO] 16:13:22:836 SAFA/(7109:7109): 	RETARDO: 1
+[INFO] 16:13:22:836 SAFA/(7109:7109): Fin de lectura
+[INFO] 16:13:22:836 SAFA/(7109:7109): Voy a escuchar por el puerto: 8001
+[TRACE] 16:13:22:838 SAFA/(7109:7111): Se espera a que haya GDT's en la cola Ready
+[INFO] 16:13:36:791 SAFA/(7109:7163): Se ha conectado DAM en el socket NRO 5  con IP 10.0.2.15,  PUERTO 8001
+
+[TRACE] 16:13:49:150 SAFA/(7109:7110): Se hace ingreso del script escriptorio de la ruta racing para su futura ejecucion
+
+[ERROR] 16:13:49:150 SAFA/(7109:7110): SAFA en estado corrupto, no se admiten nuevos GDT´S
+[INFO] 16:14:49:576 SAFA/(7109:7163): socket n° 5 se ha desconectado.
+
+[TRACE] 16:14:54:692 SAFA/(7109:7110): comando no reconocido
+
+[TRACE] 16:14:56:140 SAFA/(7109:7110): comando no reconocido
+
+[INFO] 16:15:04:637 SAFA/(7272:7272): Se genero log de S-AFA
+[INFO] 16:15:04:640 SAFA/(7272:7272): Voy a leer el archivo S-AFA.config
+[INFO] 16:15:04:642 SAFA/(7272:7272): 	PUERTO: 8001
+[INFO] 16:15:04:643 SAFA/(7272:7272): 	ALGORITMO_PLANIFICACION: RR
+[INFO] 16:15:04:645 SAFA/(7272:7272): 	QUANTUM: 3
+[INFO] 16:15:04:646 SAFA/(7272:7272): 	GRADO_MULTIPROGRAMACION: 3
+[INFO] 16:15:04:647 SAFA/(7272:7272): 	RETARDO: 1
+[INFO] 16:15:04:647 SAFA/(7272:7272): Fin de lectura
+[INFO] 16:15:04:647 SAFA/(7272:7272): Voy a escuchar por el puerto: 8001
+[TRACE] 16:15:04:648 SAFA/(7272:7274): Se espera a que haya GDT's en la cola Ready
+[INFO] 16:15:08:30 SAFA/(7272:7287): Se ha conectado DAM en el socket NRO 5  con IP 10.0.2.15,  PUERTO 8001
+
+[ERROR] 16:15:17:983 SAFA/(7272:7273): SAFA en estado corrupto, no se admiten nuevos GDT´S
+[ERROR] 16:15:22:404 SAFA/(7272:7273): SAFA en estado corrupto, no se admiten nuevos GDT´S
+[INFO] 16:15:31:733 SAFA/(7272:7317): Se ha conectado CPU en el socket NRO 6  con IP 127.0.0.1,  PUERTO 8001
+
+[INFO] 16:15:33:734 SAFA/(7272:7317): socket n° 6 se ha desconectado.
+
+[TRACE] 16:15:37:512 SAFA/(7272:7273): Se hace ingreso del script escriptorio de la ruta sdasd para su futura ejecucion
+
+[TRACE] 16:15:38:513 SAFA/(7272:7274): Segun RR el DTB a ejecutar ahora es el de id = 1
+[TRACE] 16:15:38:513 SAFA/(7272:7274): Se espera a que haya GDT's en la cola Ready
+[TRACE] 16:15:58:558 SAFA/(7272:7273): Se hace ingreso del script escriptorio de la ruta dvfsv para su futura ejecucion
+
+[TRACE] 16:16:02:696 SAFA/(7272:7273): Se hace ingreso del script escriptorio de la ruta bgbgbgb para su futura ejecucion
+
+[TRACE] 16:16:05:447 SAFA/(7272:7274): Segun RR el DTB a ejecutar ahora es el de id = 2
+[TRACE] 16:16:06:448 SAFA/(7272:7274): Segun RR el DTB a ejecutar ahora es el de id = 3
+[TRACE] 16:16:06:448 SAFA/(7272:7274): Se espera a que haya GDT's en la cola Ready
+[INFO] 16:16:12:362 SAFA/(7272:7273): Voy a cerrar SAFA
+[INFO] 16:16:12:363 SAFA/(7272:7273): Cierro log de S-AFA
+[INFO] 16:25:30:165 SAFA/(7695:7695): Se genero log de S-AFA
+[INFO] 16:25:30:168 SAFA/(7695:7695): Voy a leer el archivo S-AFA.config
+[INFO] 16:25:30:169 SAFA/(7695:7695): 	PUERTO: 8001
+[INFO] 16:25:30:170 SAFA/(7695:7695): 	ALGORITMO_PLANIFICACION: RR
+[INFO] 16:25:30:170 SAFA/(7695:7695): 	QUANTUM: 3
+[INFO] 16:25:30:170 SAFA/(7695:7695): 	GRADO_MULTIPROGRAMACION: 3
+[INFO] 16:25:30:170 SAFA/(7695:7695): 	RETARDO: 1
+[INFO] 16:25:30:172 SAFA/(7695:7695): Fin de lectura
+[INFO] 16:25:30:174 SAFA/(7695:7695): Voy a escuchar por el puerto: 8001
+[TRACE] 16:25:30:175 SAFA/(7695:7697): Se espera a que haya GDT's en la cola Ready
+[INFO] 16:25:37:581 SAFA/(7695:7710): Se ha conectado DAM en el socket NRO 5  con IP 10.0.2.15,  PUERTO 8001
+
+[ERROR] 16:25:43:126 SAFA/(7695:7696): SAFA en estado corrupto, no se admiten nuevos GDT´S
+[INFO] 16:25:48:273 SAFA/(7695:7732): Se ha conectado CPU en el socket NRO 6  con IP 127.0.0.1,  PUERTO 8001
+
+[INFO] 16:25:50:274 SAFA/(7695:7732): socket n° 6 se ha desconectado.
+
+[TRACE] 16:26:03:868 SAFA/(7695:7696): Se hace ingreso del script escriptorio de la ruta adbd para su futura ejecucion
+
+[TRACE] 16:26:04:869 SAFA/(7695:7697): Segun RR el DTB a ejecutar ahora es el de id = 1
+[TRACE] 16:26:04:869 SAFA/(7695:7697): Se espera a que haya GDT's en la cola Ready
+[TRACE] 16:26:07:994 SAFA/(7695:7696): Se ha pausado la planificacion
+[TRACE] 16:26:10:492 SAFA/(7695:7696): Se hace ingreso del script escriptorio de la ruta erw para su futura ejecucion
+
+[TRACE] 16:26:14:335 SAFA/(7695:7696): Se hace ingreso del script escriptorio de la ruta ghdfhg para su futura ejecucion
+
+[TRACE] 16:26:17:490 SAFA/(7695:7696): Se hace ingreso del script escriptorio de la ruta hgfh para su futura ejecucion
+
+[TRACE] 16:26:21:129 SAFA/(7695:7696): Se hace ingreso del script escriptorio de la ruta khtlip para su futura ejecucion
+
+[TRACE] 16:26:24:917 SAFA/(7695:7696): Se hace ingreso del script escriptorio de la ruta hhhhhh para su futura ejecucion
+
+[TRACE] 16:26:27:784 SAFA/(7695:7696): Se va a continuar con la planificacion
+[TRACE] 16:26:27:784 SAFA/(7695:7697): Segun RR el DTB a ejecutar ahora es el de id = 2
+[TRACE] 16:26:28:785 SAFA/(7695:7697): Segun RR el DTB a ejecutar ahora es el de id = 3
+[TRACE] 16:26:28:786 SAFA/(7695:7697): Se espera a que haya GDT's en la cola Ready
+[INFO] 16:27:32:512 SAFA/(7695:7696): Voy a cerrar SAFA
+[INFO] 16:27:32:512 SAFA/(7695:7696): Cierro log de S-AFA
+[INFO] 16:27:39:632 SAFA/(7847:7847): Se genero log de S-AFA
+[INFO] 16:27:39:634 SAFA/(7847:7847): Voy a leer el archivo S-AFA.config
+[INFO] 16:27:39:635 SAFA/(7847:7847): 	PUERTO: 8001
+[INFO] 16:27:39:636 SAFA/(7847:7847): 	ALGORITMO_PLANIFICACION: RR
+[INFO] 16:27:39:637 SAFA/(7847:7847): 	QUANTUM: 3
+[INFO] 16:27:39:638 SAFA/(7847:7847): 	GRADO_MULTIPROGRAMACION: 3
+[INFO] 16:27:39:639 SAFA/(7847:7847): 	RETARDO: 1
+[INFO] 16:27:39:640 SAFA/(7847:7847): Fin de lectura
+[INFO] 16:27:39:641 SAFA/(7847:7847): Voy a escuchar por el puerto: 8001
+[TRACE] 16:27:39:642 SAFA/(7847:7849): Se espera a que haya GDT's en la cola Ready
+[INFO] 16:27:47:206 SAFA/(7847:7860): Se ha conectado DAM en el socket NRO 5  con IP 10.0.2.15,  PUERTO 8001
+
+[INFO] 16:27:50:480 SAFA/(7847:7875): Se ha conectado CPU en el socket NRO 6  con IP 127.0.0.1,  PUERTO 8001
+
+[INFO] 16:27:52:483 SAFA/(7847:7875): socket n° 6 se ha desconectado.
+
+[TRACE] 16:27:54:721 SAFA/(7847:7848): Se hace ingreso del script escriptorio de la ruta hgfhfghfgh para su futura ejecucion
+
+[TRACE] 16:27:55:722 SAFA/(7847:7849): Segun RR el DTB a ejecutar ahora es el de id = 1
+[TRACE] 16:27:55:723 SAFA/(7847:7849): Se espera a que haya GDT's en la cola Ready
+[TRACE] 16:27:58:539 SAFA/(7847:7848): Se ha pausado la planificacion
+[TRACE] 16:28:01:768 SAFA/(7847:7848): Se hace ingreso del script escriptorio de la ruta yyy para su futura ejecucion
+
+[TRACE] 16:28:04:543 SAFA/(7847:7848): Se hace ingreso del script escriptorio de la ruta ewerw para su futura ejecucion
+
+[TRACE] 16:28:07:573 SAFA/(7847:7848): Se hace ingreso del script escriptorio de la ruta jhjghjhgj para su futura ejecucion
+
+[TRACE] 16:28:10:505 SAFA/(7847:7848): Se hace ingreso del script escriptorio de la ruta jjjj para su futura ejecucion
+
+[TRACE] 16:28:12:882 SAFA/(7847:7848): comando no reconocido
+
+[TRACE] 16:28:15:815 SAFA/(7847:7848): Se va a continuar con la planificacion
+[TRACE] 16:28:15:815 SAFA/(7847:7849): Segun RR el DTB a ejecutar ahora es el de id = 2
+[TRACE] 16:28:16:816 SAFA/(7847:7849): Segun RR el DTB a ejecutar ahora es el de id = 3
+[TRACE] 16:28:17:817 SAFA/(7847:7849): Segun RR el DTB a ejecutar ahora es el de id = 4
+[TRACE] 16:28:18:818 SAFA/(7847:7849): Segun RR el DTB a ejecutar ahora es el de id = 5
+[TRACE] 16:28:18:818 SAFA/(7847:7849): Se espera a que haya GDT's en la cola Ready
+[INFO] 16:35:33:149 SAFA/(7847:7860): socket n° 5 se ha desconectado.
+
+[INFO] 16:35:37:377 SAFA/(7847:8174): Se ha conectado DAM en el socket NRO 7  con IP 10.0.2.15,  PUERTO 8001
+
+[INFO] 16:37:09:951 SAFA/(7847:8288): Se ha conectado CPU en el socket NRO 5  con IP 127.0.0.1,  PUERTO 8001
+

@@ -36,9 +36,10 @@ int main(void){
         read_and_log_config("S-AFA.config");
 	log_info(logger, "Voy a escuchar por el puerto: %d", datosConfigSAFA->puerto);
 
-        sem_init(&sem_estadoCorrupto,0 ,0);
+        sem_init(&puedeEntrarAlSistema, 0, datosConfigSAFA->gradoMultiprog);
         sem_init(&cantProcesosEnNew, 0, 0);
         sem_init(&cantProcesosEnReady, 0, 0);
+        pthread_mutex_init(&m_puedePlanificar, NULL);
         pthread_mutex_init(&m_colaReady, NULL);
 	pthread_mutex_init(&m_colaBloqueados, NULL);
         pthread_mutex_init(&m_colaNew, NULL);

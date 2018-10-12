@@ -76,10 +76,7 @@ void newConnection(socket_connection* socketInfo, char** msg){
 		if(strcmp(msg[0], "DAM") == 0 ){
 			damConectado = true;
 		}
-		estadoCorrupto = !unCpuConectado || !damConectado;
-		if(!estadoCorrupto){
-			sem_post(&sem_estadoCorrupto); //deja de estar en estado corrupto y da la señal
-		}
+		estadoCorrupto = !unCpuConectado || !damConectado;		
 	}	
 }
 

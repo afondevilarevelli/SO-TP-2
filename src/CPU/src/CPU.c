@@ -1,7 +1,11 @@
 #include "libCPU.h"
+#include <signal.h>
+
+void cerrarPrograma(); 
 
 int main() {
-  
+  signal(SIGINT, cerrarPrograma);
+
   configure_logger();
   datosCPU = read_and_log_config("CPU.config");
 
@@ -22,7 +26,20 @@ int main() {
 
   intentandoConexionConFM9(&socketFM9);
   
-  exit_gracefully(1);
+  pthread_mutex_init(&m_main, NULL);
+	pthread_mutex_lock(&m_main);
+	pthread_mutex_lock(&m_main); 
+
+  return 0;
 
 }
 
+void cerrarPrograma() {
+  disconnect();
+  close_logger();
+  free(datosCPU);
+
+  dictionary_destroy(callableRemoteFunctionsCPU);
+  pthread_mutex_unlock(&m_main);
+  pthread_mutex_destroy(&m_main);
+}
