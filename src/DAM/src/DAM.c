@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 #include "libDAM.h"
 
@@ -21,16 +23,21 @@ int main(void){
 	callableRemoteFunctionsCPU = dictionary_create();
 	
 	//--------------------------------------------------------------------
-	
-      dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_existeArchivo", &MDJ_DAM_existeArchivo);
-      dictionary_put(callableRemoteFunctionsCPU, "identificarProcesoEnDAM", &identificarProceso);
-
-          
-
-
+	//Dicionarios del mdj
+    dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_existeArchivo", &MDJ_DAM_existeArchivo);
+    dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_verificarArchivoCreado",&MDJ_DAM_verificarArchivoCreado);
+    dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_verificarArchivoCreado",&MDJ_DAM_verificarArchivoCreado);
+    dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_verificameSiArchivoFueBorrado",&MDJ_DAM_verificameSiArchivoFueBorrado);
+	//--------------------------------------------------------------------
+  //dicionarios de CPU
+      
+      
+      
+    //dictionary_put(callableRemoteFunctionsCPU, "identificarProcesoEnDAM", &identificarProcesoEnDAM);
+    
 	int socketSAFA = connectServer("172.17.0.1", 8001,callableRemoteFunctionsSAFA, &disconnect, NULL);
   //CUANDO ME CONECTO AL SAFA LE DIGO QUE SOY EL PROCESO DAM (para manejar estadoCorrupto)
-        runFunction(socketSAFA,"identificarNuevaConexion",1,"DAM"); 
+  runFunction(socketSAFA,"identificarNuevaConexion",1,"DAM"); 
 	int socketFM9 = connectServer("172.17.0.1",8003, callableRemoteFunctionsFM9, &disconnect, NULL);
 	int socketMDJ = connectServer("172.17.0.1", 5001, callableRemoteFunctionsMDJ, &disconnect, NULL);
          
@@ -58,6 +65,7 @@ int main(void){
        else {      
         log_info(logger,"me conecto al MDJ");
         runFunction(socketMDJ,"identificarProcesoEnMDJ",1,"DAM");
+        //verificameSiArchivoFueBorrado(socketMDJ,"/home/utnso/tp-2018-2c-Mi-amor-es-el-Malloc/src/MDJ/MDJ.config");
        }
       
 
@@ -76,6 +84,7 @@ int main(void){
 void disconnect(socket_connection* socketInfo) {
   log_info(logger,"socket n° %d se ha desconectado.\n", socketInfo->socket);
 }
+
 
 
 void cerrarPrograma() {

@@ -5,15 +5,25 @@ int estado;
 int file;
 char strEstado[2];
 
-void  validarArchivo(socket_connection * connection,char * path){
+aplicarRetardo(char *path)
+{
+t_config* fileConfig  = config_create(path);
+int ret = config_get_int_value(fileConfig,"RETARDO");
+sleep(ret);
+config_destroy(fileConfig);
+}
+
+void  validarArchivo(socket_connection * connection,char ** args){
+char * path = args[0];
 file = verificarSiExisteArchivo(path);
 if(file == noExiste){
 estado =noExiste;
 }
 else {
-estado =existe;
+estado =  existe;
 }
 sprintf(strEstado, "%i", estado);
+aplicarRetardo("MDJ.config");
 runFunction(connection->socket,"MDJ_DAM_existeArchivo",1,strEstado);
 }
 
@@ -33,6 +43,7 @@ else
 estado = noCreado;
 }
 sprintf(strEstado, "%i", estado);
+aplicarRetardo("MDJ.config");
 runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",1,strEstado);
 }
 
@@ -55,6 +66,7 @@ else
 estado = noBorrado;
 }
 sprintf(strEstado, "%i", estado);
+aplicarRetardo("MDJ.config");
 runFunction(connection->socket,"MDJ_DAM_verificameSiArchivoFueBorrado",1,strEstado);
 }
 

@@ -5,6 +5,7 @@
 #include <commons/string.h>
 #include <commons/bitarray.h>
 #include <commons/collections/dictionary.h>
+#include <commons/collections/list.h>
 #include <pthread.h>
 #include <signal.h>
 #include <sys/socket.h>
@@ -30,6 +31,10 @@ typedef struct {
 } t_config_MDJ;
 
 typedef struct {
+t_list *  directorios;
+}t_directorios;
+
+typedef struct {
 size_t tamanio_bloques;
 int cantidad_bloques;
 char * magic_number;
@@ -45,13 +50,14 @@ int * bloques;
 }t_metadata_filemetadata;
 
 
+
 //VARIABLES
 t_log* logger;
 t_dictionary *  fns;	/* Funciones de socket */
 pthread_mutex_t mx_main;	/* Semaforo de main */
 int portServer;
 t_config * conf;
-t_config_MDJ  *   datosConfMDJ;
+t_config_MDJ  *  datosConfMDJ;
 
 
 

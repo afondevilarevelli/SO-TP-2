@@ -9,18 +9,19 @@
 #include <sys/stat.h> 
 #include <fcntl.h>
 #include "../../sample-socket/socket.h"
+#include <commons/config.h>
 
 //uso enum para ser mas claro en el codigo
 // noExiste = 0, existe =1
 // yaCreado = 0,recienCreado = 1, noCreado = 2
 //el caso que sea 2 es para casos de error
  
-typedef enum{noExiste,existe};
+typedef enum{noExiste,existe };
 typedef enum{yaCreado,recienCreado,noCreado};
 typedef enum{noBorrado,recienBorrado};
 
 // devuelve un true(1) si el archivo existe, u falso(0)  si no existe
-void  validarArchivo(socket_connection * ,char* path);
+void  validarArchivo(socket_connection * ,char**);
 //crear el archivo, cada elemento del vector sera una linea del archivo
 void crearArchivo(socket_connection *,char * ,size_t * );
 //devuelvo la cant de bytes del path(archivo)

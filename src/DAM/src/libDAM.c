@@ -6,7 +6,9 @@
 #include "libDAM.h"
 
 
-int estado;
+int estadoValidacion;
+int estadoCreacion;
+int estadoBorrado;
 
 //LOG
 void configure_logger() {
@@ -74,12 +76,12 @@ void identificarProceso(socket_connection * connection ,char** args){
 }
 
 void MDJ_DAM_existeArchivo(socket_connection* socketInf,char ** args){
-estado =atoi( args[0]);
-if(estado ==  1)
+estadoValidacion =atoi( args[0]);
+if(estadoValidacion ==  1)
 {
 log_info(logger," El MDJ informa archivo existente");
 }
-else if (estado ==  0)
+else if (estadoValidacion ==  0)
 {
 log_info(logger,"El MDJ informa archivo inexistente");
 }
@@ -90,12 +92,12 @@ log_error(logger,"Ocurrio un error al verificar si existe el archivo");
 }
 
 void MDJ_DAM_verificarArchivoCreado(socket_connection* conenction,char ** args){
-estado =atoi( args[0]);
-if(estado ==  1)
+estadoCreacion =atoi( args[0]);
+if(estadoCreacion ==  1)
 {
 log_info(logger," El MDJ informa que se creo el archivo");
 }
-else if ( estado == 0)
+else if (estadoCreacion == 0)
 {
 log_info(logger,"El MDJ informa que el archivo ya estaba creado");
 }
@@ -106,12 +108,12 @@ log_error(logger,"Ocurrio un error al querer crear el archivo");
 }
 
 void MDJ_DAM_verificameSiArchivoFueBorrado(socket_connection * connection,char ** args){
-estado =atoi( args[0]);
-if(estado ==  1)
+estadoBorrado =atoi( args[0]);
+if(estadoBorrado ==  1)
 {
 log_info(logger," El MDJ informa que se borro el archivo");
 }
-else if ( estado == 0)
+else if ( estadoBorrado == 0)
 {
 log_info(logger,"El MDJ informa que el archivo no existia,por lo que no se podia borrar");
 }
