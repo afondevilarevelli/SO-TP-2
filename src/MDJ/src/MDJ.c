@@ -14,6 +14,7 @@ int main(void) {
      dictionary_put(fns,"validarArchivo",&validarArchivo);
      dictionary_put(fns,"crearArchivo",&crearArchivo);
      dictionary_put(fns,"borrarArchivo",&borrarArchivo);
+     dictionary_put(fns,"identificarProcesoEnMDJ",&identificarProceso);
 
        //Pongo a escuchar el server en el puerto elegido
        int listener =  createListen(5001, NULL ,fns, &disconnect ,NULL);

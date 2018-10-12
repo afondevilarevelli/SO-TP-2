@@ -6,8 +6,6 @@ int main() {
   datosCPU = read_and_log_config("CPU.config");
 
   callableRemoteFunctionsCPU = dictionary_create();
-
-  //dictionary_put(callableRemoteFunctionsCPU, "SAFA_CPU_handshake", &SAFA_CPU_handshake);
   
 
   int socketDAM = connectServer(datosCPU->ipD, datosCPU->puertoD, callableRemoteFunctionsCPU, &disconnect, NULL);

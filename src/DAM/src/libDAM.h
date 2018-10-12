@@ -56,6 +56,7 @@ void verificarArchivoCreado(socket_connection* , char *);
 void verificameSiArchivoFueBorrado(socket_connection*,char *);
 
 //diccionarios
+void identificarProceso(socket_connection * connection ,char** args);
 void MDJ_DAM_existeArchivo(socket_connection*,char ** );
 void MDJ_DAM_verificarArchivoCreado(socket_connection*,char **);
 void MDJ_DAM_verificameSiArchivoFueBorrado(socket_connection*,char **);

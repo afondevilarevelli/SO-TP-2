@@ -37,14 +37,6 @@ typedef struct{
 	status_t status;
 }DTB;
 
-typedef struct {
-    char *  proceso;
-}proc;
-proc * pro;
-
-void  identificarProceso(socket_connection * connection ,char** args);
-
-
 //--------------------------------------//
 
 
@@ -92,7 +84,6 @@ t_config_SAFA * read_and_log_config(char*);
 
 //PROTOTIPOS
 void cerrarPrograma();
-void identificarDAM( socket_connection* socketInfo, char** msg);
 
 //--------------------------------------------//
 

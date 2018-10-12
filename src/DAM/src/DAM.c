@@ -23,7 +23,7 @@ int main(void){
 	//--------------------------------------------------------------------
 	
       dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_existeArchivo", &MDJ_DAM_existeArchivo);
-      //dictionary_put(callableRemoteFunctionsCPU, "identificarProcesoEnDAM", &identificarProcesoEnDAM);
+      dictionary_put(callableRemoteFunctionsCPU, "identificarProcesoEnDAM", &identificarProceso);
 
           
 
@@ -55,8 +55,9 @@ int main(void){
         if(socketMDJ == -1){
         log_error(logger,"no se pudo conectar con MDJ");
         }
-       else {
-       log_info(logger,"me conecto al MDJ");
+       else {      
+        log_info(logger,"me conecto al MDJ");
+        runFunction(socketMDJ,"identificarProcesoEnMDJ",1,"DAM");
        }
       
 

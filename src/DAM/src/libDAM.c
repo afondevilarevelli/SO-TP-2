@@ -69,6 +69,9 @@ t_config_DAM* read_and_log_config(char* path) {
 	return _datosDAM;
 }
 
+void identificarProceso(socket_connection * connection ,char** args){	
+    log_info(logger,"Se ha conectado %s en el socket NRO %d  con IP %s,  PUERTO %d\n", args[0],connection->socket,connection->ip,connection-> port);   
+}
 
 void MDJ_DAM_existeArchivo(socket_connection* socketInf,char ** args){
 estado =atoi( args[0]);

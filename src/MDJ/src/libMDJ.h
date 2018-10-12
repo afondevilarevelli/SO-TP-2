@@ -69,3 +69,4 @@ t_config_MDJ *  read_and_log_config(char*);
 
 //SOCKETS
 void disconnect(socket_connection *);
+void identificarProceso(socket_connection * connection ,char** args);

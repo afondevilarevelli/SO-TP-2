@@ -15,12 +15,6 @@ typedef struct {
 	int tamanioPagina;
 } t_config_FM9;
 
-typedef struct {
-    char *  proceso;
-}proc;
-proc * pro;
-
-
 
 //VARIABLES
 t_log* logger;

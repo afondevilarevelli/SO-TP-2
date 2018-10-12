@@ -10,3 +10,22 @@
 [INFO] 16:54:48:433 FM9/(8206:8206): Estoy escuchando el puerto: 8003
 [INFO] 16:54:53:950 FM9/(8206:8206): Voy a cerrar FM9
 [INFO] 16:54:53:950 FM9/(8206:8206): Cierro log de FM9
+[INFO] 15:22:21:100 FM9/(4531:4531): Se genero log de FM9
+[INFO] 15:22:21:102 FM9/(4531:4531): Voy a leer el archivo FM9.config
+[INFO] 15:22:21:107 FM9/(4531:4531): 	PUERTO: 8003
+[INFO] 15:22:21:111 FM9/(4531:4531): 	MODO: SEG
+[INFO] 15:22:21:112 FM9/(4531:4531): 	TAMANIO: 2048
+[INFO] 15:22:21:112 FM9/(4531:4531): 	MAX_LINEA: 128
+[INFO] 15:22:21:113 FM9/(4531:4531): 	TAM_PAGINA: 1024
+[INFO] 15:22:21:113 FM9/(4531:4531): Fin de lectura
+[INFO] 15:22:21:113 FM9/(4531:4531): Voy a escuchar el puerto: 8003
+[INFO] 15:22:21:113 FM9/(4531:4531): Estoy escuchando el puerto: 8003
+[INFO] 15:22:56:394 FM9/(4531:4617): Se ha conectado DAM en el socket NRO 5  con IP 10.0.2.15,  PUERTO 8003
+
+[INFO] 15:25:58:255 FM9/(4531:4617): El socket n°5 se ha desconectado.
+[INFO] 15:26:21:969 FM9/(4531:4722): Se ha conectado DAM en el socket NRO 6  con IP 10.0.2.15,  PUERTO 8003
+
+[INFO] 15:26:42:744 FM9/(4531:4766): Se ha conectado CPU en el socket NRO 5  con IP 127.0.0.1,  PUERTO 8003
+
+[INFO] 15:26:43:745 FM9/(4531:4766): El socket n°5 se ha desconectado.
+[INFO] 15:27:00:325 FM9/(4531:4722): El socket n°6 se ha desconectado.

@@ -29,7 +29,6 @@ void disconnect(socket_connection* socketInfo) {
 }
 
 
-
 //CONFIG
 t_config_MDJ *  read_and_log_config(char* path) {
 	log_info(logger, "Voy a leer el archivo MDJ.config");

@@ -10,3 +10,25 @@
 [TRACE] 16:58:49:133 SAFA/(8550:8552): Se espera a que haya GDT's en la cola Ready
 [INFO] 16:59:00:155 SAFA/(8550:8551): Voy a cerrar SAFA
 [INFO] 16:59:00:155 SAFA/(8550:8551): Cierro log de S-AFA
+[INFO] 15:22:09:40 SAFA/(4454:4454): Se genero log de S-AFA
+[INFO] 15:22:09:50 SAFA/(4454:4454): Voy a leer el archivo S-AFA.config
+[INFO] 15:22:09:52 SAFA/(4454:4454): 	PUERTO: 8001
+[INFO] 15:22:09:53 SAFA/(4454:4454): 	ALGORITMO_PLANIFICACION: RR
+[INFO] 15:22:09:53 SAFA/(4454:4454): 	QUANTUM: 3
+[INFO] 15:22:09:54 SAFA/(4454:4454): 	GRADO_MULTIPROGRAMACION: 3
+[INFO] 15:22:09:54 SAFA/(4454:4454): 	RETARDO: 1
+[INFO] 15:22:09:54 SAFA/(4454:4454): Fin de lectura
+[INFO] 15:22:09:54 SAFA/(4454:4454): Voy a escuchar por el puerto: 8001
+[TRACE] 15:22:09:56 SAFA/(4454:4457): Se espera a que haya GDT's en la cola Ready
+[INFO] 15:22:56:395 SAFA/(4454:4615): Se ha conectado DAM en el socket NRO 5  con IP 10.0.2.15,  PUERTO 8001
+
+[INFO] 15:25:58:256 SAFA/(4454:4615): socket n° 5 se ha desconectado.
+
+[INFO] 15:26:21:970 SAFA/(4454:4720): Se ha conectado DAM en el socket NRO 6  con IP 10.0.2.15,  PUERTO 8001
+
+[INFO] 15:26:41:743 SAFA/(4454:4764): Se ha conectado CPU en el socket NRO 5  con IP 127.0.0.1,  PUERTO 8001
+
+[INFO] 15:26:43:745 SAFA/(4454:4764): socket n° 5 se ha desconectado.
+
+[INFO] 15:27:00:325 SAFA/(4454:4720): socket n° 6 se ha desconectado.
+
