@@ -27,9 +27,19 @@ void planificarSegunRR(CPU* cpu){
             pthread_mutex_unlock(&m_puedePlanificar);
 			log_trace(logger, "Segun RR el DTB a ejecutar ahora es el de id = %d", dtbAEjecutar->id);
 
-            char* string_id = dtbAEjecutar->id + '0';
-            char* string_flagInicializacion = dtbAEjecutar->flagInicializado + '0';  
-            char* string_quantum = datosConfigSAFA->quantum + '0';
+            char string_id[2];
+            sprintf(string_id, "%i", dtbAEjecutar->id);
+
+            char string_flagInicializacion[2];
+            sprintf(string_flagInicializacion, "%i", dtbAEjecutar->flagInicializado); 
+
+            char string_quantum[2];
+            sprintf(string_quantum, "%i", datosConfigSAFA->quantum);
+            
+            pthread_mutex_lock(&m_listaEjecutando);
+            list_add(listaEjecutando, dtbAEjecutar);
+            pthread_mutex_unlock(&m_listaEjecutando);
+
             runFunction(cpu->socket,"ejecutarCPU",3, string_id, 
                                                      string_flagInicializacion, 
                                                      dtbAEjecutar->rutaScript);    
@@ -62,18 +72,17 @@ void  identificarProceso(socket_connection * connection ,char** args)
 		 CPU* cpu = malloc(sizeof(CPU));
 		 cpu->socket = connection->socket;
 		 cpu->id = generadorDeIdsCPU;
+         generadorDeIdsCPU++;
 		 sem_init(&cpu->aviso, 0, 0);
 		 list_add(listaCPUs, cpu);
          
          char stringQuantum[2];
-         char idCPU[1];
-         itoa(datosConfigSAFA->quantum, stringQuantum,10);
-         itoa(generadorDeIdsCPU, idCPU,10);
+         sprintf(stringQuantum, "%i", datosConfigSAFA->quantum);
+         char string_idCPU[2];   
+         sprintf(string_idCPU, "%i", cpu->id);
 	
-		 runFunction(cpu->socket, "establecerQuantumYID",2, stringQuantum, idCPU);
-         //free(stringQuantum);
-         //free(idCPU);
-		 generadorDeIdsCPU++;
+		 runFunction(connection->socket, "establecerQuantumYID",2, stringQuantum, string_idCPU);
+         
 
 		 pthread_t hiloPCP;
 		 if( strcmp( datosConfigSAFA->algoritmoPlanif, "RR") == 0 ){

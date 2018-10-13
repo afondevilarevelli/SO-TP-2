@@ -143,3 +143,68 @@
 [INFO] 05:59:05:670 FM9/(9946:11069): El socket n°5 se ha desconectado.
 [INFO] 06:06:43:454 FM9/(9946:9946): Voy a cerrar FM9
 [INFO] 06:06:43:455 FM9/(9946:9946): Cierro log de FM9
+[INFO] 16:41:05:866 FM9/(3894:3894): Se genero log de FM9
+[INFO] 16:41:05:873 FM9/(3894:3894): Voy a leer el archivo FM9.config
+[INFO] 16:41:05:876 FM9/(3894:3894): 	PUERTO: 8003
+[INFO] 16:41:05:876 FM9/(3894:3894): 	MODO: SEG
+[INFO] 16:41:05:876 FM9/(3894:3894): 	TAMANIO: 2048
+[INFO] 16:41:05:876 FM9/(3894:3894): 	MAX_LINEA: 128
+[INFO] 16:41:05:877 FM9/(3894:3894): 	TAM_PAGINA: 1024
+[INFO] 16:41:05:877 FM9/(3894:3894): Fin de lectura
+[INFO] 16:41:05:877 FM9/(3894:3894): Voy a escuchar el puerto: 8003
+[INFO] 16:41:05:877 FM9/(3894:3894): Estoy escuchando el puerto: 8003
+[INFO] 16:58:49:65 FM9/(3894:4818): Se ha conectado DAM en el socket NRO 5  con IP 10.0.2.15,  PUERTO 8003
+
+[INFO] 16:59:06:752 FM9/(3894:4855): Se ha conectado CPU en el socket NRO 6  con IP 127.0.0.1,  PUERTO 8003
+
+[INFO] 17:02:47:824 FM9/(3894:4855): El socket n°6 se ha desconectado.
+[INFO] 17:02:50:728 FM9/(3894:5003): Se ha conectado CPU en el socket NRO 7  con IP 127.0.0.1,  PUERTO 8003
+
+[INFO] 17:06:33:668 FM9/(3894:5003): El socket n°7 se ha desconectado.
+[INFO] 17:06:37:407 FM9/(3894:5177): Se ha conectado CPU en el socket NRO 6  con IP 127.0.0.1,  PUERTO 8003
+
+[INFO] 17:08:11:62 FM9/(3894:4818): El socket n°5 se ha desconectado.
+[INFO] 17:08:12:630 FM9/(3894:5233): Se ha conectado DAM en el socket NRO 7  con IP 10.0.2.15,  PUERTO 8003
+
+[INFO] 17:12:18:481 FM9/(3894:5177): El socket n°6 se ha desconectado.
+[INFO] 17:12:21:811 FM9/(3894:5370): Se ha conectado CPU en el socket NRO 5  con IP 127.0.0.1,  PUERTO 8003
+
+[INFO] 17:12:23:50 FM9/(3894:5233): El socket n°7 se ha desconectado.
+[INFO] 17:12:24:803 FM9/(3894:5382): Se ha conectado DAM en el socket NRO 6  con IP 10.0.2.15,  PUERTO 8003
+
+[INFO] 17:21:04:415 FM9/(3894:5370): El socket n°5 se ha desconectado.
+[INFO] 17:21:08:214 FM9/(3894:5663): Se ha conectado CPU en el socket NRO 7  con IP 127.0.0.1,  PUERTO 8003
+
+[INFO] 17:21:09:933 FM9/(3894:5382): El socket n°6 se ha desconectado.
+[INFO] 17:21:11:871 FM9/(3894:5667): Se ha conectado DAM en el socket NRO 5  con IP 10.0.2.15,  PUERTO 8003
+
+[INFO] 17:26:18:324 FM9/(3894:5663): El socket n°7 se ha desconectado.
+[INFO] 17:26:20:368 FM9/(3894:5667): El socket n°5 se ha desconectado.
+[INFO] 17:26:21:102 FM9/(3894:5877): Se ha conectado DAM en el socket NRO 6  con IP 10.0.2.15,  PUERTO 8003
+
+[INFO] 17:26:29:201 FM9/(3894:5893): Se ha conectado CPU en el socket NRO 5  con IP 127.0.0.1,  PUERTO 8003
+
+[INFO] 17:32:25:11 FM9/(3894:5877): El socket n°6 se ha desconectado.
+[INFO] 17:32:26:41 FM9/(3894:6187): Se ha conectado DAM en el socket NRO 7  con IP 10.0.2.15,  PUERTO 8003
+
+[INFO] 17:32:27:426 FM9/(3894:5893): El socket n°5 se ha desconectado.
+[INFO] 17:32:36:281 FM9/(3894:6227): Se ha conectado CPU en el socket NRO 6  con IP 127.0.0.1,  PUERTO 8003
+
+[INFO] 17:37:32:12 FM9/(3894:6187): El socket n°7 se ha desconectado.
+[INFO] 17:37:33:611 FM9/(3894:6442): Se ha conectado DAM en el socket NRO 5  con IP 10.0.2.15,  PUERTO 8003
+
+[INFO] 17:37:34:939 FM9/(3894:6227): El socket n°6 se ha desconectado.
+[INFO] 17:37:48:893 FM9/(3894:6489): Se ha conectado CPU en el socket NRO 7  con IP 127.0.0.1,  PUERTO 8003
+
+[INFO] 17:41:21:329 FM9/(3894:6442): El socket n°5 se ha desconectado.
+[INFO] 17:41:22:897 FM9/(3894:6713): Se ha conectado DAM en el socket NRO 6  con IP 10.0.2.15,  PUERTO 8003
+
+[INFO] 17:41:26:563 FM9/(3894:6489): El socket n°7 se ha desconectado.
+[INFO] 17:41:35:677 FM9/(3894:6765): Se ha conectado CPU en el socket NRO 5  con IP 127.0.0.1,  PUERTO 8003
+
+[INFO] 17:49:21:463 FM9/(3894:6713): El socket n°6 se ha desconectado.
+[INFO] 17:49:22:803 FM9/(3894:7088): Se ha conectado DAM en el socket NRO 7  con IP 10.0.2.15,  PUERTO 8003
+
+[INFO] 17:49:28:21 FM9/(3894:6765): El socket n°5 se ha desconectado.
+[INFO] 17:49:37:517 FM9/(3894:7139): Se ha conectado CPU en el socket NRO 6  con IP 127.0.0.1,  PUERTO 8003
+

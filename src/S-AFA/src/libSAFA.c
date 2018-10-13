@@ -79,9 +79,8 @@ t_config_SAFA * read_and_log_config(char* path) {
 	datosConfigSAFA = malloc(sizeof(t_config_SAFA));
 
 	datosConfigSAFA->puerto = config_get_int_value(archivo_Config, "S-AFA_PUERTO");
-	char* alg = string_new();
-	string_append(&alg, config_get_string_value(archivo_Config, "ALGORITMO_PLANIF"));
-	datosConfigSAFA->algoritmoPlanif = alg;
+	datosConfigSAFA->algoritmoPlanif = malloc(strlen(config_get_string_value(archivo_Config, "ALGORITMO_PLANIF")) + 1);
+	strcpy(datosConfigSAFA->algoritmoPlanif, config_get_string_value(archivo_Config, "ALGORITMO_PLANIF"));
 	datosConfigSAFA->quantum = config_get_int_value(archivo_Config, "QUANTUM");
 	datosConfigSAFA->gradoMultiprog = config_get_int_value(archivo_Config, "GRADO_MULTIPROG");
 	datosConfigSAFA->retardo = config_get_int_value(archivo_Config, "RETARDO");
@@ -95,7 +94,6 @@ t_config_SAFA * read_and_log_config(char* path) {
 	log_info(logger, "Fin de lectura");
 
 	config_destroy(archivo_Config);
-	free(alg);
        return datosConfigSAFA;
  
 } // al final de esta funcion me queda la variable datosConfigSAFA con la config de SAFA
@@ -121,8 +119,8 @@ void newConnection(socket_connection* socketInfo, char** msg){
 //								  "finalizar" => finalizo GDT,
 //								  "continuar" => NO finalizo GDT
 void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
-	int idCPU = msg[0];
-	int idDTB = msg[1];
+	int idCPU = atoi( msg[0] );
+	int idDTB = atoi ( msg[1] );
 	CPU* cpu = buscarCPU(idCPU);
 	DTB* dtb = buscarYRemoverDTB(listaEjecutando, m_listaEjecutando, idDTB);
 	

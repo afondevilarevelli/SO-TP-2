@@ -204,11 +204,15 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 	
 
 	//cuando finaliza de ejecutar dicho proceso, le avisa al SAFA
-	runFunction(connection->socket, "finalizacionProcesamientoCPU",3, idCPU+'0',args[0], "finalizar" );
+	char id[2];
+	sprintf(id, "%i", idCPU);
+	runFunction(connection->socket, "finalizacionProcesamientoCPU",3, id, args[0], "finalizar" );
 	//runFunction(connection->socket, "finalizacionProcesamientoCPU",3, idCPU+'0',args[0], "continuar" );
 }
 
 void establecerQuantumYID(socket_connection * connection ,char** args){
-	quantum = args[0]; //- '0';
-	idCPU = args[1];
+	quantum = atoi( args[0] ); 
+	idCPU = atoi (args[1] );
+	log_trace(logger,"QUANTUM = %i",quantum);
+	log_trace(logger,"ID de CPU =  %i",idCPU);
 }

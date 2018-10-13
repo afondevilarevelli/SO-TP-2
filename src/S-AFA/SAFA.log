@@ -338,3 +338,169 @@
 [INFO] 04:48:08:328 SAFA/(11050:11050): Voy a escuchar por el puerto: 8001
 [INFO] 04:48:16:21 SAFA/(11050:11067): Se ha conectado CPU en el socket NRO 5  con IP 127.0.0.1,  PUERTO 8001
 
+[INFO] 16:58:42:996 SAFA/(4799:4799): Se genero log de S-AFA
+[INFO] 16:58:42:1 SAFA/(4799:4799): Voy a leer el archivo S-AFA.config
+[INFO] 16:58:42:3 SAFA/(4799:4799): 	PUERTO: 8001
+[INFO] 16:58:42:3 SAFA/(4799:4799): 	ALGORITMO_PLANIFICACION: RR
+[INFO] 16:58:42:3 SAFA/(4799:4799): 	QUANTUM: 3
+[INFO] 16:58:43:4 SAFA/(4799:4799): 	GRADO_MULTIPROGRAMACION: 3
+[INFO] 16:58:43:4 SAFA/(4799:4799): 	RETARDO: 1
+[INFO] 16:58:43:4 SAFA/(4799:4799): Fin de lectura
+[INFO] 16:58:43:5 SAFA/(4799:4799): Voy a escuchar por el puerto: 8001
+[INFO] 16:58:54:766 SAFA/(4799:4814): Se ha conectado DAM en el socket NRO 5  con IP 10.0.2.15,  PUERTO 8001
+
+[INFO] 16:59:10:722 SAFA/(4799:4846): Se ha conectado CPU en el socket NRO 6  con IP 127.0.0.1,  PUERTO 8001
+
+[INFO] 17:02:46:27 SAFA/(4984:4984): Se genero log de S-AFA
+[INFO] 17:02:46:28 SAFA/(4984:4984): Voy a leer el archivo S-AFA.config
+[INFO] 17:02:46:28 SAFA/(4984:4984): 	PUERTO: 8001
+[INFO] 17:02:46:28 SAFA/(4984:4984): 	ALGORITMO_PLANIFICACION: RR
+[INFO] 17:02:46:28 SAFA/(4984:4984): 	QUANTUM: 3
+[INFO] 17:02:46:28 SAFA/(4984:4984): 	GRADO_MULTIPROGRAMACION: 3
+[INFO] 17:02:46:28 SAFA/(4984:4984): 	RETARDO: 1
+[INFO] 17:02:46:29 SAFA/(4984:4984): Fin de lectura
+[INFO] 17:02:46:29 SAFA/(4984:4984): Voy a escuchar por el puerto: 8001
+[INFO] 17:02:52:254 SAFA/(4984:5001): Se ha conectado CPU en el socket NRO 5  con IP 127.0.0.1,  PUERTO 8001
+
+[INFO] 17:06:23:453 SAFA/(5142:5142): Se genero log de S-AFA
+[INFO] 17:06:23:454 SAFA/(5142:5142): Voy a leer el archivo S-AFA.config
+[INFO] 17:06:23:454 SAFA/(5142:5142): 	PUERTO: 8001
+[INFO] 17:06:23:454 SAFA/(5142:5142): 	ALGORITMO_PLANIFICACION: RR
+[INFO] 17:06:23:454 SAFA/(5142:5142): 	QUANTUM: 3
+[INFO] 17:06:23:454 SAFA/(5142:5142): 	GRADO_MULTIPROGRAMACION: 3
+[INFO] 17:06:23:454 SAFA/(5142:5142): 	RETARDO: 1
+[INFO] 17:06:23:454 SAFA/(5142:5142): Fin de lectura
+[INFO] 17:06:23:454 SAFA/(5142:5142): Voy a escuchar por el puerto: 8001
+[INFO] 17:06:31:672 SAFA/(5159:5159): Se genero log de S-AFA
+[INFO] 17:06:31:673 SAFA/(5159:5159): Voy a leer el archivo S-AFA.config
+[INFO] 17:06:31:673 SAFA/(5159:5159): 	PUERTO: 8001
+[INFO] 17:06:31:673 SAFA/(5159:5159): 	ALGORITMO_PLANIFICACION: RR
+[INFO] 17:06:31:673 SAFA/(5159:5159): 	QUANTUM: 3
+[INFO] 17:06:31:673 SAFA/(5159:5159): 	GRADO_MULTIPROGRAMACION: 3
+[INFO] 17:06:31:673 SAFA/(5159:5159): 	RETARDO: 1
+[INFO] 17:06:31:673 SAFA/(5159:5159): Fin de lectura
+[INFO] 17:06:31:673 SAFA/(5159:5159): Voy a escuchar por el puerto: 8001
+[INFO] 17:06:38:591 SAFA/(5159:5175): Se ha conectado CPU en el socket NRO 5  con IP 127.0.0.1,  PUERTO 8001
+
+[TRACE] 17:07:03:950 SAFA/(5159:5202): Se espera a que haya GDT's en la cola Ready
+[ERROR] 17:08:07:495 SAFA/(5159:5160): SAFA en estado corrupto, no se admiten nuevos GDT´S
+[INFO] 17:08:15:530 SAFA/(5159:5231): Se ha conectado DAM en el socket NRO 6  con IP 10.0.2.15,  PUERTO 8001
+
+[TRACE] 17:08:21:46 SAFA/(5159:5160): Se hace ingreso del script escriptorio de la ruta boca para su futura ejecucion
+
+[TRACE] 17:08:22:48 SAFA/(5159:5202): Segun RR el DTB a ejecutar ahora es el de id = 1
+[INFO] 17:12:16:583 SAFA/(5350:5350): Se genero log de S-AFA
+[INFO] 17:12:16:583 SAFA/(5350:5350): Voy a leer el archivo S-AFA.config
+[INFO] 17:12:16:583 SAFA/(5350:5350): 	PUERTO: 8001
+[INFO] 17:12:16:584 SAFA/(5350:5350): 	ALGORITMO_PLANIFICACION: RR
+[INFO] 17:12:16:584 SAFA/(5350:5350): 	QUANTUM: 3
+[INFO] 17:12:16:584 SAFA/(5350:5350): 	GRADO_MULTIPROGRAMACION: 3
+[INFO] 17:12:16:584 SAFA/(5350:5350): 	RETARDO: 1
+[INFO] 17:12:16:584 SAFA/(5350:5350): Fin de lectura
+[INFO] 17:12:16:584 SAFA/(5350:5350): Voy a escuchar por el puerto: 8001
+[INFO] 17:12:20:812 SAFA/(5350:5367): Se ha conectado CPU en el socket NRO 5  con IP 127.0.0.1,  PUERTO 8001
+
+[INFO] 17:12:32:197 SAFA/(5350:5393): Se ha conectado DAM en el socket NRO 6  con IP 10.0.2.15,  PUERTO 8001
+
+[TRACE] 17:12:32:923 SAFA/(5350:5369): Se espera a que haya GDT's en la cola Ready
+[TRACE] 17:12:35:138 SAFA/(5350:5354): comando no reconocido
+
+[TRACE] 17:13:18:125 SAFA/(5350:5354): Se hace ingreso del script escriptorio de la ruta boca para su futura ejecucion
+
+[TRACE] 17:15:05:734 SAFA/(5350:5369): Segun RR el DTB a ejecutar ahora es el de id = 1
+[INFO] 17:21:01:505 SAFA/(5633:5633): Se genero log de S-AFA
+[INFO] 17:21:01:505 SAFA/(5633:5633): Voy a leer el archivo S-AFA.config
+[INFO] 17:21:01:506 SAFA/(5633:5633): 	PUERTO: 8001
+[INFO] 17:21:01:506 SAFA/(5633:5633): 	ALGORITMO_PLANIFICACION: RR
+[INFO] 17:21:01:506 SAFA/(5633:5633): 	QUANTUM: 3
+[INFO] 17:21:01:506 SAFA/(5633:5633): 	GRADO_MULTIPROGRAMACION: 3
+[INFO] 17:21:01:506 SAFA/(5633:5633): 	RETARDO: 1
+[INFO] 17:21:01:506 SAFA/(5633:5633): Fin de lectura
+[INFO] 17:21:01:506 SAFA/(5633:5633): Voy a escuchar por el puerto: 8001
+[INFO] 17:21:07:215 SAFA/(5633:5653): Se ha conectado CPU en el socket NRO 5  con IP 127.0.0.1,  PUERTO 8001
+
+[INFO] 17:21:19:800 SAFA/(5633:5684): Se ha conectado DAM en el socket NRO 6  con IP 10.0.2.15,  PUERTO 8001
+
+[TRACE] 17:21:20:475 SAFA/(5633:5655): Se espera a que haya GDT's en la cola Ready
+[TRACE] 17:21:21:929 SAFA/(5633:5637): comando no reconocido
+
+[TRACE] 17:21:22:368 SAFA/(5633:5637): comando no reconocido
+
+[TRACE] 17:21:31:348 SAFA/(5633:5637): Se hace ingreso del script escriptorio de la ruta boooooca para su futura ejecucion
+
+[TRACE] 17:22:28:993 SAFA/(5633:5655): Segun RR el DTB a ejecutar ahora es el de id = 1
+[INFO] 17:26:13:813 SAFA/(5853:5853): Se genero log de S-AFA
+[INFO] 17:26:13:813 SAFA/(5853:5853): Voy a leer el archivo S-AFA.config
+[INFO] 17:26:13:813 SAFA/(5853:5853): 	PUERTO: 8001
+[INFO] 17:26:13:813 SAFA/(5853:5853): 	ALGORITMO_PLANIFICACION: RR
+[INFO] 17:26:13:814 SAFA/(5853:5853): 	QUANTUM: 3
+[INFO] 17:26:13:814 SAFA/(5853:5853): 	GRADO_MULTIPROGRAMACION: 3
+[INFO] 17:26:13:814 SAFA/(5853:5853): 	RETARDO: 1
+[INFO] 17:26:13:814 SAFA/(5853:5853): Fin de lectura
+[INFO] 17:26:13:814 SAFA/(5853:5853): Voy a escuchar por el puerto: 8001
+[INFO] 17:26:24:333 SAFA/(5853:5875): Se ha conectado DAM en el socket NRO 5  con IP 10.0.2.15,  PUERTO 8001
+
+[INFO] 17:26:31:733 SAFA/(5853:5891): Se ha conectado CPU en el socket NRO 6  con IP 127.0.0.1,  PUERTO 8001
+
+[TRACE] 17:27:28:698 SAFA/(5853:5928): Se espera a que haya GDT's en la cola Ready
+[TRACE] 17:27:47:66 SAFA/(5853:5857): Se hace ingreso del script escriptorio de la ruta hvgvjk para su futura ejecucion
+
+[TRACE] 17:27:48:67 SAFA/(5853:5928): Segun RR el DTB a ejecutar ahora es el de id = 1
+[INFO] 17:32:22:729 SAFA/(6170:6170): Se genero log de S-AFA
+[INFO] 17:32:22:730 SAFA/(6170:6170): Voy a leer el archivo S-AFA.config
+[INFO] 17:32:22:730 SAFA/(6170:6170): 	PUERTO: 8001
+[INFO] 17:32:22:730 SAFA/(6170:6170): 	ALGORITMO_PLANIFICACION: RR
+[INFO] 17:32:22:731 SAFA/(6170:6170): 	QUANTUM: 3
+[INFO] 17:32:22:731 SAFA/(6170:6170): 	GRADO_MULTIPROGRAMACION: 3
+[INFO] 17:32:22:731 SAFA/(6170:6170): 	RETARDO: 1
+[INFO] 17:32:22:731 SAFA/(6170:6170): Fin de lectura
+[INFO] 17:32:22:731 SAFA/(6170:6170): Voy a escuchar por el puerto: 8001
+[INFO] 17:32:43:742 SAFA/(6170:6185): Se ha conectado DAM en el socket NRO 5  con IP 10.0.2.15,  PUERTO 8001
+
+[INFO] 17:32:45:592 SAFA/(6170:6229): Se ha conectado CPU en el socket NRO 6  con IP 127.0.0.1,  PUERTO 8001
+
+[INFO] 17:37:30:340 SAFA/(6424:6424): Se genero log de S-AFA
+[INFO] 17:37:30:340 SAFA/(6424:6424): Voy a leer el archivo S-AFA.config
+[INFO] 17:37:30:341 SAFA/(6424:6424): 	PUERTO: 8001
+[INFO] 17:37:30:341 SAFA/(6424:6424): 	ALGORITMO_PLANIFICACION: RR
+[INFO] 17:37:30:341 SAFA/(6424:6424): 	QUANTUM: 3
+[INFO] 17:37:30:342 SAFA/(6424:6424): 	GRADO_MULTIPROGRAMACION: 3
+[INFO] 17:37:30:342 SAFA/(6424:6424): 	RETARDO: 1
+[INFO] 17:37:30:342 SAFA/(6424:6424): Fin de lectura
+[INFO] 17:37:30:342 SAFA/(6424:6424): Voy a escuchar por el puerto: 8001
+[INFO] 17:37:36:741 SAFA/(6424:6440): Se ha conectado DAM en el socket NRO 5  con IP 10.0.2.15,  PUERTO 8001
+
+[INFO] 17:37:50:722 SAFA/(6424:6487): Se ha conectado CPU en el socket NRO 6  con IP 127.0.0.1,  PUERTO 8001
+
+[INFO] 17:41:18:379 SAFA/(6696:6696): Se genero log de S-AFA
+[INFO] 17:41:18:384 SAFA/(6696:6696): Voy a leer el archivo S-AFA.config
+[INFO] 17:41:18:385 SAFA/(6696:6696): 	PUERTO: 8001
+[INFO] 17:41:18:385 SAFA/(6696:6696): 	ALGORITMO_PLANIFICACION: RR
+[INFO] 17:41:18:386 SAFA/(6696:6696): 	QUANTUM: 3
+[INFO] 17:41:18:386 SAFA/(6696:6696): 	GRADO_MULTIPROGRAMACION: 3
+[INFO] 17:41:18:386 SAFA/(6696:6696): 	RETARDO: 1
+[INFO] 17:41:18:386 SAFA/(6696:6696): Fin de lectura
+[INFO] 17:41:18:386 SAFA/(6696:6696): Voy a escuchar por el puerto: 8001
+[INFO] 17:41:24:890 SAFA/(6696:6711): Se ha conectado DAM en el socket NRO 5  con IP 10.0.2.15,  PUERTO 8001
+
+[INFO] 17:41:38:130 SAFA/(6696:6755): Se ha conectado CPU en el socket NRO 6  con IP 127.0.0.1,  PUERTO 8001
+
+[INFO] 17:49:19:161 SAFA/(7071:7071): Se genero log de S-AFA
+[INFO] 17:49:19:162 SAFA/(7071:7071): Voy a leer el archivo S-AFA.config
+[INFO] 17:49:19:166 SAFA/(7071:7071): 	PUERTO: 8001
+[INFO] 17:49:19:166 SAFA/(7071:7071): 	ALGORITMO_PLANIFICACION: RR
+[INFO] 17:49:19:166 SAFA/(7071:7071): 	QUANTUM: 3
+[INFO] 17:49:19:167 SAFA/(7071:7071): 	GRADO_MULTIPROGRAMACION: 3
+[INFO] 17:49:19:167 SAFA/(7071:7071): 	RETARDO: 1
+[INFO] 17:49:19:167 SAFA/(7071:7071): Fin de lectura
+[INFO] 17:49:19:167 SAFA/(7071:7071): Voy a escuchar por el puerto: 8001
+[INFO] 17:49:22:804 SAFA/(7071:7086): Se ha conectado DAM en el socket NRO 5  con IP 10.0.2.15,  PUERTO 8001
+
+[INFO] 17:49:36:516 SAFA/(7071:7136): Se ha conectado CPU en el socket NRO 6  con IP 127.0.0.1,  PUERTO 8001
+
+[TRACE] 17:49:36:525 SAFA/(7071:7138): Se espera a que haya GDT's en la cola Ready
+[TRACE] 17:50:11:127 SAFA/(7071:7075): Se hace ingreso del script escriptorio de la ruta boca.txt para su futura ejecucion
+
+[TRACE] 17:50:12:128 SAFA/(7071:7138): Segun RR el DTB a ejecutar ahora es el de id = 1
+[INFO] 17:50:12:129 SAFA/(7071:7136): se va a finalizar el GDT de id 1
+[TRACE] 17:50:12:129 SAFA/(7071:7138): Se espera a que haya GDT's en la cola Ready

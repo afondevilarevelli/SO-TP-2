@@ -3,6 +3,7 @@
 
 #include "libSAFA.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 void planificadorLargoPlazo();
 void planificarSegunRR(CPU* cpu);
