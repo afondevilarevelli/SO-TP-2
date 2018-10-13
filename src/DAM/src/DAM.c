@@ -70,8 +70,10 @@ int main(void){
       
 
         log_info(logger,"voy a escuchar el puerto %d ",datosConfigDAM->puertoEscucha);
+
 	  createListen(datosConfigDAM->puertoEscucha, NULL,callableRemoteFunctionsCPU, &disconnect, NULL);
        
+
  	pthread_mutex_init(&mx_main, NULL);
 	pthread_mutex_lock(&mx_main);
 	pthread_mutex_lock(&mx_main);

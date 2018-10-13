@@ -137,4 +137,26 @@ void verificameSiArchivoFueBorrado(socket_connection* socketMDJ, char * pathFile
 {
 runFunction(socketMDJ,"borrarArchivo",1,pathFile);
 }
+/*
+void abrirArchivo(socket_connection* socketMDJ,char *pathDelArchivo,char *buffer)
+  {
+   FILE *archivo;
+   runFunction(socketMDJ,"validarArchivo",1,pathDelArchivo);
+   if(estado==0)
+   {log_info(logger, "abriendo el archivo");
+   archivo = fopen(pathDelArchivo, "r+");
+   while(fread(buffer,sizeof(buffer),1,archivo) != EOF );
+   //bloquear G.DT y cargar archivo deseado
+   //desbloquear G.DT
+   }
+  }
 
+void solicitudDeFlush(char *pathDelArchivo)
+{
+	socket_connection* socketMDJ;
+	socket_connection* socketFM9;
+	char *buffer;
+	
+	runFunction(socketFM9,"obtenerArchivo",2,pathDelArchivo,buffer);
+	runFunction(socketMDJ,"guardarArchivo",2,pathDelArchivo,buffer);
+}*/
