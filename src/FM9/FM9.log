@@ -141,3 +141,5 @@
 [INFO] 04:48:13:475 FM9/(9946:11069): Se ha conectado CPU en el socket NRO 5  con IP 127.0.0.1,  PUERTO 8003
 
 [INFO] 05:59:05:670 FM9/(9946:11069): El socket n°5 se ha desconectado.
+[INFO] 06:06:43:454 FM9/(9946:9946): Voy a cerrar FM9
+[INFO] 06:06:43:455 FM9/(9946:9946): Cierro log de FM9
