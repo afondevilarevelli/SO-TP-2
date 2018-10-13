@@ -272,3 +272,53 @@
 [INFO] 19:35:02:313 DAM/(7528:7528): me conecto al MDJ
 [INFO] 19:35:02:313 DAM/(7528:7528): voy a escuchar el puerto 8000 
 [INFO] 19:35:07:317 DAM/(7528:7530): El MDJ informa que el archivo no existia,por lo que no se podia borrar
+[INFO] 04:16:46:605 DAM/(9959:9959): Se genero log de DAM
+[INFO] 04:16:46:607 DAM/(9959:9959): Voy a leer el archivo DAM.config
+[INFO] 04:16:46:609 DAM/(9959:9959): 	PUERTO ESCUCHA: 8000
+[INFO] 04:16:46:610 DAM/(9959:9959): 	IP DE S-AFA: 127.0.0.1
+[INFO] 04:16:46:611 DAM/(9959:9959): 	PUERTO DE S-AFA: 8001
+[INFO] 04:16:46:612 DAM/(9959:9959): 	IP DE MDJ: 137.0.0.1
+[INFO] 04:16:46:612 DAM/(9959:9959): 	PUERTO DE MDJ: 8002
+[INFO] 04:16:46:612 DAM/(9959:9959): 	IP DE FM9: 127.0.0.1
+[INFO] 04:16:46:613 DAM/(9959:9959): 	PUERTO DE FM9: 8003
+[INFO] 04:16:46:613 DAM/(9959:9959): 	TRANSFER SIZE: 16
+[INFO] 04:16:46:613 DAM/(9959:9959): Fin de lectura
+[INFO] 04:16:46:614 DAM/(9959:9959): me conecto al SAFA
+[INFO] 04:16:46:614 DAM/(9959:9959): me conecto al FM9
+[ERROR] 04:16:46:614 DAM/(9959:9959): no se pudo conectar con MDJ
+[INFO] 04:16:46:614 DAM/(9959:9959): voy a escuchar el puerto 8000 
+[INFO] 04:17:08:158 DAM/(9959:9961): socket n° 4 se ha desconectado.
+
+[INFO] 04:17:21:0 DAM/(9959:9988): socket n° 8 se ha desconectado.
+
+[INFO] 04:22:39:624 DAM/(9959:10034): socket n° 9 se ha desconectado.
+
+[INFO] 04:23:26:467 DAM/(9959:10196): socket n° 4 se ha desconectado.
+
+[INFO] 04:28:07:99 DAM/(9959:10237): socket n° 8 se ha desconectado.
+
+[INFO] 04:32:28:805 DAM/(9959:10382): socket n° 4 se ha desconectado.
+
+[INFO] 04:35:32:28 DAM/(9959:10515): socket n° 8 se ha desconectado.
+
+[INFO] 04:39:43:422 DAM/(9959:10649): socket n° 4 se ha desconectado.
+
+[INFO] 04:41:49:795 DAM/(9959:9959): Voy a cerrar DAM
+[INFO] 04:41:49:796 DAM/(9959:9959): Cierro log de DAM
+[INFO] 04:41:51:964 DAM/(10860:10860): Se genero log de DAM
+[INFO] 04:41:51:965 DAM/(10860:10860): Voy a leer el archivo DAM.config
+[INFO] 04:41:51:967 DAM/(10860:10860): 	PUERTO ESCUCHA: 8000
+[INFO] 04:41:51:968 DAM/(10860:10860): 	IP DE S-AFA: 127.0.0.1
+[INFO] 04:41:51:969 DAM/(10860:10860): 	PUERTO DE S-AFA: 8001
+[INFO] 04:41:51:971 DAM/(10860:10860): 	IP DE MDJ: 137.0.0.1
+[INFO] 04:41:51:971 DAM/(10860:10860): 	PUERTO DE MDJ: 8002
+[INFO] 04:41:51:972 DAM/(10860:10860): 	IP DE FM9: 127.0.0.1
+[INFO] 04:41:51:972 DAM/(10860:10860): 	PUERTO DE FM9: 8003
+[INFO] 04:41:51:972 DAM/(10860:10860): 	TRANSFER SIZE: 16
+[INFO] 04:41:51:972 DAM/(10860:10860): Fin de lectura
+[INFO] 04:41:51:973 DAM/(10860:10860): me conecto al SAFA
+[INFO] 04:41:51:973 DAM/(10860:10860): me conecto al FM9
+[ERROR] 04:41:51:974 DAM/(10860:10860): no se pudo conectar con MDJ
+[INFO] 04:41:51:974 DAM/(10860:10860): voy a escuchar el puerto 8000 
+[INFO] 04:43:02:232 DAM/(10860:10862): socket n° 4 se ha desconectado.
+

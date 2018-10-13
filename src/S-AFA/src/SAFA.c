@@ -11,22 +11,26 @@ int main(void){
 
         unCpuConectado = false;
         damConectado = false;
+        generadorDeIdsCPU = 1;
         //señal para que al cortar el flujo, se libere memoria
         signal(SIGINT, cerrarPrograma);
 
      // diccionarios para la funcion runFunction....
      fns = dictionary_create();
      dictionary_put(fns,"identificarProcesoEnSAFA",&identificarProceso);
-     dictionary_put(fns, "identificarNuevaConexion", &newConnection);
+     dictionary_put(fns, "identificarNuevaConexion", &newConnection); 
+     dictionary_put(fns, "finalizacionProcesamientoCPU", &finalizacionProcesamientoCPU);
 
+        
         colaReady = queue_create();
         colaBloqueados = queue_create();
         colaFinalizados = queue_create();
         colaNew = queue_create();
+        listaEjecutando = list_create();
         hilos = list_create();
+        listaCPUs = list_create();
 
-        pthread_t hiloPCP, hiloConsola, hiloPLP;
-        list_add(hilos, &hiloPCP);
+        pthread_t hiloConsola, hiloPLP;
         list_add(hilos, &hiloConsola);
         list_add(hilos, &hiloPLP);
 
@@ -43,13 +47,13 @@ int main(void){
         pthread_mutex_init(&m_colaReady, NULL);
 	pthread_mutex_init(&m_colaBloqueados, NULL);
         pthread_mutex_init(&m_colaNew, NULL);
+        pthread_mutex_init(&m_listaEjecutando, NULL);
+        pthread_mutex_init(&m_busqueda, NULL);
 
-        pthread_create(&hiloConsola, NULL, (void*)&consolaSAFA, NULL);
-        pthread_create(&hiloPCP, NULL, (void*)&planificarSegunRR, &datosConfigSAFA->quantum);
+        pthread_create(&hiloConsola, NULL, (void*)&consolaSAFA, NULL);       
         pthread_create(&hiloPLP, NULL, (void*)&planificadorLargoPlazo, NULL);
        
-        pthread_detach(hiloConsola);
-        pthread_detach(hiloPCP);
+        pthread_detach(hiloConsola);   
         pthread_detach(hiloPLP);
 
         estadoCorrupto = true;
@@ -80,6 +84,8 @@ void cerrarPrograma() {
     pthread_mutex_destroy(&m_colaReady);
     pthread_mutex_destroy(&m_colaBloqueados);
     pthread_mutex_destroy(&m_colaNew);
+    pthread_mutex_destroy(&m_listaEjecutando);
+    pthread_mutex_destroy(&m_busqueda);
 
     close_logger();
     dictionary_destroy(fns); 
@@ -91,6 +97,8 @@ void cerrarPrograma() {
     queue_destroy_and_destroy_elements(colaNew, (void*)free);
     queue_destroy_and_destroy_elements(colaBloqueados, (void*)free);
     list_destroy(hilos);
+    list_destroy_and_destroy_elements(listaCPUs, (void*)free);
+    list_destroy(listaEjecutando);
 
 
     pthread_mutex_unlock(&mx_main);

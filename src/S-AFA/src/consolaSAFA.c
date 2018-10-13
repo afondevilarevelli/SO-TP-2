@@ -99,8 +99,9 @@ void ejecutar(char* rutaSc){
 	}			
 }
 
-void finalizar(int inGDT){
-	//algo
+void finalizar(int idGDT){
+	log_info(logger,"se va a finalizar el GDT de id %d",idGDT);
+	//buscar proceso en colas, sacarlo y pasarlo a finalizados
 	sem_post(&puedeEntrarAlSistema);
 }
 
@@ -124,7 +125,7 @@ void status(int idGDT){
 	    else{ //funcion status con parametro
 
 	    	buscarIdGdtAsociado(idGDT);
-	    	return 0;
+	    	//return 0;
 	    }
 }
 

@@ -35,6 +35,9 @@ typedef struct {
 -borrar /equipos/Racing.txt
 */
 
+int quantum;
+int idCPU;
+
 typedef enum{
 	ABRIR, 
 	CONCENTRAR, 
@@ -77,6 +80,10 @@ void disconnect();
 
 //PARSER
 operacion_t parse(char* line);
+
+//callable remote functions
+void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args); //SAFA
+void establecerQuantumYID(socket_connection * connection ,char** args); //SAFA
 
 
 #endif

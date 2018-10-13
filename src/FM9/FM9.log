@@ -99,3 +99,44 @@
 [INFO] 16:46:22:558 FM9/(8381:8661): Se ha conectado CPU en el socket NRO 5  con IP 127.0.0.1,  PUERTO 8003
 
 [INFO] 16:46:26:770 FM9/(8381:8661): El socket n°5 se ha desconectado.
+[INFO] 04:16:38:642 FM9/(9946:9946): Se genero log de FM9
+[INFO] 04:16:38:649 FM9/(9946:9946): Voy a leer el archivo FM9.config
+[INFO] 04:16:38:650 FM9/(9946:9946): 	PUERTO: 8003
+[INFO] 04:16:38:651 FM9/(9946:9946): 	MODO: SEG
+[INFO] 04:16:38:654 FM9/(9946:9946): 	TAMANIO: 2048
+[INFO] 04:16:38:654 FM9/(9946:9946): 	MAX_LINEA: 128
+[INFO] 04:16:38:654 FM9/(9946:9946): 	TAM_PAGINA: 1024
+[INFO] 04:16:38:655 FM9/(9946:9946): Fin de lectura
+[INFO] 04:16:38:655 FM9/(9946:9946): Voy a escuchar el puerto: 8003
+[INFO] 04:16:38:655 FM9/(9946:9946): Estoy escuchando el puerto: 8003
+[INFO] 04:16:46:616 FM9/(9946:9962): Se ha conectado DAM en el socket NRO 5  con IP 10.0.2.15,  PUERTO 8003
+
+[INFO] 04:17:08:657 FM9/(9946:10000): Se ha conectado CPU en el socket NRO 6  con IP 127.0.0.1,  PUERTO 8003
+
+[INFO] 04:17:21:0 FM9/(9946:10000): El socket n°6 se ha desconectado.
+[INFO] 04:17:34:410 FM9/(9946:10038): Se ha conectado CPU en el socket NRO 7  con IP 127.0.0.1,  PUERTO 8003
+
+[INFO] 04:22:39:624 FM9/(9946:10038): El socket n°7 se ha desconectado.
+[INFO] 04:22:47:201 FM9/(9946:10200): Se ha conectado CPU en el socket NRO 6  con IP 127.0.0.1,  PUERTO 8003
+
+[INFO] 04:23:26:467 FM9/(9946:10200): El socket n°6 se ha desconectado.
+[INFO] 04:23:30:174 FM9/(9946:10249): Se ha conectado CPU en el socket NRO 7  con IP 127.0.0.1,  PUERTO 8003
+
+[INFO] 04:28:07:99 FM9/(9946:10249): El socket n°7 se ha desconectado.
+[INFO] 04:28:10:68 FM9/(9946:10386): Se ha conectado CPU en el socket NRO 6  con IP 127.0.0.1,  PUERTO 8003
+
+[INFO] 04:32:28:805 FM9/(9946:10386): El socket n°6 se ha desconectado.
+[INFO] 04:32:31:736 FM9/(9946:10519): Se ha conectado CPU en el socket NRO 7  con IP 127.0.0.1,  PUERTO 8003
+
+[INFO] 04:35:32:28 FM9/(9946:10519): El socket n°7 se ha desconectado.
+[INFO] 04:35:34:971 FM9/(9946:10653): Se ha conectado CPU en el socket NRO 6  con IP 127.0.0.1,  PUERTO 8003
+
+[INFO] 04:39:43:422 FM9/(9946:10653): El socket n°6 se ha desconectado.
+[INFO] 04:39:46:192 FM9/(9946:10791): Se ha conectado CPU en el socket NRO 7  con IP 127.0.0.1,  PUERTO 8003
+
+[INFO] 04:41:49:796 FM9/(9946:9962): El socket n°5 se ha desconectado.
+[INFO] 04:41:51:974 FM9/(9946:10863): Se ha conectado DAM en el socket NRO 6  con IP 10.0.2.15,  PUERTO 8003
+
+[INFO] 04:47:38:360 FM9/(9946:10791): El socket n°7 se ha desconectado.
+[INFO] 04:48:13:475 FM9/(9946:11069): Se ha conectado CPU en el socket NRO 5  con IP 127.0.0.1,  PUERTO 8003
+

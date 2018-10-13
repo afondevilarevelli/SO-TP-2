@@ -195,3 +195,20 @@ sleep(1);
 void disconnect(){
   log_info(logger,"..Desconectado..");
 }
+
+//callable remote functions
+//args[0]: idGDT, args[1]: flagInizializacionGDT, args[2]: rutaScript
+void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
+	log_trace(logger,"Ejecutando el GDT de id %s",args[0]);
+	//algo...
+	
+
+	//cuando finaliza de ejecutar dicho proceso, le avisa al SAFA
+	runFunction(connection->socket, "finalizacionProcesamientoCPU",3, idCPU+'0',args[0], "finalizar" );
+	//runFunction(connection->socket, "finalizacionProcesamientoCPU",3, idCPU+'0',args[0], "continuar" );
+}
+
+void establecerQuantumYID(socket_connection * connection ,char** args){
+	quantum = args[0]; //- '0';
+	idCPU = args[1];
+}

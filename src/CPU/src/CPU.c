@@ -10,6 +10,8 @@ int main() {
   datosCPU = read_and_log_config("CPU.config");
 
   callableRemoteFunctionsCPU = dictionary_create();
+  dictionary_put(callableRemoteFunctionsCPU,"ejecutarCPU",&permisoConcedidoParaEjecutar);
+  dictionary_put(callableRemoteFunctionsCPU,"establecerQuantumYID",&establecerQuantumYID);
   
 
   int socketDAM = connectServer(datosCPU->ipD, datosCPU->puertoD, callableRemoteFunctionsCPU, &disconnect, NULL);

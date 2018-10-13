@@ -16,6 +16,41 @@ DTB* desencolarDTB(t_queue* c, pthread_mutex_t m){
 	return d;
 }
 
+CPU* buscarCPU(int id){
+	pthread_mutex_lock(&m_busqueda);
+	idCpuABuscar = id;
+	CPU* cpu = list_find(listaCPUs, (void*)closureIdCPU);
+	pthread_mutex_unlock(&m_busqueda);
+	return cpu;
+}
+
+bool closureIdCPU(CPU* cpu){
+	return cpu->id == idCpuABuscar;
+}
+
+DTB* buscarYRemoverDTB(t_list* list, pthread_mutex_t mutex, int id){
+	pthread_mutex_lock(&m_busqueda);
+	idDtbABuscar = id;
+	DTB* dtb = list_find(list, (void*)closureIdDTB);
+	pthread_mutex_lock(&mutex);
+	list_remove_by_condition(list, (void*)closureIdDTB);
+	pthread_mutex_unlock(&m_busqueda);
+	pthread_mutex_unlock(&mutex);
+	return dtb;
+}
+
+DTB* buscarDTB(t_list* list, int id){
+	pthread_mutex_lock(&m_busqueda);
+	idDtbABuscar = id;
+	DTB* dtb = list_find(list, (void*)closureIdDTB);
+	pthread_mutex_unlock(&m_busqueda);
+	return dtb;
+}
+
+bool closureIdDTB(DTB* dtb){
+	return idDtbABuscar == dtb->id;
+}
+
 //LOG
 void configure_logger() {
 
@@ -80,11 +115,34 @@ void newConnection(socket_connection* socketInfo, char** msg){
 	}	
 }
 
-void  identificarProceso(socket_connection * connection ,char** args)
-{
-     log_info(logger,"Se ha conectado %s en el socket NRO %d  con IP %s,  PUERTO %d\n", args[0],connection->socket,connection->ip,connection-> port);
-} 
 
+
+//args[0]: idCPU, args[1]: idGDT, args[2]:"finalizar" ó "continuar"
+//								  "finalizar" => finalizo GDT,
+//								  "continuar" => NO finalizo GDT
+void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
+	int idCPU = msg[0];
+	int idDTB = msg[1];
+	CPU* cpu = buscarCPU(idCPU);
+	DTB* dtb = buscarYRemoverDTB(listaEjecutando, m_listaEjecutando, idDTB);
+	
+	if( strcmp( msg[2], "finalizar") == 0){
+		finalizarDTB(dtb);
+	} else{ //continuar		
+		encolarDTB(colaReady, dtb, m_colaReady);
+		sem_post(&cantProcesosEnReady);
+	}
+
+	sem_post(&cpu->aviso);
+}
+
+
+//FIN callable remote functions
+void finalizarDTB(DTB* dtb){
+	log_info(logger,"se va a finalizar el GDT de id %d",dtb->id);
+	queue_push(colaFinalizados, dtb);
+	sem_post(&puedeEntrarAlSistema);
+}
 
 static inline char *stringFromState(status_t status) { //Agarra un estado del enum y retorna el valor como String
     static const char *strings[] = { "NEW", "READY", "BLOCKED", "RUNNING", "FINISHED"};

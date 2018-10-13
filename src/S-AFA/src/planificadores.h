@@ -2,10 +2,14 @@
 #define PLANIFICADORES_H
 
 #include "libSAFA.h"
+#include <stdlib.h>
 
 void planificadorLargoPlazo();
-void planificarSegunRR(int quantum);
-void planificarSegunVRR(int quantum);
+void planificarSegunRR(CPU* cpu);
+void planificarSegunVRR(CPU* cpu);
+void planificarSegunAlgoritmoPropio(CPU* cpu);
 DTB* obtenerDTBAEjecutarSegunRR();
+
+void  identificarProceso(socket_connection * connection ,char** args);
 
 #endif
