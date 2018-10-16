@@ -197,17 +197,40 @@ void disconnect(){
 }
 
 //callable remote functions
-//args[0]: idGDT, args[1]: flagInizializacionGDT, args[2]: rutaScript
+//args[0]: idGDT, args[1]: rutaScript, args[2]: PC, args[3]: flagInicializacionGDT,
+//args[4]: status, args[5]: quantum
 void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
-	log_trace(logger,"Ejecutando el GDT de id %s",args[0]);
-	//algo...
+	int idGDT = atoi(args[0]);
+	log_trace(logger,"Ejecutando el GDT de id %d\n",idGDT);
+	//por ahora muestro todo lo que recibio
+	char* rutaScript = args[1];
+	int programCounter = atoi(args[2]);
+	int flagInicializado = atoi(args[3]);
+	//char* status = args[4];
+	int quantum = atoi(args[4]);
 	
-
-	//cuando finaliza de ejecutar dicho proceso, le avisa al SAFA
 	char id[2];
 	sprintf(id, "%i", idCPU);
+
+	log_info(logger, "La ruta Script es: %s", rutaScript);
+	log_info(logger, "El Program Counter se encuentra en: %d", programCounter);
+	log_info(logger, "El flag con el que inicia es: %d", flagInicializado);
+	//log_info(logger, "Se encuentra en la cola con el estado: %s", status);
+	log_info(logger, "El quantum que recibio es de: %d\n", quantum);
+
+	if (flagInicializado == 0) {
+		log_trace(logger,"Preparando la inicializacion de ejecucion del DTB Dummy\n");
+		runFunction(socketDAM, "CPU_DAM_solicitudCargaGDT", 2,args[0], rutaScript);
+
+		runFunction(socketSAFA, "CPU_SAFA_bloquearDTB",3, args[0], args[3],id);
+	}
+
+	else{
+	//cuando finaliza de ejecutar dicho proceso, le avisa al SAFA
+
 	runFunction(connection->socket, "finalizacionProcesamientoCPU",3, id, args[0], "finalizar" );
 	//runFunction(connection->socket, "finalizacionProcesamientoCPU",3, idCPU+'0',args[0], "continuar" );
+}
 }
 
 void establecerQuantumYID(socket_connection * connection ,char** args){

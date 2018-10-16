@@ -6,7 +6,6 @@ void planificadorLargoPlazo(){
         sem_wait(&puedeEntrarAlSistema);
         DTB* dtbDummy = desencolarDTB(colaNew, m_colaNew);
         dtbDummy->status = READY;
-        dtbDummy->flagInicializado = 0;
         encolarDTB(colaReady, dtbDummy, m_colaReady);
         sem_post(&cantProcesosEnReady);
     }
@@ -33,16 +32,25 @@ void planificarSegunRR(CPU* cpu){
             char string_flagInicializacion[2];
             sprintf(string_flagInicializacion, "%i", dtbAEjecutar->flagInicializado); 
 
+            char string_pc[2];
+                     sprintf(string_pc, "%i", dtbAEjecutar->PC);
+
             char string_quantum[2];
             sprintf(string_quantum, "%i", datosConfigSAFA->quantum);
-            
+
+            char* string_status;
+            //string_status = stringFromState(dtbAEjecutar->status);
+
             pthread_mutex_lock(&m_listaEjecutando);
             list_add(listaEjecutando, dtbAEjecutar);
             pthread_mutex_unlock(&m_listaEjecutando);
 
-            runFunction(cpu->socket,"ejecutarCPU",3, string_id, 
+            runFunction(cpu->socket,"ejecutarCPU",5, string_id,
+            										 dtbAEjecutar->rutaScript,
+													 string_pc,
                                                      string_flagInicializacion, 
-                                                     dtbAEjecutar->rutaScript);    
+													 //string_status,
+													 string_quantum);
 
             sem_wait(&cpu->aviso);   
 			

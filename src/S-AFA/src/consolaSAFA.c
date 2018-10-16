@@ -90,7 +90,11 @@ void ejecutar(char* rutaSc){
     	dtb->rutaScript = malloc(strlen(rutaSc)+1);
     	strcpy(dtb->rutaScript, rutaSc);
     	dtb->PC = 0;
-    	dtb->flagInicializado = 1;
+    	if (dtb->id == 1) {dtb ->flagInicializado = 0;
+    												  }
+    	else {dtb->flagInicializado = 1;
+    									}
+
     	list_create(dtb->archivosAbiertos);
     	dtb->status = NEW;
 
@@ -112,13 +116,13 @@ void status(int idGDT){
 	    DTB* datoDTB;
 
 	    log_trace(logger,"La Info De Los DTB En Cada Cola Son:\n");
-	    log_trace(logger,"Cola New:\n");
+	    log_trace(logger,"Cola New:");
 		buscarDTBEnColas(idGDT, colaNew);
-		log_trace(logger,"Cola Ready:\n");
+		log_trace(logger,"Cola Ready:");
 		buscarDTBEnColas(idGDT, colaReady);
-		log_trace(logger,"Cola Blocked:\n");
+		log_trace(logger,"Cola Blocked:");
 		buscarDTBEnColas(idGDT, colaBloqueados);
-		log_trace(logger,"Cola Finished:\n");
+		log_trace(logger,"Cola Finished:");
 		buscarDTBEnColas(idGDT, colaFinalizados);
 
 	    }

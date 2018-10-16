@@ -66,6 +66,11 @@ t_config_CPU* datosCPU;
 t_dictionary * callableRemoteFunctionsCPU;
 pthread_mutex_t m_main;
 
+//VAR GLOB SOCKETS
+int socketDAM;
+int socketSAFA;
+int socketFM9;
+
 //FUNCIONES
 
 void configure_logger();

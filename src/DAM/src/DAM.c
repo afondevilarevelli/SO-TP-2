@@ -30,7 +30,7 @@ int main(void){
     dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_verificameSiArchivoFueBorrado",&MDJ_DAM_verificameSiArchivoFueBorrado);
 	//--------------------------------------------------------------------
   //dicionarios de CPU
-      
+      dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_solicitudCargaGDT", &solicitudCargaGDT);
       
       
     //dictionary_put(callableRemoteFunctionsCPU, "identificarProcesoEnDAM", &identificarProcesoEnDAM);

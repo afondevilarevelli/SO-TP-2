@@ -60,8 +60,8 @@ pthread_mutex_t m_colaReady;
 pthread_mutex_t m_colaBloqueados;
 pthread_mutex_t m_colaNew;
 pthread_mutex_t m_listaEjecutando;
-
 pthread_mutex_t m_busqueda;
+pthread_mutex_t m_puedePasarABlock;
 
 t_log* logger;
 t_config_SAFA* datosConfigSAFA;
@@ -116,6 +116,7 @@ void finalizarDTB(DTB* dtb);
 //void identificarProceso(socket_connection * connection ,char** args);
 void newConnection(socket_connection* socketInfo, char** msg);
 void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg);
+void bloquearDTB(socket_connection* connection, char ** args);
 
 //Funciones Para La Funcion De Status
 void mostrarInformacionDTB(DTB*);

@@ -113,7 +113,24 @@ void newConnection(socket_connection* socketInfo, char** msg){
 	}	
 }
 
+void bloquearDTB(socket_connection* connection, char ** args){
 
+	int idGDT = atoi(args[0]);
+	int flagInicializado = atoi(args[1]);
+	int idCPU = atoi(args[2]);
+	CPU* cpu = buscarCPU(idCPU);
+
+	if(flagInicializado == 0){
+    pthread_mutex_lock(&m_puedePasarABlock);
+	DTB* dtbBuscado = buscarYRemoverDTB(listaEjecutando, m_listaEjecutando, idGDT);
+	dtbBuscado->status = BLOCKED;
+	encolarDTB(colaBloqueados, dtbBuscado, m_colaBloqueados);
+    pthread_mutex_unlock(&m_puedePasarABlock);
+    log_info(logger, "El DTB paso al Estado Blocked");
+    sem_post(&puedeEntrarAlSistema);
+	}
+	sem_post(&cpu->aviso);
+}
 
 //args[0]: idCPU, args[1]: idGDT, args[2]:"finalizar" ó "continuar"
 //								  "finalizar" => finalizo GDT,
@@ -138,6 +155,7 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 //FIN callable remote functions
 void finalizarDTB(DTB* dtb){
 	log_info(logger,"se va a finalizar el GDT de id %d",dtb->id);
+	dtb->status = FINISHED;
 	queue_push(colaFinalizados, dtb);
 	sem_post(&puedeEntrarAlSistema);
 }
@@ -159,8 +177,6 @@ void * buscarIdGdtAsociado(int idGDT){ //Idea de Buscar Por Cada Cola Hasta Enco
 
 void * buscarDTBEnColas(int idDTB, t_queue* colaBusqueda) {
 
-// Por Ahora agarra el primer elemento de la cola y se fija si es el buscado
-// Habra que hacer despues que busque por cada nodo
 	int index = 0;
 	DTB* elemento;
 
@@ -172,9 +188,10 @@ void * buscarDTBEnColas(int idDTB, t_queue* colaBusqueda) {
     while(index < queue_size(colaBusqueda)){
 
     if(idDTB == 0) {mostrarInformacionDTB(elemento);
-					return 0;}
+					index++;
+				    elemento = list_get(colaBusqueda->elements, index);}
 
-	if(idDTB != elemento->id) {
+	else if(idDTB != elemento->id) {
 
 		printf("No Se Encontro En La Cola\n");
 		index++;
@@ -184,11 +201,11 @@ void * buscarDTBEnColas(int idDTB, t_queue* colaBusqueda) {
 	else {
 
 	mostrarInformacionDTB(elemento);
-	return 0;
+	index++;
+	elemento = list_get(colaBusqueda->elements, index);
 	}
-
    }
-
+    return 0;
 }
 
 void mostrarInformacionDTB(DTB* unDTB){
@@ -201,5 +218,6 @@ void mostrarInformacionDTB(DTB* unDTB){
     	printf("Flag Inicializado: %d\n", unDTB->flagInicializado);
     	estado = stringFromState(unDTB->status);
     	printf("Estado: %s\n", estado);
+    	printf("----------------------\n");
 
     }

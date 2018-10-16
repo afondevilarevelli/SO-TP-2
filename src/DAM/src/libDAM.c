@@ -75,6 +75,16 @@ void identificarProceso(socket_connection * connection ,char** args){
     log_info(logger,"Se ha conectado %s en el socket NRO %d  con IP %s,  PUERTO %d\n", args[0],connection->socket,connection->ip,connection-> port);   
 }
 
+//Comunicacion entre CPU-DAM para Cargar GDT
+void solicitudCargaGDT(socket_connection* connection, char ** args){
+
+	int idGDT = atoi(args[0]);
+	char* rutaScript = args[1];
+
+	log_trace(logger, "Voy a Buscar: %s Para PID: %d",rutaScript, idGDT);
+	//(Para crear despues) runFunction(socketMDJ, "DAM_MDJ_buscarElArchivo",1, rutaScript);
+}
+
 void MDJ_DAM_existeArchivo(socket_connection* socketInf,char ** args){
 estadoValidacion =atoi( args[0]);
 if(estadoValidacion ==  1)
