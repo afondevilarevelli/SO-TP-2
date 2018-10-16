@@ -28,6 +28,7 @@ int main(void) {
 	callableRemoteFunctions = dictionary_create();
 
 	dictionary_put(callableRemoteFunctions, "identificarProcesoEnFM9", &identificarProceso);
+	dictionary_put(callableRemoteFunctions, "DAM_FM9_guardarGDT", &DAM_FM9_guardarGDT);
 
 	log_info(logger, "Voy a escuchar el puerto: %d", datosConfigFM9->puerto);
 

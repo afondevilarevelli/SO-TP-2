@@ -36,9 +36,9 @@ void inicializarMemoriaConSegmentacion(){
 	log_info(logger, "Espacio reservado con exito");
 }
 
-void guardarGDT(char* contenido) {
-	log_info(logger, "Voy a persistir: %s . cuyo tamanio es %d", contenido, strlen(contenido));
-	memcpy(memoria, contenido, strlen(contenido));
+void DAM_FM9_guardarGDT(socket_connection * connection ,char** args) {
+	log_info(logger, "Voy a persistir: %s . cuyo tamanio es %d", args[0], strlen(args[0]));
+	memcpy(memoria, args[0], strlen(args[0]));
 	log_info(logger, "Persisti el contenido");
 }
 

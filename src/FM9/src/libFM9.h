@@ -32,10 +32,10 @@ void close_logger();
 //SOCKETS
 void identificarProceso(socket_connection * connection ,char** args);
 void disconnect(socket_connection*);
+void DAM_FM9_guardarGDT(socket_connection * connection ,char** args);
 
 //SEGMENTACION
 void inicializarMemoriaConSegmentacion();
-void guardarGDT();
 
 //CONFIG
 t_config_FM9* read_and_log_config(char*);
