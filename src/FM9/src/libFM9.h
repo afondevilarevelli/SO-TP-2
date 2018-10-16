@@ -22,6 +22,8 @@ t_config_FM9* datosConfigFM9;
 t_dictionary * callableRemoteFunctions;
 pthread_mutex_t mx_main;
 
+void* memoria;
+
 //FUNCIONES
 //LOGS
 void configure_logger();
@@ -30,6 +32,10 @@ void close_logger();
 //SOCKETS
 void identificarProceso(socket_connection * connection ,char** args);
 void disconnect(socket_connection*);
+
+//SEGMENTACION
+void inicializarMemoriaConSegmentacion();
+void guardarGDT();
 
 //CONFIG
 t_config_FM9* read_and_log_config(char*);

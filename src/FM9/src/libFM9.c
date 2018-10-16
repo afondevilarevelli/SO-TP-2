@@ -3,7 +3,6 @@
 #include "libFM9.h"
 #include <string.h>
 
-
 //LOG
 void configure_logger() {
 
@@ -19,19 +18,29 @@ void close_logger() {
 	log_destroy(logger);
 }
 
-
 //SOCKETS
-void  identificarProceso(socket_connection * connection ,char** args)
-{
-     log_info(logger,"Se ha conectado %s en el socket NRO %d  con IP %s,  PUERTO %d\n", args[0],connection->socket,connection->ip,connection-> port);
-} 
-
-
+void identificarProceso(socket_connection * connection, char** args) {
+	log_info(logger,
+			"Se ha conectado %s en el socket NRO %d  con IP %s,  PUERTO %d\n",
+			args[0], connection->socket, connection->ip, connection->port);
+}
 
 void disconnect(socket_connection* socketInfo) {
 	log_info(logger, "El socket n°%d se ha desconectado.", socketInfo->socket);
 }
 
+//SEGMENTACION
+void inicializarMemoriaConSegmentacion(){
+	log_info(logger, "Voy a reservar espacio para guardar los procesos");
+	memoria = calloc(1,datosConfigFM9->tamanio);
+	log_info(logger, "Espacio reservado con exito");
+}
+
+void guardarGDT(char* contenido) {
+	log_info(logger, "Voy a persistir: %s . cuyo tamanio es %d", contenido, strlen(contenido));
+	memcpy(memoria, contenido, strlen(contenido));
+	log_info(logger, "Persisti el contenido");
+}
 
 //CONFIG
 t_config_FM9* read_and_log_config(char* path) {
@@ -67,5 +76,4 @@ t_config_FM9* read_and_log_config(char* path) {
 
 	return _datosFM9;
 }
-
 

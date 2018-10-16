@@ -8,6 +8,7 @@ void cerrarPrograma() {
 
 	close_logger();
 	free(datosConfigFM9);
+	free(memoria);
 	dictionary_destroy(callableRemoteFunctions);
 	pthread_mutex_unlock(&mx_main);
 	pthread_mutex_destroy(&mx_main);
@@ -20,6 +21,9 @@ int main(void) {
 	configure_logger();
 
 	datosConfigFM9 = read_and_log_config("FM9.config");
+
+	//Por ahora
+	inicializarMemoriaConSegmentacion();
 
 	callableRemoteFunctions = dictionary_create();
 
