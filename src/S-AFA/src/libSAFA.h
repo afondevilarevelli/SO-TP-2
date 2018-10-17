@@ -95,7 +95,7 @@ CPU* buscarCPU(int id);
 bool closureIdCPU(CPU* cpu);
 
 DTB* buscarYRemoverDTB(t_list* list, pthread_mutex_t mutex, int id);
-DTB* buscarDTB(t_list* list, int id);
+DTB* buscarDTB(t_list* list, pthread_mutex_t mutex, int id);
 bool closureIdDTB(DTB* dtb);
 
 
@@ -115,9 +115,9 @@ void cerrarPrograma();
 void finalizarDTB(DTB* dtb);
 
 //CallableRemoteFunctions
-//void identificarProceso(socket_connection * connection ,char** args);
 void newConnection(socket_connection* socketInfo, char** msg);
 void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg);
+void avisoDeDamDeResultadoDTBDummy(socket_connection* socketInfo, char** msg);
 
 //Funciones Para La Funcion De Status
 void mostrarInformacionDTB(DTB*);

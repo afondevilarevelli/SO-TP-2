@@ -36,6 +36,9 @@ t_dictionary* callableRemoteFunctionsCPU;
 pthread_mutex_t mx_main;	/* Semaforo de main */
 t_config_DAM*  datosConfigDAM;
 
+int socketSAFA;
+int socketFM9;
+int socketMDJ;
 
 //----------------------------//
 
@@ -60,6 +63,9 @@ void identificarProceso(socket_connection * connection ,char** args);
 void MDJ_DAM_existeArchivo(socket_connection*,char ** );
 void MDJ_DAM_verificarArchivoCreado(socket_connection*,char **);
 void MDJ_DAM_verificameSiArchivoFueBorrado(socket_connection*,char **);
+
+void MDJ_DAM_avisarSAFAResultadoDTBDummy(socket_connection* socketInf,char ** args);
+
 void solicitudCargaGDT(socket_connection* connection, char ** args);
 
 #endif

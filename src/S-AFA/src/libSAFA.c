@@ -31,18 +31,26 @@ bool closureIdCPU(CPU* cpu){
 DTB* buscarYRemoverDTB(t_list* list, pthread_mutex_t mutex, int id){
 	pthread_mutex_lock(&m_busqueda);
 	idDtbABuscar = id;
-	DTB* dtb = list_find(list, (void*)closureIdDTB);
 	pthread_mutex_lock(&mutex);
-	list_remove_by_condition(list, (void*)closureIdDTB);
-	pthread_mutex_unlock(&m_busqueda);
+	DTB* dtb = list_find(list, (void*)closureIdDTB);
 	pthread_mutex_unlock(&mutex);
+	if(dtb != NULL){ 
+		pthread_mutex_lock(&mutex);
+		list_remove_by_condition(list, (void*)closureIdDTB);
+		pthread_mutex_unlock(&mutex);
+	}
+	pthread_mutex_unlock(&m_busqueda);
 	return dtb;
 }
 
-DTB* buscarDTB(t_list* list, int id){
+DTB* buscarDTB(t_list* list, pthread_mutex_t mutex, int id){
 	pthread_mutex_lock(&m_busqueda);
+
 	idDtbABuscar = id;
+	pthread_mutex_lock(&mutex);
 	DTB* dtb = list_find(list, (void*)closureIdDTB);
+	pthread_mutex_unlock(&mutex);
+
 	pthread_mutex_unlock(&m_busqueda);
 	return dtb;
 }
@@ -123,27 +131,55 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 	CPU* cpu = buscarCPU(idCPU);
 	DTB* dtb = buscarYRemoverDTB(listaEjecutando, m_listaEjecutando, idDTB);
 	
-	if( strcmp( msg[2], "finalizar") == 0){
+	if(dtb != NULL){
+		if(dtb->status != FINISHED){ 
+			if( strcmp( msg[2], "finalizar") == 0){
 
-		finalizarDTB(dtb);
+				finalizarDTB(dtb);
 
-	} else if(strcmp( msg[2], "continuar") == 0){ 
+			} else if(strcmp( msg[2], "continuar") == 0){ 
 
-		dtb->status = READY;
-		encolarDTB(colaReady, dtb, m_colaReady);
-		sem_post(&cantProcesosEnReady);
+				dtb->status = READY;
+				encolarDTB(colaReady, dtb, m_colaReady);
+				sem_post(&cantProcesosEnReady);
 
-	} else{ // "bloquear"
+			} else{ // "bloquear"
 	
-		dtb->status = BLOCKED;
-		encolarDTB(colaBloqueados, dtb, m_colaBloqueados);
-    	log_info(logger, "El DTB paso al Estado Blocked");
+				dtb->status = BLOCKED;
+				encolarDTB(colaBloqueados, dtb, m_colaBloqueados);
+    			log_info(logger, "El DTB paso al Estado Blocked");
 
+			}
+		} else{
+			encolarDTB(colaFinalizados, dtb, m_colaFinalizados);
+			sem_post(&puedeEntrarAlSistema);
+		}
 	}
+	
 
 	sem_post(&cpu->aviso);
 }
-
+//msg[0] = idDTB ,msg[1] = "ok" ó "error"
+void avisoDeDamDeResultadoDTBDummy(socket_connection* socketInfo, char** msg){
+	int idDTB = atoi(msg[0]);
+	DTB* dtb = buscarYRemoverDTB(colaBloqueados->elements, m_colaBloqueados, idDTB);
+	if(dtb != NULL){
+		if(dtb->status == FINISHED) {
+			encolarDTB(colaFinalizados, dtb, m_colaFinalizados);
+			sem_post(&puedeEntrarAlSistema);
+		} else{
+			if( strcmp(msg[1], "ok") == 0 ){
+				log_info(logger,"Se finalizo OK el DTB-Dummy del GDT de id %d",dtb->id);
+				dtb->status = READY;
+				encolarDTB(colaReady, dtb, m_colaReady);
+				sem_post(&cantProcesosEnReady);
+			} else{ // "error"
+				finalizarDTB(dtb);
+			}
+		}
+		
+	}
+}
 
 //FIN callable remote functions
 void finalizarDTB(DTB* dtb){

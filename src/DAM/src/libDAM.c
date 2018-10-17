@@ -85,6 +85,18 @@ void solicitudCargaGDT(socket_connection* connection, char ** args){
 	//(Para crear despues) runFunction(socketMDJ, "DAM_MDJ_buscarElArchivo",1, rutaScript);
 }
 
+//esta funcion le avisa al SAFA el resultado de la carga del DTBDummy,
+//es llamada por el MDJ
+void MDJ_DAM_avisarSAFAResultadoDTBDummy(socket_connection* socketInf,char ** args){
+	//algo
+
+	//if(todoBien){
+		runFunction(socketSAFA, "avisoDamDTBDummy", 1, "ok"); //puede llevar mas parametros
+	//} else{
+	//	runFuncion(socketSAFA, "avisoDamDTBDummy", 1, "error"); //puede llevar mas parametros
+	//}
+}
+
 void MDJ_DAM_existeArchivo(socket_connection* socketInf,char ** args){
 estadoValidacion =atoi( args[0]);
 if(estadoValidacion ==  1)

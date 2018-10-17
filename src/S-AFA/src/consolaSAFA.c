@@ -100,9 +100,38 @@ void ejecutar(char* rutaSc){
 }
 
 void finalizar(int idGDT){
-	log_info(logger,"se va a finalizar el GDT de id %d",idGDT);
-	//buscar proceso en colas, sacarlo y pasarlo a finalizados
-	sem_post(&puedeEntrarAlSistema);
+	/*DTB* dtb;
+	dtb = buscarYRemoverDTB(colaReady->elements, m_colaReady, idGDT);
+	if(dtb != NULL){
+		finalizarDTB(dtb);
+	} else{
+		dtb = buscarDTB(colaBloqueados->elements, m_colaBloqueados, idGDT);
+		if(dtb != NULL){
+			dtb->status = FINISHED;
+			log_info(logger,"se va a finalizar el GDT de id %d",dtb->id);
+			sem_post(&puedeEntrarAlSistema);
+		} else{
+			dtb = buscarYRemoverDTB(colaNew->elements, m_colaNew, idGDT);
+			if(dtb != NULL){
+				finalizarDTB(dtb);
+			} else{
+				dtb = buscarYRemoverDTB(colaNew->elements, m_colaNew, idGDT);
+				if(dtb != NULL){
+					finalizarDTB(dtb);
+				} else {
+					dtb = buscarDTB(listaEjecutando, m_listaEjecutando, idGDT);
+					if(dtb != NULL){
+						dtb->status = FINISHED;
+						log_info(logger,"se va a finalizar el GDT de id %d",dtb->id);
+						sem_post(&puedeEntrarAlSistema);
+					} else {
+						log_info(logger,"No existe el GDT de id %d",idGDT);
+					}
+				}
+			}
+		}
+	}
+*/
 }
 
 void status(int idGDT){ 

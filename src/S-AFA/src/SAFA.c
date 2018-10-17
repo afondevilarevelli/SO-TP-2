@@ -20,6 +20,7 @@ int main(void){
      dictionary_put(fns,"identificarProcesoEnSAFA",&identificarProceso);
      dictionary_put(fns, "identificarNuevaConexion", &newConnection); 
      dictionary_put(fns, "finalizacionProcesamientoCPU", &finalizacionProcesamientoCPU);
+     dictionary_put(fns, "avisoDamDTBDummy", &avisoDeDamDeResultadoDTBDummy);
 
         
         colaReady = queue_create();
