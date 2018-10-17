@@ -113,28 +113,10 @@ void newConnection(socket_connection* socketInfo, char** msg){
 	}	
 }
 
-void bloquearDTB(socket_connection* connection, char ** args){
-
-	int idGDT = atoi(args[0]);
-	int flagInicializado = atoi(args[1]);
-	int idCPU = atoi(args[2]);
-	CPU* cpu = buscarCPU(idCPU);
-
-	if(flagInicializado == 0){
-    pthread_mutex_lock(&m_puedePasarABlock);
-	DTB* dtbBuscado = buscarYRemoverDTB(listaEjecutando, m_listaEjecutando, idGDT);
-	dtbBuscado->status = BLOCKED;
-	encolarDTB(colaBloqueados, dtbBuscado, m_colaBloqueados);
-    pthread_mutex_unlock(&m_puedePasarABlock);
-    log_info(logger, "El DTB paso al Estado Blocked");
-    sem_post(&puedeEntrarAlSistema);
-	}
-	sem_post(&cpu->aviso);
-}
-
-//args[0]: idCPU, args[1]: idGDT, args[2]:"finalizar" ó "continuar"
+//args[0]: idCPU, args[1]: idGDT, args[2]:"finalizar","continuar" ó "bloquear"
 //								  "finalizar" => finalizo GDT,
-//								  "continuar" => NO finalizo GDT
+//								  "bloquear"  => bloqueo GDT,
+//								  "continuar" => paso a Ready GDT
 void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 	int idCPU = atoi( msg[0] );
 	int idDTB = atoi ( msg[1] );
@@ -142,10 +124,21 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 	DTB* dtb = buscarYRemoverDTB(listaEjecutando, m_listaEjecutando, idDTB);
 	
 	if( strcmp( msg[2], "finalizar") == 0){
+
 		finalizarDTB(dtb);
-	} else{ //continuar		
+
+	} else if(strcmp( msg[2], "continuar") == 0){ 
+
+		dtb->status = READY;
 		encolarDTB(colaReady, dtb, m_colaReady);
 		sem_post(&cantProcesosEnReady);
+
+	} else{ // "bloquear"
+	
+		dtb->status = BLOCKED;
+		encolarDTB(colaBloqueados, dtb, m_colaBloqueados);
+    	log_info(logger, "El DTB paso al Estado Blocked");
+
 	}
 
 	sem_post(&cpu->aviso);
@@ -156,7 +149,7 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 void finalizarDTB(DTB* dtb){
 	log_info(logger,"se va a finalizar el GDT de id %d",dtb->id);
 	dtb->status = FINISHED;
-	queue_push(colaFinalizados, dtb);
+	encolarDTB(colaFinalizados, dtb, m_colaFinalizados);
 	sem_post(&puedeEntrarAlSistema);
 }
 

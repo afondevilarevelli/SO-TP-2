@@ -20,7 +20,6 @@ int main(void){
      dictionary_put(fns,"identificarProcesoEnSAFA",&identificarProceso);
      dictionary_put(fns, "identificarNuevaConexion", &newConnection); 
      dictionary_put(fns, "finalizacionProcesamientoCPU", &finalizacionProcesamientoCPU);
-     dictionary_put(fns, "CPU_SAFA_bloquearDTB", &bloquearDTB);
 
         
         colaReady = queue_create();
@@ -47,10 +46,11 @@ int main(void){
         pthread_mutex_init(&m_puedePlanificar, NULL);
         pthread_mutex_init(&m_colaReady, NULL);
 	pthread_mutex_init(&m_colaBloqueados, NULL);
+        pthread_mutex_init(&m_colaFinalizados, NULL);
         pthread_mutex_init(&m_colaNew, NULL);
         pthread_mutex_init(&m_listaEjecutando, NULL);
+
         pthread_mutex_init(&m_busqueda, NULL);
-        pthread_mutex_init(&m_puedePasarABlock, NULL);
 
         pthread_create(&hiloConsola, NULL, (void*)&consolaSAFA, NULL);       
         pthread_create(&hiloPLP, NULL, (void*)&planificadorLargoPlazo, NULL);
@@ -88,6 +88,7 @@ void cerrarPrograma() {
     pthread_mutex_destroy(&m_colaNew);
     pthread_mutex_destroy(&m_listaEjecutando);
     pthread_mutex_destroy(&m_busqueda);
+    pthread_mutex_destroy(&m_colaFinalizados);
 
     close_logger();
     dictionary_destroy(fns); 

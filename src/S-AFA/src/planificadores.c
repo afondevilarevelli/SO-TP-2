@@ -6,6 +6,7 @@ void planificadorLargoPlazo(){
         sem_wait(&puedeEntrarAlSistema);
         DTB* dtbDummy = desencolarDTB(colaNew, m_colaNew);
         dtbDummy->status = READY;
+        dtbDummy->flagInicializado = 0;
         encolarDTB(colaReady, dtbDummy, m_colaReady);
         sem_post(&cantProcesosEnReady);
     }
@@ -24,7 +25,12 @@ void planificarSegunRR(CPU* cpu){
             pthread_mutex_lock(&m_puedePlanificar);
 			dtbAEjecutar = obtenerDTBAEjecutarSegunRR();
             pthread_mutex_unlock(&m_puedePlanificar);
-			log_trace(logger, "Segun RR el DTB a ejecutar ahora es el de id = %d", dtbAEjecutar->id);
+
+            if(dtbAEjecutar->flagInicializado == 0){
+                log_trace(logger, "Se va a ejecutar el DTB-Dummy del GDT de id = %d", dtbAEjecutar->id);            
+            }else{
+                log_trace(logger, "Segun RR el DTB a ejecutar ahora es el de id = %d", dtbAEjecutar->id);
+            }
 
             char string_id[2];
             sprintf(string_id, "%i", dtbAEjecutar->id);
@@ -38,9 +44,6 @@ void planificarSegunRR(CPU* cpu){
             char string_quantum[2];
             sprintf(string_quantum, "%i", datosConfigSAFA->quantum);
 
-            char* string_status;
-            //string_status = stringFromState(dtbAEjecutar->status);
-
             pthread_mutex_lock(&m_listaEjecutando);
             list_add(listaEjecutando, dtbAEjecutar);
             pthread_mutex_unlock(&m_listaEjecutando);
@@ -48,9 +51,7 @@ void planificarSegunRR(CPU* cpu){
             runFunction(cpu->socket,"ejecutarCPU",5, string_id,
             										 dtbAEjecutar->rutaScript,
 													 string_pc,
-                                                     string_flagInicializacion, 
-													 //string_status,
-													 string_quantum);
+                                                     string_flagInicializacion);
 
             sem_wait(&cpu->aviso);   
 			
