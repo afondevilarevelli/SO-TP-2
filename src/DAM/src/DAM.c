@@ -67,7 +67,9 @@ int main(void){
        else {      
         log_info(logger,"me conecto al MDJ");
         runFunction(socketMDJ,"identificarProcesoEnMDJ",1,"DAM");
-        //verificameSiArchivoFueBorrado(socketMDJ,"/home/utnso/tp-2018-2c-Mi-amor-es-el-Malloc/src/MDJ/MDJ.config");
+        existeArchivo(socketMDJ,"/home/utnso/tp-2018-2c-Mi-amor-es-el-Malloc/src/MDJ/MDJ.config");
+        existeArchivo(socketMDJ,"/home/utnso/tp-2018-2c-Mi-amor-es-el-Malloc/src/MDJ/pepe.config");
+        existeArchivo(socketMDJ,"/home/utnso/tp-2018-2c-Mi-amor-es-el-Malloc/src/MDJ/MDJ.config");
        }
       
 
