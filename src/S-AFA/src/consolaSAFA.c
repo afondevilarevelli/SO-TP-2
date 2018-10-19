@@ -93,45 +93,26 @@ void ejecutar(char* rutaSc){
     	dtb->flagInicializado = 1;
     	list_create(dtb->archivosAbiertos);
     	dtb->status = NEW;
+		dtb->quantumFaltante = 0;
 
 		encolarDTB(colaNew, dtb, m_colaNew);
 		sem_post(&cantProcesosEnNew);
 	}			
 }
 
-void finalizar(int idGDT){
-	/*DTB* dtb;
-	dtb = buscarYRemoverDTB(colaReady->elements, m_colaReady, idGDT);
-	if(dtb != NULL){
-		finalizarDTB(dtb);
-	} else{
-		dtb = buscarDTB(colaBloqueados->elements, m_colaBloqueados, idGDT);
-		if(dtb != NULL){
+void finalizar(int idGDT){	
+	DTB * dtb = buscarDTB(listaEjecutando, idGDT);
+	if(dtb != NULL){ //está ejecutando  
 			dtb->status = FINISHED;
-			log_info(logger,"se va a finalizar el GDT de id %d",dtb->id);
-			sem_post(&puedeEntrarAlSistema);
+	} 
+	else{ //no está ejecutando
+		dtb = quitarDTBDeSuListaActual(idGDT);
+		if(dtb != NULL){
+			finalizarDTB(dtb);
 		} else{
-			dtb = buscarYRemoverDTB(colaNew->elements, m_colaNew, idGDT);
-			if(dtb != NULL){
-				finalizarDTB(dtb);
-			} else{
-				dtb = buscarYRemoverDTB(colaNew->elements, m_colaNew, idGDT);
-				if(dtb != NULL){
-					finalizarDTB(dtb);
-				} else {
-					dtb = buscarDTB(listaEjecutando, m_listaEjecutando, idGDT);
-					if(dtb != NULL){
-						dtb->status = FINISHED;
-						log_info(logger,"se va a finalizar el GDT de id %d",dtb->id);
-						sem_post(&puedeEntrarAlSistema);
-					} else {
-						log_info(logger,"No existe el GDT de id %d",idGDT);
-					}
-				}
-			}
+			printf("No se ha encontrado un proceso con el id %d en el sistema\n",idGDT);
 		}
-	}
-*/
+	}	
 }
 
 void status(int idGDT){ 

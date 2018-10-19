@@ -39,10 +39,7 @@ void planificarSegunRR(CPU* cpu){
             sprintf(string_flagInicializacion, "%i", dtbAEjecutar->flagInicializado); 
 
             char string_pc[2];
-                     sprintf(string_pc, "%i", dtbAEjecutar->PC);
-
-            char string_quantum[2];
-            sprintf(string_quantum, "%i", datosConfigSAFA->quantum);
+            sprintf(string_pc, "%i", dtbAEjecutar->PC);
 
             pthread_mutex_lock(&m_listaEjecutando);
             list_add(listaEjecutando, dtbAEjecutar);
@@ -89,7 +86,7 @@ void  identificarProceso(socket_connection * connection ,char** args)
          sprintf(stringQuantum, "%i", datosConfigSAFA->quantum);
          char string_idCPU[2];   
          sprintf(string_idCPU, "%i", cpu->id);
-	
+    
 		 runFunction(connection->socket, "establecerQuantumYID",2, stringQuantum, string_idCPU);
          
 

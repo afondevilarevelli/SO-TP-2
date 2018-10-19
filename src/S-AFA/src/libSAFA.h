@@ -35,6 +35,7 @@ typedef struct{
 	int flagInicializado;
 	t_list* archivosAbiertos;
 	status_t status;
+	int quantumFaltante; //sentencias que le faltan ejecutar para terminar su quantum ( para VRR )
 }DTB;
 
 typedef struct{
@@ -50,7 +51,6 @@ typedef struct{
 //VARIABLES GLOBALES
 int generadorDeIdsCPU;
 int idCpuABuscar;
-int idDtbABuscar;
 //semaforos
 sem_t puedeEntrarAlSistema;
 sem_t cantProcesosEnReady;
@@ -90,14 +90,13 @@ bool unCpuConectado;
 //FUNCIONES UTILES
 void encolarDTB(t_queue* c, DTB* d, pthread_mutex_t m);
 DTB* desencolarDTB(t_queue* c, pthread_mutex_t m);
+DTB* get_and_remove_DTB_by_ID( t_list * lista, int id );
+DTB * quitarDTBDeSuListaActual(int idDTB);
 
 CPU* buscarCPU(int id);
 bool closureIdCPU(CPU* cpu);
 
-DTB* buscarYRemoverDTB(t_list* list, pthread_mutex_t mutex, int id);
-DTB* buscarDTB(t_list* list, pthread_mutex_t mutex, int id);
-bool closureIdDTB(DTB* dtb);
-
+DTB* buscarDTB(t_list* lista,int id);
 
 //LOGS
 void configure_logger();

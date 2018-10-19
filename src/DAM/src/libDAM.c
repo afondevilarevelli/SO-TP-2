@@ -4,7 +4,6 @@
 #include <commons/log.h>
 #include <commons/config.h>
 #include "libDAM.h"
-#include "libSAFA.h"
 
 int estadoValidacion;
 int estadoCreacion;
