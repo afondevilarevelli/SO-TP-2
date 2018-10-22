@@ -4,10 +4,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <pthread.h>
+#include <string.h>
 #include <commons/log.h>
 #include <commons/config.h>
 #include <commons/string.h>
 #include <commons/collections/dictionary.h>
+#include <commons/collections/list.h>
 #include "../../sample-socket/socket.h" 
 #include "../../Utils/gestionArchConf.h"
 
@@ -49,7 +52,7 @@ typedef enum{
 	CREAR, 
 	BORRAR, 
 	NUMERAL, //para comentarios
-	BLANCO  //para señalar fin de programa
+	FIN //para fin de script
 }palabraReservada_t;
 
 typedef struct{   
@@ -59,12 +62,22 @@ typedef struct{
     char* p3; //asignar
 }operacion_t;
 
+typedef struct{
+	int idGDT;
+	FILE* scriptf;
+}scriptGDT;
+
 //VARIABLES GLOBALES
 t_log* logger;
 t_config* archivo_Config;
 t_config_CPU* datosCPU;
 t_dictionary * callableRemoteFunctionsCPU;
 pthread_mutex_t m_main;
+pthread_mutex_t m_busqueda;
+pthread_mutex_t m_listaScriptsGDT;
+int idGDTScriptABuscar;
+
+t_list* listaScriptsGDT;
 
 //VAR GLOB SOCKETS
 int socketDAM;
@@ -80,8 +93,12 @@ void close_logger();
 void* intentandoConexionConSAFA(int* );
 void* intentandoConexionConDAM(int* );
 void* intentandoConexionConFM9(int* );
-
 void disconnect();
+
+scriptGDT* verificarSiYaSeAbrioElScript(int idGDT, char* ruta);
+bool closureBusquedaScript(scriptGDT* el);
+FILE * abrirScript(char * scriptFilename);
+operacion_t obtenerSentenciaParseada(FILE* script);
 
 //PARSER
 operacion_t parse(char* line);

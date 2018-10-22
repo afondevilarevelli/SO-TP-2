@@ -2,10 +2,14 @@
 #include <signal.h>
 
 void cerrarPrograma(); 
+void destruirScriptsGDT();
 
 int main() {
   signal(SIGINT, cerrarPrograma);
 
+  listaScriptsGDT = list_create();
+  pthread_mutex_init(&m_busqueda, NULL);
+  pthread_mutex_init(&m_listaScriptsGDT, NULL);
   configure_logger();
   datosCPU = read_and_log_config("CPU.config");
 
@@ -40,8 +44,16 @@ void cerrarPrograma() {
   disconnect();
   close_logger();
   free(datosCPU);
+  list_destroy_and_destroy_elements(listaScriptsGDT, (void*) &destruirScriptsGDT);
 
   dictionary_destroy(callableRemoteFunctionsCPU);
+  pthread_mutex_destroy(&m_busqueda);
+  pthread_mutex_destroy(&m_listaScriptsGDT);
   pthread_mutex_unlock(&m_main);
   pthread_mutex_destroy(&m_main);
+}
+
+void destruirScriptsGDT(scriptGDT* sc){
+  fclose(sc->scriptf);
+  free(sc);
 }

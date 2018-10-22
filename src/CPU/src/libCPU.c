@@ -3,14 +3,6 @@
 operacion_t parse(char* line){
     operacion_t retorno;
 
-	if(line == NULL || string_equals_ignore_case(line, "")){
-		retorno.palabraReservada = BLANCO;
-        retorno.p1 = NULL;
-        retorno.p2 = NULL;
-        retorno.p3 = NULL;
-		return retorno;
-	}
-
 	char* auxLine = string_duplicate(line);
 	string_trim(&auxLine);
 	char** split = string_n_split(auxLine, 4, " ");
@@ -65,15 +57,12 @@ operacion_t parse(char* line){
 		retorno.p1 = split[1];
         retorno.p2 = NULL;
         retorno.p3 = NULL;
-	} else if(string_equals_ignore_case(palReservada, "#")){
+	} else if(string_equals_ignore_case(&palReservada[0], "#")){
 		retorno.palabraReservada = NUMERAL;
 		retorno.p1 = NULL;
         retorno.p2 = NULL;
         retorno.p3 = NULL;
-	} else{
-        fprintf(stderr, "No se encontro la palabra reservada <%s>\n", palReservada);
-		return;
-    }
+	} 
 
 	free(auxLine);
 	return retorno;
@@ -201,11 +190,10 @@ void disconnect(){
 void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 	int idGDT = atoi(args[0]);
 	log_trace(logger,"Ejecutando el GDT de id %d\n",idGDT);
-	//por ahora muestro todo lo que recibio
+	//muestro todo lo que recibio
 	char* rutaScript = args[1];
 	int programCounter = atoi(args[2]);
 	int flagInicializado = atoi(args[3]);
-	
 	char string_id[2]; 
 	sprintf(string_id, "%i", idCPU);
 
@@ -213,16 +201,58 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 	log_info(logger, "El Program Counter se encuentra en: %d", programCounter);
 	log_info(logger, "El flag con el que inicia es: %d", flagInicializado);
 
+
 	if (flagInicializado == 0) { //DTB-Dummy
 		log_trace(logger,"Preparando la inicializacion de ejecucion del DTB Dummy\n");
 		runFunction(socketDAM, "CPU_DAM_solicitudCargaGDT", 2,args[0], rutaScript);
 		runFunction(socketSAFA, "finalizacionProcesamientoCPU",3, string_id, args[0], "bloquear");
 	}
-
 	else{
+		scriptGDT* scriptGdt = verificarSiYaSeAbrioElScript(idGDT, rutaScript);
+		int sentenciasEjecutadas = 0;
+		while(sentenciasEjecutadas < quantum){
+			operacion_t sentencia = obtenerSentenciaParseada(scriptGdt->scriptf);
+			switch(sentencia.palabraReservada){
+				case ABRIR:
+					//algo
+					break;
+				case CONCENTRAR:
+					//algo
+					break; 
+				case ASIGNAR:
+					//algo
+					break;
+				case WAIT:
+					//algo
+					break;
+			    case SIGNAL:
+					//algo
+					break;
+				case FLUSH:
+					//algo
+					break;
+				case CLOSE:
+					//algo
+					break;
+				case CREAR:
+					//algo
+					break;
+				case BORRAR:
+					//algo
+					break;
+				case NUMERAL:
+					//algo
+					break;
+				case FIN:
+					runFunction(connection->socket, "finalizacionProcesamientoCPU",3, string_id, args[0], "finalizar" );
+					break;
+			}
+			sleep(datosCPU->retardo);
+			sentenciasEjecutadas++;
+		}
+
 	//cuando finaliza de ejecutar dicho proceso, le avisa al SAFA
 
-	runFunction(connection->socket, "finalizacionProcesamientoCPU",3, string_id, args[0], "finalizar" );
 	//runFunction(connection->socket, "finalizacionProcesamientoCPU",3, string_id, args[0], "continuar" );
 	}
 }
@@ -232,4 +262,59 @@ void establecerQuantumYID(socket_connection * connection ,char** args){
 	idCPU = atoi (args[1] );
 	log_trace(logger,"QUANTUM = %i",quantum);
 	log_trace(logger,"ID de CPU =  %i",idCPU);
+}
+
+operacion_t obtenerSentenciaParseada(FILE* script){
+	operacion_t sentenciaParseada;
+    char * line = NULL;
+    size_t len = 0;
+    ssize_t read;
+
+	if( read = getline(&line, &len, script) != -1){
+		sentenciaParseada = parse(line);
+	}
+	else{
+		sentenciaParseada.palabraReservada = FIN;
+	}
+
+    if (line){ 
+		log_trace(logger, "Sentencia: %s", line);
+        free(line);
+	}
+	return sentenciaParseada;
+}
+
+FILE * abrirScript(char * scriptFilename)
+{
+  FILE * scriptf = fopen(strcat("../../../Pto_Montaje/Scripts/",scriptFilename), "r");
+  if (scriptf == NULL)
+  {
+    log_error(logger, "Error al abrir el archivo %s: %s", scriptFilename, strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+
+  return scriptf;
+}
+
+scriptGDT* verificarSiYaSeAbrioElScript(int idGDT, char* ruta){
+	pthread_mutex_lock(&m_busqueda);
+	idGDTScriptABuscar = idGDT;
+	scriptGDT* s = list_find(listaScriptsGDT, (void*)closureBusquedaScript);
+	pthread_mutex_unlock(&m_busqueda);
+	if(s == NULL){ //el script no está abierto
+		scriptGDT* nuevo = malloc(sizeof(scriptGDT));
+		nuevo->idGDT = idGDT;
+		nuevo->scriptf = abrirScript(ruta);
+		pthread_mutex_lock(&m_listaScriptsGDT);
+		list_add(listaScriptsGDT, nuevo);
+		pthread_mutex_unlock(&m_listaScriptsGDT);
+		return nuevo;
+	}
+	else{
+		return s;
+	}
+}
+
+bool closureBusquedaScript(scriptGDT* el){
+	return el->idGDT == idGDTScriptABuscar;
 }
