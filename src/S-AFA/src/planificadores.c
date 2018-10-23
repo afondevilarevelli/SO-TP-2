@@ -2,8 +2,8 @@
 
 void planificadorLargoPlazo(){
     while(1){
-        sem_wait(&cantProcesosEnNew);
         sem_wait(&puedeEntrarAlSistema);
+        sem_wait(&cantProcesosEnNew);
         DTB* dtbDummy = desencolarDTB(colaNew, m_colaNew);
         dtbDummy->status = READY;
         dtbDummy->flagInicializado = 0;
@@ -41,6 +41,9 @@ void planificarSegunRR(CPU* cpu){
             char string_pc[2];
             sprintf(string_pc, "%i", dtbAEjecutar->PC);
 
+            char string_quantumAEjecutar[2];
+            sprintf(string_quantumAEjecutar, "%i", datosConfigSAFA->quantum);
+
             pthread_mutex_lock(&m_listaEjecutando);
             list_add(listaEjecutando, dtbAEjecutar);
             pthread_mutex_unlock(&m_listaEjecutando);
@@ -48,7 +51,8 @@ void planificarSegunRR(CPU* cpu){
             runFunction(cpu->socket,"ejecutarCPU",5, string_id,
             										 dtbAEjecutar->rutaScript,
 													 string_pc,
-                                                     string_flagInicializacion);
+                                                     string_flagInicializacion,
+                                                     string_quantumAEjecutar);
 
             sem_wait(&cpu->aviso);   
 			

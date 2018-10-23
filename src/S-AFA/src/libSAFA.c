@@ -159,13 +159,14 @@ void newConnection(socket_connection* socketInfo, char** msg){
 	}	
 }
 
-//args[0]: idCPU, args[1]: idGDT, args[2]:"finalizar","continuar" ó "bloquear"
-//								  "finalizar" => finalizo GDT,
-//								  "bloquear"  => bloqueo GDT,
-//								  "continuar" => paso a Ready GDT
+//args[0]: idCPU, args[1]: idGDT, args[2]: cantidad de quanto que ejecutó, args[3]:"finalizar","continuar" ó "bloquear"
+//								  							   			   "finalizar" => finalizo GDT,		
+//								  							   			   "bloquear"  => bloqueo GDT,
+//								   							   			   "continuar" => paso a Ready GDT
 void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 	int idCPU = atoi( msg[0] );
 	int idDTB = atoi ( msg[1] );
+	int quantumEjecutado = atoi( msg[2] );
 	CPU* cpu = buscarCPU(idCPU);
 	pthread_mutex_lock(&m_listaEjecutando);
 	DTB* dtb = get_and_remove_DTB_by_ID(listaEjecutando, idDTB);
@@ -173,19 +174,21 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 	
 	if(dtb != NULL){ 
 		if(dtb->status != FINISHED){ 
-			if( strcmp( msg[2], "finalizar") == 0){
+			if( strcmp( msg[3], "finalizar") == 0){
 
 				finalizarDTB(dtb);
 
-			} else if(strcmp( msg[2], "continuar") == 0){ 
+			} else if(strcmp( msg[3], "continuar") == 0){ 
 
 				dtb->status = READY;
+				dtb->quantumFaltante = datosConfigSAFA->quantum - quantumEjecutado;
 				encolarDTB(colaReady, dtb, m_colaReady);
 				sem_post(&cantProcesosEnReady);
 
 			} else{ // "bloquear"
 	
 				dtb->status = BLOCKED;
+				dtb->quantumFaltante = datosConfigSAFA->quantum - quantumEjecutado;
 				encolarDTB(colaBloqueados, dtb, m_colaBloqueados);
     			log_info(logger, "El DTB paso al Estado Blocked");
 

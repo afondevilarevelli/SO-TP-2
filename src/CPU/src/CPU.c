@@ -10,8 +10,8 @@ int main() {
   listaScriptsGDT = list_create();
   pthread_mutex_init(&m_busqueda, NULL);
   pthread_mutex_init(&m_listaScriptsGDT, NULL);
-  configure_logger();
-  datosCPU = read_and_log_config("CPU.config");
+  configure_loggerCPU();
+  datosCPU = read_and_log_configCPU("CPU.config");
 
   callableRemoteFunctionsCPU = dictionary_create();
   dictionary_put(callableRemoteFunctionsCPU,"ejecutarCPU",&permisoConcedidoParaEjecutar);
@@ -42,7 +42,7 @@ int main() {
 
 void cerrarPrograma() {
   disconnect();
-  close_logger();
+  close_loggerCPU();
   free(datosCPU);
   list_destroy_and_destroy_elements(listaScriptsGDT, (void*) &destruirScriptsGDT);
 

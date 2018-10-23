@@ -68,7 +68,7 @@ operacion_t parse(char* line){
 	return retorno;
 }
 
-void configure_logger() {
+void configure_loggerCPU() {
 
 	char * nombrePrograma = "CPU.log";
 	char * nombreArchivo = "CPU";
@@ -78,13 +78,13 @@ void configure_logger() {
 
 }
 
-void close_logger() {
+void close_loggerCPU() {
 	log_info(logger, "Cierro log de CPU");
 	log_destroy(logger);
 }
 
 //CONFIG
-t_config_CPU* read_and_log_config(char* path) {
+t_config_CPU* read_and_log_configCPU(char* path) {
 
 	char* ipS;
 	char* ipD;
@@ -186,9 +186,10 @@ void disconnect(){
 }
 
 //callable remote functions
-//args[0]: idGDT, args[1]: rutaScript, args[2]: PC, args[3]: flagInicializacionGDT
+//args[0]: idGDT, args[1]: rutaScript, args[2]: PC, args[3]: flagInicializacionGDT, args[4]: quantum a ejecutar
 void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 	int idGDT = atoi(args[0]);
+	int quantumAEjecutar = atoi(args[4]);
 	log_trace(logger,"Ejecutando el GDT de id %d\n",idGDT);
 	//muestro todo lo que recibio
 	char* rutaScript = args[1];
@@ -200,17 +201,17 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 	log_info(logger, "La ruta Script es: %s", rutaScript);
 	log_info(logger, "El Program Counter se encuentra en: %d", programCounter);
 	log_info(logger, "El flag con el que inicia es: %d", flagInicializado);
-
+	log_info(logger, "El quantum a ejecutar es: %d", quantumAEjecutar);
 
 	if (flagInicializado == 0) { //DTB-Dummy
 		log_trace(logger,"Preparando la inicializacion de ejecucion del DTB Dummy\n");
 		runFunction(socketDAM, "CPU_DAM_solicitudCargaGDT", 2,args[0], rutaScript);
-		runFunction(socketSAFA, "finalizacionProcesamientoCPU",3, string_id, args[0], "bloquear");
+		runFunction(socketSAFA, "finalizacionProcesamientoCPU",4, string_id, args[0], "0", "bloquear");
 	}
 	else{
 		scriptGDT* scriptGdt = verificarSiYaSeAbrioElScript(idGDT, rutaScript);
 		int sentenciasEjecutadas = 0;
-		while(sentenciasEjecutadas < quantum){
+		while(sentenciasEjecutadas < quantumAEjecutar){
 			operacion_t sentencia = obtenerSentenciaParseada(scriptGdt->scriptf);
 			switch(sentencia.palabraReservada){
 				case ABRIR:
@@ -244,17 +245,28 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					//algo
 					break;
 				case FIN:
-					runFunction(connection->socket, "finalizacionProcesamientoCPU",3, string_id, args[0], "finalizar" );
+					fclose(scriptGdt->scriptf);
+					idGDTScriptARemover = scriptGdt->idGDT;
+					list_remove_by_condition(listaScriptsGDT, (void*) condicionRemoverListaScriptGDT);
+					runFunction(connection->socket, "finalizacionProcesamientoCPU",4, string_id, args[0],"0", "finalizar" );
 					break;
 			}
 			sleep(datosCPU->retardo);
 			sentenciasEjecutadas++;
+
+			if(sentenciasEjecutadas == quantumAEjecutar){
+				char string_sentEjecutadas[2];
+				sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas);
+				runFunction(connection->socket, "finalizacionProcesamientoCPU",4, string_id, args[0], string_sentEjecutadas, "continuar");
+				break;
+			}
 		}
 
-	//cuando finaliza de ejecutar dicho proceso, le avisa al SAFA
-
-	//runFunction(connection->socket, "finalizacionProcesamientoCPU",3, string_id, args[0], "continuar" );
 	}
+}
+
+bool condicionRemoverListaScriptGDT(scriptGDT* sg){
+	return sg->idGDT == idGDTScriptARemover;
 }
 
 void establecerQuantumYID(socket_connection * connection ,char** args){
@@ -286,13 +298,18 @@ operacion_t obtenerSentenciaParseada(FILE* script){
 
 FILE * abrirScript(char * scriptFilename)
 {
-  FILE * scriptf = fopen(strcat("../../../Pto_Montaje/Scripts/",scriptFilename), "r");
+  char* ruta = malloc(100*sizeof(char));
+  strcpy(ruta, "/home/utnso/git/tp-2018-2c-Mi-amor-es-el-Malloc/Pto_Montaje/Scripts/");//"../../../Pto_Montaje/Scripts/");
+  strcat(ruta,scriptFilename);
+
+  FILE * scriptf = fopen(ruta, "r");
   if (scriptf == NULL)
   {
     log_error(logger, "Error al abrir el archivo %s: %s", scriptFilename, strerror(errno));
     exit(EXIT_FAILURE);
   }
-
+  
+  free(ruta);
   return scriptf;
 }
 

@@ -13,6 +13,8 @@
 #include <commons/collections/list.h>
 #include "../../sample-socket/socket.h" 
 #include "../../Utils/gestionArchConf.h"
+//el include de libSAFA es SÓLO para verificar si un archivo ya fue abierto por un GDT para la funcion ABRIR
+#include "../../S-AFA/src/libSAFA.h"
 
 //ESTRUCTURA
 typedef struct {
@@ -75,7 +77,9 @@ t_dictionary * callableRemoteFunctionsCPU;
 pthread_mutex_t m_main;
 pthread_mutex_t m_busqueda;
 pthread_mutex_t m_listaScriptsGDT;
+
 int idGDTScriptABuscar;
+int idGDTScriptARemover;
 
 t_list* listaScriptsGDT;
 
@@ -86,9 +90,9 @@ int socketFM9;
 
 //FUNCIONES
 
-void configure_logger();
-t_config_CPU* read_and_log_config(char*);
-void close_logger();
+void configure_loggerCPU();
+t_config_CPU* read_and_log_configCPU(char* path);
+void close_loggerCPU();
 
 void* intentandoConexionConSAFA(int* );
 void* intentandoConexionConDAM(int* );
@@ -97,6 +101,7 @@ void disconnect();
 
 scriptGDT* verificarSiYaSeAbrioElScript(int idGDT, char* ruta);
 bool closureBusquedaScript(scriptGDT* el);
+bool condicionRemoverListaScriptGDT(scriptGDT* sg);
 FILE * abrirScript(char * scriptFilename);
 operacion_t obtenerSentenciaParseada(FILE* script);
 
