@@ -182,6 +182,7 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 
 				dtb->status = READY;
 				dtb->quantumFaltante = datosConfigSAFA->quantum - quantumEjecutado;
+				dtb->PC += quantumEjecutado;
 				encolarDTB(colaReady, dtb, m_colaReady);
 				sem_post(&cantProcesosEnReady);
 
@@ -189,6 +190,7 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 	
 				dtb->status = BLOCKED;
 				dtb->quantumFaltante = datosConfigSAFA->quantum - quantumEjecutado;
+				dtb->PC += quantumEjecutado;
 				encolarDTB(colaBloqueados, dtb, m_colaBloqueados);
     			log_info(logger, "El DTB paso al Estado Blocked");
 

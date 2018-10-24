@@ -53,8 +53,7 @@ typedef enum{
 	CLOSE, 
 	CREAR, 
 	BORRAR, 
-	NUMERAL, //para comentarios
-	FIN //para fin de script
+	NUMERAL //para comentarios
 }palabraReservada_t;
 
 typedef struct{   
@@ -62,6 +61,7 @@ typedef struct{
     char* p1; //abrir, wait, signal, flush, close, borrar
     char* p2; //crear
     char* p3; //asignar
+	bool ultimaSentencia;
 }operacion_t;
 
 typedef struct{

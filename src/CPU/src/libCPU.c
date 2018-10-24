@@ -57,13 +57,14 @@ operacion_t parse(char* line){
 		retorno.p1 = split[1];
         retorno.p2 = NULL;
         retorno.p3 = NULL;
-	} else if(string_equals_ignore_case(&palReservada[0], "#")){
+	} else if( palReservada[0] =='#' ){
 		retorno.palabraReservada = NUMERAL;
 		retorno.p1 = NULL;
         retorno.p2 = NULL;
         retorno.p3 = NULL;
 	} 
 
+	retorno.ultimaSentencia = false;
 	free(auxLine);
 	return retorno;
 }
@@ -241,25 +242,29 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 				case BORRAR:
 					//algo
 					break;
-				case NUMERAL:
-					//algo
-					break;
-				case FIN:
-					fclose(scriptGdt->scriptf);
-					idGDTScriptARemover = scriptGdt->idGDT;
-					list_remove_by_condition(listaScriptsGDT, (void*) condicionRemoverListaScriptGDT);
-					runFunction(connection->socket, "finalizacionProcesamientoCPU",4, string_id, args[0],"0", "finalizar" );
-					break;
+				
 			}
-			sleep(datosCPU->retardo);
-			sentenciasEjecutadas++;
 
-			if(sentenciasEjecutadas == quantumAEjecutar){
-				char string_sentEjecutadas[2];
-				sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas);
-				runFunction(connection->socket, "finalizacionProcesamientoCPU",4, string_id, args[0], string_sentEjecutadas, "continuar");
+			if(sentencia.ultimaSentencia){
+				fclose(scriptGdt->scriptf);
+				idGDTScriptARemover = scriptGdt->idGDT;
+				list_remove_by_condition(listaScriptsGDT, (void*) condicionRemoverListaScriptGDT);
+				runFunction(connection->socket, "finalizacionProcesamientoCPU",4, string_id, args[0],"0", "finalizar" );
 				break;
 			}
+
+			if(sentencia.palabraReservada != NUMERAL){ 
+				sentenciasEjecutadas++;
+
+				if(sentenciasEjecutadas == quantumAEjecutar){
+					char string_sentEjecutadas[2];
+					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas);
+					runFunction(connection->socket, "finalizacionProcesamientoCPU",4, string_id, args[0], string_sentEjecutadas, "continuar");
+					break;					
+				}
+				
+			}
+			sleep(datosCPU->retardo);
 		}
 
 	}
@@ -283,14 +288,21 @@ operacion_t obtenerSentenciaParseada(FILE* script){
     ssize_t read;
 
 	if( read = getline(&line, &len, script) != -1){
+		log_trace(logger, "Sentencia: %s", line);
 		sentenciaParseada = parse(line);
+		int prevPos = ftell(script);
+		
+		read = getline(&line, &len, script);
+		if( read == -1){
+			sentenciaParseada.ultimaSentencia = true;
+		}
+			fseek(script, prevPos, SEEK_SET);
 	}
 	else{
-		sentenciaParseada.palabraReservada = FIN;
+		log_error(logger, "Error al obtener sentencia del GDT ");
 	}
 
     if (line){ 
-		log_trace(logger, "Sentencia: %s", line);
         free(line);
 	}
 	return sentenciaParseada;
@@ -299,7 +311,8 @@ operacion_t obtenerSentenciaParseada(FILE* script){
 FILE * abrirScript(char * scriptFilename)
 {
   char* ruta = malloc(100*sizeof(char));
-  strcpy(ruta, "/home/utnso/git/tp-2018-2c-Mi-amor-es-el-Malloc/Pto_Montaje/Scripts/");//"../../../Pto_Montaje/Scripts/");
+  // "/home/utnso/git/tp-2018-2c-Mi-amor-es-el-Malloc/Pto_Montaje/Scripts/" CON RUTA ABSOLUTA ME ANDA
+  strcpy(ruta, "../../../Pto_Montaje/Scripts/");
   strcat(ruta,scriptFilename);
 
   FILE * scriptf = fopen(ruta, "r");

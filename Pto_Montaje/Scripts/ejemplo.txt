@@ -1,3 +1,2 @@
 abrir hola
-concentrar
 #alto comentario papa
