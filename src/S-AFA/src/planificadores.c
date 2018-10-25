@@ -6,7 +6,7 @@ void planificadorLargoPlazo(){
         sem_wait(&cantProcesosEnNew);
         DTB* dtbDummy = desencolarDTB(colaNew, m_colaNew);
         dtbDummy->status = READY;
-        dtbDummy->flagInicializado = 0;
+        dtbDummy->flagInicializado = 1;
         encolarDTB(colaReady, dtbDummy, m_colaReady);
         sem_post(&cantProcesosEnReady);
     }
@@ -29,7 +29,7 @@ void planificarSegunRR(CPU* cpu){
             if(dtbAEjecutar->flagInicializado == 0){
                 log_trace(logger, "Se va a ejecutar el DTB-Dummy del GDT de id = %d", dtbAEjecutar->id);            
             }else{
-                log_trace(logger, "Segun RR el DTB a ejecutar ahora es el de id = %d", dtbAEjecutar->id);
+                log_trace(logger, "Segun RR el DTB a ejecutar ahora es el de id = %d en la CPU de id %d", dtbAEjecutar->id, cpu->id);
             }
 
             char string_id[2];
@@ -75,6 +75,8 @@ DTB* obtenerDTBAEjecutarSegunRR(){ // como FIFO
 }
 
 //callable remote function
+//args[0]: el tipo del proceso que se conectó
+//Esta funcion es para que por cada CPU se cree un hilo para planificarla
 void  identificarProceso(socket_connection * connection ,char** args)
 {
      log_info(logger,"Se ha conectado %s en el socket NRO %d  con IP %s,  PUERTO %d\n", args[0],connection->socket,connection->ip,connection-> port);

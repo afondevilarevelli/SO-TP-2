@@ -167,6 +167,7 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 	int idCPU = atoi( msg[0] );
 	int idDTB = atoi ( msg[1] );
 	int quantumEjecutado = atoi( msg[2] );
+	log_info(logger, "La CPU %d ha finalizado de procesar sentencias del GDT de id %d", idCPU, idDTB);
 	CPU* cpu = buscarCPU(idCPU);
 	pthread_mutex_lock(&m_listaEjecutando);
 	DTB* dtb = get_and_remove_DTB_by_ID(listaEjecutando, idDTB);

@@ -64,11 +64,6 @@ typedef struct{
 	bool ultimaSentencia;
 }operacion_t;
 
-typedef struct{
-	int idGDT;
-	FILE* scriptf;
-}scriptGDT;
-
 //VARIABLES GLOBALES
 t_log* logger;
 t_config* archivo_Config;
@@ -76,12 +71,6 @@ t_config_CPU* datosCPU;
 t_dictionary * callableRemoteFunctionsCPU;
 pthread_mutex_t m_main;
 pthread_mutex_t m_busqueda;
-pthread_mutex_t m_listaScriptsGDT;
-
-int idGDTScriptABuscar;
-int idGDTScriptARemover;
-
-t_list* listaScriptsGDT;
 
 //VAR GLOB SOCKETS
 int socketDAM;
@@ -94,16 +83,13 @@ void configure_loggerCPU();
 t_config_CPU* read_and_log_configCPU(char* path);
 void close_loggerCPU();
 
-void* intentandoConexionConSAFA(int* );
-void* intentandoConexionConDAM(int* );
-void* intentandoConexionConFM9(int* );
+void* intentandoConexionConSAFA(int );
+void* intentandoConexionConDAM(int );
+void* intentandoConexionConFM9(int );
 void disconnect();
 
-scriptGDT* verificarSiYaSeAbrioElScript(int idGDT, char* ruta);
-bool closureBusquedaScript(scriptGDT* el);
-bool condicionRemoverListaScriptGDT(scriptGDT* sg);
 FILE * abrirScript(char * scriptFilename);
-operacion_t obtenerSentenciaParseada(FILE* script);
+operacion_t obtenerSentenciaParseada(char* script,int programCounter);
 
 //PARSER
 operacion_t parse(char* line);

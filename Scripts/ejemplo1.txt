@@ -1,0 +1,5 @@
+abrir hola
+#alto comentario papa
+#otro comentario re piola
+concentrar
+close caracolaMagica
