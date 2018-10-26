@@ -7,12 +7,15 @@ int main() {
   signal(SIGINT, cerrarPrograma);
 
   pthread_mutex_init(&m_busqueda, NULL);
+  pthread_mutex_init(&m_puedeEjecutar, NULL);
   configure_loggerCPU();
   datosCPU = read_and_log_configCPU("CPU.config");
 
   callableRemoteFunctionsCPU = dictionary_create();
   dictionary_put(callableRemoteFunctionsCPU,"ejecutarCPU",&permisoConcedidoParaEjecutar);
   dictionary_put(callableRemoteFunctionsCPU,"establecerQuantumYID",&establecerQuantumYID);
+  dictionary_put(callableRemoteFunctionsCPU,"pausarPlanificacion",&pausarPlanificacion);
+  dictionary_put(callableRemoteFunctionsCPU,"continuarPlanificacion",&continuarPlanificacion);
   
 
   socketDAM = connectServer(datosCPU->ipD, datosCPU->puertoD, callableRemoteFunctionsCPU, &disconnect, NULL);
@@ -44,6 +47,7 @@ void cerrarPrograma() {
 
   dictionary_destroy(callableRemoteFunctionsCPU);
   pthread_mutex_destroy(&m_busqueda);
+  pthread_mutex_destroy(&m_puedeEjecutar);
   pthread_mutex_unlock(&m_main);
   pthread_mutex_destroy(&m_main);
 }

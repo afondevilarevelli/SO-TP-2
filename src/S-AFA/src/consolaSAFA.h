@@ -19,7 +19,9 @@ void status(int idGDT);
 void finalizar(int idGDT);
 void metricas();
 void pausarPlanificacion();
+void iteracionPausarCPUs(CPU* cpu);
 void continuarPlanificacion();
+void iteracionContinuarCPUs(CPU* cpu);
 
 
 //  A medida que avanzamos puede que necesitemos cambiarles los

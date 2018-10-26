@@ -72,10 +72,20 @@ void consolaSAFA(){
 
 void pausarPlanificacion(){
 	pthread_mutex_trylock(&m_puedePlanificar);
+	list_iterate(listaCPUs, (void*)&iteracionPausarCPUs);
 }
 
 void continuarPlanificacion(){
 	pthread_mutex_unlock(&m_puedePlanificar);
+	list_iterate(listaCPUs, (void*)&iteracionContinuarCPUs);
+}
+
+void iteracionPausarCPUs(CPU* cpu){
+	runFunction(cpu->socket,"pausarPlanificacion",0);
+}
+
+void iteracionContinuarCPUs(CPU* cpu){
+	runFunction(cpu->socket,"continuarPlanificacion",0);
 }
 
 void ejecutar(char* rutaSc){	

@@ -71,6 +71,7 @@ t_config_CPU* datosCPU;
 t_dictionary * callableRemoteFunctionsCPU;
 pthread_mutex_t m_main;
 pthread_mutex_t m_busqueda;
+pthread_mutex_t m_puedeEjecutar;
 
 //VAR GLOB SOCKETS
 int socketDAM;
@@ -97,6 +98,8 @@ operacion_t parse(char* line);
 //callable remote functions
 void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args); //SAFA
 void establecerQuantumYID(socket_connection * connection ,char** args); //SAFA
+void pausarPlanificacion(socket_connection * connection ,char** args);
+void continuarPlanificacion(socket_connection * connection ,char** args);
 
 
 #endif

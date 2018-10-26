@@ -128,7 +128,7 @@ DTB* obtenerDTBAEjecutarSegunRR(){ // como FIFO
 
 DTB* obtenerDTBAEjecutarSegunVRR(){
     pthread_mutex_lock(&m_colaReady);
-    list_sort(colaReady->elements, (void*) closureSortVRR);
+    list_sort(colaReady->elements, (void*) &closureSortVRR);
     DTB* dtb = queue_pop(colaReady);
     pthread_mutex_unlock(&m_colaReady);
     return dtb;

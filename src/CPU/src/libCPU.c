@@ -187,6 +187,14 @@ void disconnect(){
   log_info(logger,"..Desconectado..");
 }
 
+void pausarPlanificacion(socket_connection * connection ,char** args){
+	while( pthread_mutex_trylock(&m_puedeEjecutar) );
+}
+
+void continuarPlanificacion(socket_connection * connection ,char** args){
+	pthread_mutex_unlock(&m_puedeEjecutar);
+}
+
 //callable remote functions
 //args[0]: idGDT, args[1]: rutaScript, args[2]: PC, args[3]: flagInicializacionGDT, args[4]: quantum a ejecutar
 void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
@@ -215,6 +223,8 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 	else{
 		int sentenciasEjecutadas = 0;
 		while(sentenciasEjecutadas < quantumAEjecutar){
+			pthread_mutex_lock(&m_puedeEjecutar);
+			pthread_mutex_unlock(&m_puedeEjecutar);
 			sentencia = obtenerSentenciaParseada(rutaScript, programCounter);
 			switch(sentencia.palabraReservada){
 				case ABRIR:
