@@ -6,7 +6,7 @@ void planificadorLargoPlazo(){
         sem_wait(&cantProcesosEnNew);
         DTB* dtbDummy = desencolarDTB(colaNew, m_colaNew);
         dtbDummy->status = READY;
-        dtbDummy->flagInicializado = 1;
+        dtbDummy->flagInicializado = 0;
         encolarDTB(colaReady, dtbDummy, m_colaReady);
         sem_post(&cantProcesosEnReady);
     }
@@ -62,7 +62,52 @@ void planificarSegunRR(CPU* cpu){
 
 
 void planificarSegunVRR(CPU* cpu){
-    
+    DTB* dtbAEjecutar;
+        while(1){
+			if(queue_size(colaReady) == 0){
+				log_trace(logger, "Se espera a que haya GDT's en la cola Ready");
+			}
+			sem_wait(&cantProcesosEnReady);
+			sleep(1);
+
+            pthread_mutex_lock(&m_puedePlanificar);
+			dtbAEjecutar = obtenerDTBAEjecutarSegunVRR();
+            pthread_mutex_unlock(&m_puedePlanificar);
+
+            if(dtbAEjecutar->flagInicializado == 0){
+                log_trace(logger, "Se va a ejecutar el DTB-Dummy del GDT de id = %d", dtbAEjecutar->id);            
+            }else{
+                log_trace(logger, "Segun V-RR el DTB a ejecutar ahora es el de id = %d en la CPU de id %d", dtbAEjecutar->id, cpu->id);
+            }
+
+            char string_id[2];
+            sprintf(string_id, "%i", dtbAEjecutar->id);
+
+            char string_flagInicializacion[2];
+            sprintf(string_flagInicializacion, "%i", dtbAEjecutar->flagInicializado); 
+
+            char string_pc[2];
+            sprintf(string_pc, "%i", dtbAEjecutar->PC);
+
+            char string_quantumAEjecutar[2];
+            if(dtbAEjecutar->quantumFaltante == 0)
+                sprintf(string_quantumAEjecutar, "%i", datosConfigSAFA->quantum);
+            else
+                sprintf(string_quantumAEjecutar, "%i", dtbAEjecutar->quantumFaltante);
+
+            pthread_mutex_lock(&m_listaEjecutando);
+            list_add(listaEjecutando, dtbAEjecutar);
+            pthread_mutex_unlock(&m_listaEjecutando);
+
+            runFunction(cpu->socket,"ejecutarCPU",5, string_id,
+            										 dtbAEjecutar->rutaScript,
+													 string_pc,
+                                                     string_flagInicializacion,
+                                                     string_quantumAEjecutar);
+
+            sem_wait(&cpu->aviso);   
+			
+	    }
 }
 
 void planificarSegunAlgoritmoPropio(CPU* cpu){
@@ -73,6 +118,21 @@ DTB* obtenerDTBAEjecutarSegunRR(){ // como FIFO
     DTB* dtb = desencolarDTB(colaReady, m_colaReady);
     return dtb;
 }
+
+DTB* obtenerDTBAEjecutarSegunVRR(){
+    pthread_mutex_lock(&m_colaReady);
+    list_sort(colaReady->elements, (void*) closureSortVRR);
+    DTB* dtb = queue_pop(colaReady);
+    pthread_mutex_unlock(&m_colaReady);
+    return dtb;
+}
+
+//true si p1 aparece antes que p2 en la lista
+bool closureSortVRR(DTB* p1, DTB* p2){
+    return p1->quantumFaltante != 0 || p2->quantumFaltante == 0;
+} //ANDA
+
+
 
 //callable remote function
 //args[0]: el tipo del proceso que se conectó

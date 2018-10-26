@@ -7,8 +7,7 @@
 
 void disconnect(socket_connection* socketInfo);
 
-int main(void){
-
+int main(void){      
         unCpuConectado = false;
         damConectado = false;
         generadorDeIdsCPU = 1;
