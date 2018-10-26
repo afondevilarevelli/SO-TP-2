@@ -6,7 +6,7 @@ void planificadorLargoPlazo(){
         sem_wait(&cantProcesosEnNew);
         DTB* dtbDummy = desencolarDTB(colaNew, m_colaNew);
         dtbDummy->status = READY;
-        dtbDummy->flagInicializado = 0;
+        dtbDummy->flagInicializado = 1;
         encolarDTB(colaReady, dtbDummy, m_colaReady);
         sem_post(&cantProcesosEnReady);
     }
@@ -19,6 +19,7 @@ void planificarSegunRR(CPU* cpu){
 			if(queue_size(colaReady) == 0){
 				log_trace(logger, "Se espera a que haya GDT's en la cola Ready");
 			}
+      
 			sem_wait(&cantProcesosEnReady);
 			sleep(1);
 
@@ -26,36 +27,39 @@ void planificarSegunRR(CPU* cpu){
 			dtbAEjecutar = obtenerDTBAEjecutarSegunRR();
             pthread_mutex_unlock(&m_puedePlanificar);
 
-            if(dtbAEjecutar->flagInicializado == 0){
-                log_trace(logger, "Se va a ejecutar el DTB-Dummy del GDT de id = %d", dtbAEjecutar->id);            
-            }else{
-                log_trace(logger, "Segun RR el DTB a ejecutar ahora es el de id = %d en la CPU de id %d", dtbAEjecutar->id, cpu->id);
-            }
+            if(dtbAEjecutar != NULL){ //si no fue finalizado
+                dtbAEjecutar->status = RUNNING;
+                if(dtbAEjecutar->flagInicializado == 0){
+                    log_trace(logger, "Se va a ejecutar el DTB-Dummy del GDT de id = %d", dtbAEjecutar->id);            
+                }else{
+                    log_trace(logger, "Segun RR el DTB a ejecutar ahora es el de id = %d en la CPU de id %d", dtbAEjecutar->id, cpu->id);
+                }
 
-            char string_id[2];
-            sprintf(string_id, "%i", dtbAEjecutar->id);
+                char string_id[2];
+                sprintf(string_id, "%i", dtbAEjecutar->id);
 
-            char string_flagInicializacion[2];
-            sprintf(string_flagInicializacion, "%i", dtbAEjecutar->flagInicializado); 
+                char string_flagInicializacion[2];
+                sprintf(string_flagInicializacion, "%i", dtbAEjecutar->flagInicializado); 
 
-            char string_pc[2];
-            sprintf(string_pc, "%i", dtbAEjecutar->PC);
+                char string_pc[2];
+                sprintf(string_pc, "%i", dtbAEjecutar->PC);
 
-            char string_quantumAEjecutar[2];
-            sprintf(string_quantumAEjecutar, "%i", datosConfigSAFA->quantum);
+                char string_quantumAEjecutar[2];
+                sprintf(string_quantumAEjecutar, "%i", datosConfigSAFA->quantum);
 
-            pthread_mutex_lock(&m_listaEjecutando);
-            list_add(listaEjecutando, dtbAEjecutar);
-            pthread_mutex_unlock(&m_listaEjecutando);
+                pthread_mutex_lock(&m_listaEjecutando);
+                list_add(listaEjecutando, dtbAEjecutar);
+                pthread_mutex_unlock(&m_listaEjecutando);
 
-            runFunction(cpu->socket,"ejecutarCPU",5, string_id,
+                runFunction(cpu->socket,"ejecutarCPU",5, string_id,
             										 dtbAEjecutar->rutaScript,
 													 string_pc,
                                                      string_flagInicializacion,
                                                      string_quantumAEjecutar);
 
-            sem_wait(&cpu->aviso);   
-			
+                sem_wait(&cpu->aviso);  
+             
+            }
 	    }
 
 }
@@ -74,6 +78,8 @@ void planificarSegunVRR(CPU* cpu){
 			dtbAEjecutar = obtenerDTBAEjecutarSegunVRR();
             pthread_mutex_unlock(&m_puedePlanificar);
 
+            if(dtbAEjecutar != NULL){ //si no fue finalizado
+                dtbAEjecutar->status = RUNNING;
             if(dtbAEjecutar->flagInicializado == 0){
                 log_trace(logger, "Se va a ejecutar el DTB-Dummy del GDT de id = %d", dtbAEjecutar->id);            
             }else{
@@ -108,6 +114,7 @@ void planificarSegunVRR(CPU* cpu){
             sem_wait(&cpu->aviso);   
 			
 	    }
+    }
 }
 
 void planificarSegunAlgoritmoPropio(CPU* cpu){

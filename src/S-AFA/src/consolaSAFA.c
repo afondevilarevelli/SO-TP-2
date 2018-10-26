@@ -1,6 +1,6 @@
 #include "consolaSAFA.h"
 
-void consolaSAFA(/* mas adelante ver si lleva parametros*/){
+void consolaSAFA(){
 	generadorDeIds = 1;
 	char* linea=NULL;
 	char espaBlan[4]=" \n\t";
@@ -24,7 +24,6 @@ void consolaSAFA(/* mas adelante ver si lleva parametros*/){
 		if(strcmp(p1,"finalizar") == 0 && p2 != NULL)
 		{
             int id = atoi(p2); //convertir p2 a int
-			log_trace(logger,"se ha finalizado el G.DT con id = %d\n", id);
 			finalizar(id);
 		}
 		else
@@ -104,10 +103,12 @@ void finalizar(int idGDT){
 	DTB * dtb = buscarDTB(listaEjecutando, idGDT);
 	if(dtb != NULL){ //está ejecutando  
 			dtb->status = FINISHED;
+			log_info(logger,"Se ha finalizado el GDT de id %d", idGDT);
 	} 
 	else{ //no está ejecutando
 		dtb = quitarDTBDeSuListaActual(idGDT);
 		if(dtb != NULL){
+			log_info(logger,"Se ha finalizado el GDT de id %d", idGDT);
 			finalizarDTB(dtb);
 		} else{
 			printf("No se ha encontrado un proceso con el id %d en el sistema\n",idGDT);

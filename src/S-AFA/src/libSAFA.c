@@ -11,7 +11,6 @@ void encolarDTB(t_queue* c, DTB* d, pthread_mutex_t m){
 DTB* desencolarDTB(t_queue* c, pthread_mutex_t m){
 	pthread_mutex_lock(&m);
     DTB* d = queue_pop(c);
-	d->status = READY;
     pthread_mutex_unlock(&m);
 	return d;
 }
@@ -45,6 +44,7 @@ DTB* buscarDTB(t_list* lista,int id){
 	return NULL;
 }
 
+//Se usa sólo en la funcion FINALIZAR de la consola del SAFA
 DTB * quitarDTBDeSuListaActual(int idDTB)
 {
   DTB * dtb = NULL;
@@ -58,8 +58,8 @@ DTB * quitarDTBDeSuListaActual(int idDTB)
     pthread_mutex_lock(&m_colaReady);
     dtb = get_and_remove_DTB_by_ID( colaReady->elements, idDTB);
     pthread_mutex_unlock(&m_colaReady);
-    if(dtb) sem_wait(&cantProcesosEnReady);
-  }
+    //if(dtb) sem_wait(&cantProcesosEnReady); //cuando ejecuto el comando finalizar idGDT, se queda bloqueado
+  }											//en este semáforo!!!!!!!
 
   if(!dtb)
   {
@@ -178,6 +178,7 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 			if( strcmp( msg[3], "finalizar") == 0){
 
 				finalizarDTB(dtb);
+				log_info(logger,"El GDT de id %d ha sido finalizado",dtb->id);
 
 			} else if(strcmp( msg[3], "continuar") == 0){ 
 
@@ -226,7 +227,6 @@ void avisoDeDamDeResultadoDTBDummy(socket_connection* socketInfo, char** msg){
 
 //FIN callable remote functions
 void finalizarDTB(DTB* dtb){
-	log_info(logger,"El GDT de id %d ha sido finalizado",dtb->id);
 	dtb->status = FINISHED;
 	encolarDTB(colaFinalizados, dtb, m_colaFinalizados);
 	sem_post(&puedeEntrarAlSistema);
