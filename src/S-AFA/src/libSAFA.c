@@ -238,16 +238,26 @@ static inline char *stringFromState(status_t status) { //Agarra un estado del en
     return strings[status];
 }
 
-void * buscarIdGdtAsociado(int idGDT){ //Idea de Buscar Por Cada Cola Hasta Encontrar El Id Especifico
-
-	buscarDTBEnColas(idGDT, colaNew);
-	buscarDTBEnColas(idGDT, colaReady);
-	buscarDTBEnColas(idGDT, colaBloqueados);
-	buscarDTBEnColas(idGDT, colaFinalizados);
+void * statusDTB(int idGDT){ //Idea de Buscar Por Cada Cola Hasta Encontrar El Id Especifico
+	DTB* dtb;
+	dtb = buscarDTB(colaNew->elements, idGDT);
+	if(dtb == NULL)
+		dtb = buscarDTB(colaReady->elements, idGDT);
+	if(dtb == NULL)
+		dtb = buscarDTB(colaBloqueados->elements, idGDT);
+	if(dtb == NULL)
+		dtb = buscarDTB(listaEjecutando, idGDT);
+	if(dtb == NULL)
+		dtb = buscarDTB(colaFinalizados->elements, idGDT);
+	
+	if(dtb != NULL)
+		mostrarInformacionDTB(dtb);
+	else
+		printf("No exite un GDT con id %d en el sistema\n", idGDT);
 
 }
 
-void * buscarDTBEnColas(int idDTB, t_queue* colaBusqueda) {
+void * buscarDTBEnColasMostrandoInfo(int idDTB, t_queue* colaBusqueda) {
 
 	int index = 0;
 	DTB* elemento;

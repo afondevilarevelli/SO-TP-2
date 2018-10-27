@@ -120,7 +120,7 @@ void avisoDeDamDeResultadoDTBDummy(socket_connection* socketInfo, char** msg);
 
 //Funciones Para La Funcion De Status
 void mostrarInformacionDTB(DTB*);
-void* buscarIdGdtAsociado(int);
-void* buscarDTBEnColas(int, t_queue*);
+void* statusDTB(int);
+void* buscarDTBEnColasMostrandoInfo(int, t_queue*);
 static inline char *stringFromState(status_t);
 #endif

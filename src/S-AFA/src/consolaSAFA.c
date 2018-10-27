@@ -71,8 +71,8 @@ void consolaSAFA(){
 }
 
 void pausarPlanificacion(){
-	pthread_mutex_trylock(&m_puedePlanificar);
 	list_iterate(listaCPUs, (void*)&iteracionPausarCPUs);
+	pthread_mutex_trylock(&m_puedePlanificar);
 }
 
 void continuarPlanificacion(){
@@ -134,18 +134,18 @@ void status(int idGDT){
 
 	    log_trace(logger,"La Info De Los DTB En Cada Cola Son:\n");
 	    log_trace(logger,"Cola New:");
-		buscarDTBEnColas(idGDT, colaNew);
+		buscarDTBEnColasMostrandoInfo(idGDT, colaNew);
 		log_trace(logger,"Cola Ready:");
-		buscarDTBEnColas(idGDT, colaReady);
+		buscarDTBEnColasMostrandoInfo(idGDT, colaReady);
 		log_trace(logger,"Cola Blocked:");
-		buscarDTBEnColas(idGDT, colaBloqueados);
+		buscarDTBEnColasMostrandoInfo(idGDT, colaBloqueados);
 		log_trace(logger,"Cola Finished:");
-		buscarDTBEnColas(idGDT, colaFinalizados);
+		buscarDTBEnColasMostrandoInfo(idGDT, colaFinalizados);
 
 	    }
 	    else{ //funcion status con parametro
 
-	    	buscarIdGdtAsociado(idGDT);
+	    	statusDTB(idGDT);
 	    	//return 0;
 	    }
 }
