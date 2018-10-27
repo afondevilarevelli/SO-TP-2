@@ -188,7 +188,7 @@ void disconnect(){
 }
 
 void pausarPlanificacion(socket_connection * connection ,char** args){
-	while( pthread_mutex_trylock(&m_puedeEjecutar) );
+	 pthread_mutex_trylock(&m_puedeEjecutar);
 }
 
 void continuarPlanificacion(socket_connection * connection ,char** args){
@@ -223,9 +223,10 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 	else{
 		int sentenciasEjecutadas = 0;
 		while(sentenciasEjecutadas < quantumAEjecutar){
+			sleep(datosCPU->retardo);
 			pthread_mutex_lock(&m_puedeEjecutar);
-			pthread_mutex_unlock(&m_puedeEjecutar);
 			sentencia = obtenerSentenciaParseada(rutaScript, programCounter);
+			pthread_mutex_unlock(&m_puedeEjecutar);
 			switch(sentencia.palabraReservada){
 				case ABRIR:
 					//algo
@@ -269,7 +270,6 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 			else
 				sentenciasEjecutadas++;
 					
-			sleep(datosCPU->retardo);
 		}
 
 		if(!sentencia.ultimaSentencia){ 

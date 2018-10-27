@@ -150,6 +150,12 @@ void status(int idGDT){
 	    }
 }
 
+//FALTA IMPLEMENTAR
 void metricas(){
+	log_trace(logger,"Cant. de sentencias ejecutadas que esperó un DTB en la cola NEW");
+	log_trace(logger,"Cant.de sentencias ejecutadas prom. del sistema que usaron a El Diego");
+	log_trace(logger,"Cant. de sentencias ejecutadas prom. del sistema para que un DTB termine en la cola EXIT");
+	log_trace(logger,"Porcentaje de las sentencias ejecutadas promedio que fueron a El Diego");
+	log_trace(logger,"Tiempo de Respuesta promedio del Sistema");
 
 }
