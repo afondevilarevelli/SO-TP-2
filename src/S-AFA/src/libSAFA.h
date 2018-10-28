@@ -51,6 +51,7 @@ typedef struct{
 //VARIABLES GLOBALES
 int generadorDeIdsCPU;
 int idCpuABuscar;
+int idCPU;
 //semaforos
 sem_t puedeEntrarAlSistema;
 sem_t cantProcesosEnReady;
@@ -117,6 +118,8 @@ void finalizarDTB(DTB* dtb);
 void newConnection(socket_connection* socketInfo, char** msg);
 void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg);
 void avisoDeDamDeResultadoDTBDummy(socket_connection* socketInfo, char** msg);
+void desbloquearDTB(socket_connection* connection, char** msgs);
+void pasarDTBAExit(socket_connection* connection, char** msgs);
 
 //Funciones Para La Funcion De Status
 void mostrarInformacionDTB(DTB*);

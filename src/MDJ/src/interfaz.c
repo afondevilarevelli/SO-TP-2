@@ -31,11 +31,15 @@ runFunction(connection->socket,"MDJ_DAM_existeArchivo",1,strEstado);
 
 //void* mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
 
-void crearArchivo(socket_connection * connection ,char * path,size_t sizeText)
+//args[0]: rutaDelArchivo, args[1]: cantidadDeLineas
+void crearArchivo(socket_connection * connection ,char** args)
 {
-archivo->path = path;
-archivo->size = sizeText;
-archivo->fd = verificarSiExisteArchivo(path);
+	char* path = args[0];
+	size_t sizeText = args[1];
+	archivo->path = path;
+	archivo->size = sizeText;
+	archivo->fd = verificarSiExisteArchivo(path);
+
 if(archivo->fd == existe)
 {
 estado = yaCreado;

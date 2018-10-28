@@ -112,19 +112,21 @@ log_error(logger,"Ocurrio un error al verificar si existe el archivo");
 }
 }
 
-void MDJ_DAM_verificarArchivoCreado(socket_connection* conenction,char ** args){
-estadoCreacion =atoi( args[0]);
+//Parametros cambiados para ver que hacer si se encuentra creado o no
+void MDJ_DAM_verificarArchivoCreado(/*socket_connection* conenction,char ** args*/char* pam1, char* pam2){
+
+estadoCreacion = atoi( pam1);
+
 if(estadoCreacion ==  1)
 {
 log_info(logger," El MDJ informa que se creo el archivo");
-}
-else if (estadoCreacion == 0)
-{
-log_info(logger,"El MDJ informa que el archivo ya estaba creado");
+runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB",1, pam2);
+
 }
 else
 {
 log_error(logger,"Ocurrio un error al querer crear el archivo");
+runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, pam2);
 }
 }
 
@@ -144,19 +146,21 @@ log_error(logger,"Ocurrio un error al querer borrar un archivo");
 }
 }
 
+void crearArchivo(socket_connection* connection, char** args){
+
+	int	idDTB = atoi(args[0]);
+	printf("%d", idDTB);
+	char* rutaArchivo = args[1];
+	char* cantidadLineas = args[2];
+
+	//Como todavia falta desarrollo del MDJ envio por parametro los posibles resultados con el DTB a buscar
+	//runFunction(socketMDJ,"crearArchivo",2, rutaArchivo, cantidadLineas);
+	MDJ_DAM_verificarArchivoCreado("0", args[0]);
+
+};
 
 void existeArchivo(socket_connection* socketMDJ, char * pathFile){
  runFunction(socketMDJ,"validarArchivo",1,pathFile);
-}
-
-void verificarArchivoCreado(socket_connection* socketMDJ, char * pathFile)
-{
- runFunction(socketMDJ,"crearArchivo",1,pathFile);
-}
-
-void verificameSiArchivoFueBorrado(socket_connection* socketMDJ, char * pathFile)
-{
-runFunction(socketMDJ,"borrarArchivo",1,pathFile);
 }
 /*
 void abrirArchivo(char *pathDelArchivo,char *buffer,DTB* d)

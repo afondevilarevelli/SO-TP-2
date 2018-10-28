@@ -227,12 +227,12 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 			pthread_mutex_lock(&m_puedeEjecutar);
 			sentencia = obtenerSentenciaParseada(rutaScript, programCounter);
 			pthread_mutex_unlock(&m_puedeEjecutar);
+
 			switch(sentencia.palabraReservada){
 				case ABRIR:
-					//algo
 					break;
 				case CONCENTRAR:
-					//algo
+					sleep(datosCPU->retardo);
 					break; 
 				case ASIGNAR:
 					//algo
@@ -250,7 +250,17 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					//algo
 					break;
 				case CREAR:
-					//algo
+					//Aca se incrementa el PC y SE, al final para ver si mas adelante continua o aborta
+					programCounter++;
+					sentenciasEjecutadas++;
+					char string_sentEjecutadas[2];
+					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
+					//args[0] idGDT para Bloquear
+					runFunction(socketSAFA, "finalizacionProcesamientoCPU",4,string_id, args[0],string_sentEjecutadas,"bloquear");
+					sleep(datosCPU->retardo);
+					runFunction(socketDAM, "CPU_DAM_crearArchivo", 3, args[0],sentencia.p1, sentencia.p2);
+					sleep(datosCPU->retardo);
+					return 0;
 					break;
 				case BORRAR:
 					//algo

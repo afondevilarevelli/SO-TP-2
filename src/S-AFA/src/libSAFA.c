@@ -189,7 +189,6 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 				sem_post(&cantProcesosEnReady);
 
 			} else{ // "bloquear"
-	
 				dtb->status = BLOCKED;
 				dtb->quantumFaltante = datosConfigSAFA->quantum - quantumEjecutado;
 				dtb->PC += quantumEjecutado;
@@ -223,6 +222,30 @@ void avisoDeDamDeResultadoDTBDummy(socket_connection* socketInfo, char** msg){
 			finalizarDTB(dtb);
 		}				
 	}
+}
+
+//Probablemente haya que cambiar el nombre de la funcion avisoDeDamDeResultadoDTBDummy
+//para que lo haga con cualquier DTB
+void desbloquearDTB(socket_connection* connection, char** msgs){
+	int idDTB = atoi(msgs[0]);
+	printf("%d", idDTB);
+	pthread_mutex_lock(&m_colaBloqueados);
+	DTB* dtb = get_and_remove_DTB_by_ID(colaBloqueados->elements, idDTB);
+	pthread_mutex_unlock(&m_colaBloqueados);
+	log_info("Se va a desbloquear el ID del DTB: %d", dtb->id);
+	dtb->status = READY;
+	encolarDTB(colaReady, dtb, m_colaReady);
+	sem_post(&cantProcesosEnReady);
+}
+
+//Caso cuando ocurre un fallo y pasa a abortarse para la cola FINISHED
+void pasarDTBAExit(socket_connection* connection, char** msgs){
+	int idDTB = atoi(msgs[0]);
+	log_trace(logger,"Termino Abortandose el ID del DTB: %d", idDTB);
+	pthread_mutex_lock(&m_colaBloqueados);
+	DTB* dtb = get_and_remove_DTB_by_ID(colaBloqueados->elements, idDTB);
+	pthread_mutex_unlock(&m_colaBloqueados);
+	finalizarDTB(dtb);
 }
 
 //FIN callable remote functions

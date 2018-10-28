@@ -33,8 +33,8 @@ int main(void){
 	//--------------------------------------------------------------------
   //dicionarios de CPU
       dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_solicitudCargaGDT", &solicitudCargaGDT);
-      
       dictionary_put(callableRemoteFunctionsCPU, "identificarProcesoEnDAM", &identificarProceso);
+      dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_crearArchivo", &crearArchivo);
     
 	socketSAFA = connectServer("172.17.0.1", 8001,callableRemoteFunctionsSAFA, &disconnect, NULL);
   //CUANDO ME CONECTO AL SAFA LE DIGO QUE SOY EL PROCESO DAM (para manejar estadoCorrupto)
