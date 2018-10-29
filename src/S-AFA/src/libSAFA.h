@@ -36,6 +36,7 @@ typedef struct{
 	t_list* archivosAbiertos;
 	status_t status;
 	int quantumFaltante; //sentencias que le faltan ejecutar para terminar su quantum ( para VRR )
+	int cantSentEsperadasEnNew; //para las metricas
 }DTB;
 
 typedef struct{
@@ -86,6 +87,10 @@ bool estadoCorrupto;
 bool damConectado;
 bool unCpuConectado;
 
+//para las metricas
+int cantGDTsEjecutados;
+int cantSentEsperadasASumar;
+
 //--------------------------------------------//
 
 //FUNCIONES UTILES
@@ -98,6 +103,8 @@ CPU* buscarCPU(int id);
 bool closureIdCPU(CPU* cpu);
 
 DTB* buscarDTB(t_list* lista,int id);
+
+DTB* buscarDTBEnElSistema(idGDT);
 
 //LOGS
 void configure_logger();
@@ -121,6 +128,9 @@ void avisoDeDamDeResultadoDTBDummy(socket_connection* socketInfo, char** msg);
 void desbloquearDTB(socket_connection* connection, char** msgs);
 void pasarDTBAExit(socket_connection* connection, char** msgs);
 
+//fin CallableRemoteFunctions
+
+void aumentarCantSentenciasEsperadasEnNew(DTB* dtb);
 //Funciones Para La Funcion De Status
 void mostrarInformacionDTB(DTB*);
 void* statusDTB(int);

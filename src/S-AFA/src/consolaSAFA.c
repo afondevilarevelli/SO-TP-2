@@ -28,24 +28,28 @@ void consolaSAFA(){
 		}
 		else
 		if(strcmp(p1,"status") == 0 )
-		{
-            int id;
+		{     
             if(p2 == NULL){
-                id = 0;
                 log_trace(logger,"Estado de las colas:\n");
                 status(0);
             }
             else{
-                id = atoi(p2);	//convertir p2 a int
+                int id = atoi(p2);	//convertir p2 a int
 			    log_trace(logger,"Datos del DTB del G.DT de id = %d\n", id);
 			    status(id);
             }
 		}
 		else
-		if(strcmp(p1,"metricas") == 0 && p2 == NULL)
+		if(strcmp(p1,"metricas") == 0 )
 		{
-			log_trace(logger,"Se detallaran las metricas del sistema:\n");
-            metricas();
+			log_trace(logger,"Se detallaran las metricas:\n");
+			if(p2 == NULL){ 
+                metricas(0);
+            }
+            else{
+                int id = atoi(p2);	//convertir p2 a int
+			    metricas(id);
+            }
 		}
 		else if(strcmp(p1,"pausar") == 0 && p2 == NULL){
 			pausarPlanificacion();
@@ -103,6 +107,7 @@ void ejecutar(char* rutaSc){
     	list_create(dtb->archivosAbiertos);
     	dtb->status = NEW;
 		dtb->quantumFaltante = 0;
+		dtb->cantSentEsperadasEnNew = 0;
 
 		encolarDTB(colaNew, dtb, m_colaNew);
 		sem_post(&cantProcesosEnNew);
@@ -151,11 +156,17 @@ void status(int idGDT){
 }
 
 //FALTA IMPLEMENTAR
-void metricas(){
-	log_trace(logger,"Cant. de sentencias ejecutadas que esperó un DTB en la cola NEW");
+void metricas(int idGDT){	
 	log_trace(logger,"Cant.de sentencias ejecutadas prom. del sistema que usaron a El Diego");
 	log_trace(logger,"Cant. de sentencias ejecutadas prom. del sistema para que un DTB termine en la cola EXIT");
 	log_trace(logger,"Porcentaje de las sentencias ejecutadas promedio que fueron a El Diego");
 	log_trace(logger,"Tiempo de Respuesta promedio del Sistema");
-
+	 
+	if(idGDT != 0){ 
+		DTB* dtb = buscarDTBEnElSistema(idGDT);
+		if(dtb != NULL)
+			log_trace(logger,"Cant. de sentencias ejecutadas que esperó el DTB de id %d en la cola NEW: %d", idGDT, dtb->cantSentEsperadasEnNew);
+		else
+			log_info(logger, "No existe un GDT con id %d en el sistema", idGDT);
+	}
 }

@@ -17,7 +17,7 @@ void consolaSAFA();
 void ejecutar(char* rutaScript);
 void status(int idGDT);
 void finalizar(int idGDT);
-void metricas();
+void metricas(int idGDT);
 void pausarPlanificacion();
 void iteracionPausarCPUs(CPU* cpu);
 void continuarPlanificacion();

@@ -257,11 +257,8 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 					//args[0] idGDT para Bloquear
 					runFunction(socketSAFA, "finalizacionProcesamientoCPU",4,string_id, args[0],string_sentEjecutadas,"bloquear");
-					sleep(datosCPU->retardo);
 					runFunction(socketDAM, "CPU_DAM_crearArchivo", 3, args[0],sentencia.p1, sentencia.p2);
-					sleep(datosCPU->retardo);
-					return 0;
-					break;
+					return;
 				case BORRAR:
 					//algo
 					break;

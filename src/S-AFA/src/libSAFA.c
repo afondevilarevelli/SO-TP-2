@@ -97,6 +97,21 @@ DTB* get_and_remove_DTB_by_ID( t_list * lista, int id )
   return NULL;
 }
 
+DTB* buscarDTBEnElSistema(idGDT){
+	DTB* dtb;
+	dtb = buscarDTB(colaNew->elements, idGDT);
+	if(dtb == NULL)
+		dtb = buscarDTB(colaReady->elements, idGDT);
+	if(dtb == NULL)
+		dtb = buscarDTB(colaBloqueados->elements, idGDT);
+	if(dtb == NULL)
+		dtb = buscarDTB(listaEjecutando, idGDT);
+	if(dtb == NULL)
+		dtb = buscarDTB(colaFinalizados->elements, idGDT);
+
+	return dtb;
+}
+
 //LOG
 void configure_logger() {
 
@@ -172,7 +187,12 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 	pthread_mutex_lock(&m_listaEjecutando);
 	DTB* dtb = get_and_remove_DTB_by_ID(listaEjecutando, idDTB);
 	pthread_mutex_unlock(&m_listaEjecutando);
-	
+
+	pthread_mutex_lock(&m_colaNew);
+	cantSentEsperadasASumar = quantumEjecutado;
+	list_iterate(colaNew->elements, (void*) &aumentarCantSentenciasEsperadasEnNew);
+	pthread_mutex_unlock(&m_colaNew);
+
 	if(dtb != NULL){ 
 		if(dtb->status != FINISHED){ 
 			if( strcmp( msg[3], "finalizar") == 0){
@@ -204,6 +224,10 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 	sem_post(&cpu->aviso);
 }
 
+void aumentarCantSentenciasEsperadasEnNew(DTB* dtb){
+	dtb->cantSentEsperadasEnNew += cantSentEsperadasASumar;
+}
+
 //msg[0] = idDTB ,msg[1] = "ok" ó "error"
 void avisoDeDamDeResultadoDTBDummy(socket_connection* socketInfo, char** msg){
 	int idDTB = atoi(msg[0]);
@@ -224,28 +248,29 @@ void avisoDeDamDeResultadoDTBDummy(socket_connection* socketInfo, char** msg){
 	}
 }
 
-//Probablemente haya que cambiar el nombre de la funcion avisoDeDamDeResultadoDTBDummy
-//para que lo haga con cualquier DTB
 void desbloquearDTB(socket_connection* connection, char** msgs){
 	int idDTB = atoi(msgs[0]);
-	printf("%d", idDTB);
 	pthread_mutex_lock(&m_colaBloqueados);
 	DTB* dtb = get_and_remove_DTB_by_ID(colaBloqueados->elements, idDTB);
 	pthread_mutex_unlock(&m_colaBloqueados);
-	log_info("Se va a desbloquear el ID del DTB: %d", dtb->id);
-	dtb->status = READY;
-	encolarDTB(colaReady, dtb, m_colaReady);
-	sem_post(&cantProcesosEnReady);
+	if(dtb != NULL){ 
+		log_info("Se va a desbloquear el ID del DTB: %d", dtb->id);
+		dtb->status = READY;
+		encolarDTB(colaReady, dtb, m_colaReady);
+		sem_post(&cantProcesosEnReady);
+	}
 }
 
 //Caso cuando ocurre un fallo y pasa a abortarse para la cola FINISHED
 void pasarDTBAExit(socket_connection* connection, char** msgs){
 	int idDTB = atoi(msgs[0]);
-	log_trace(logger,"Termino Abortandose el ID del DTB: %d", idDTB);
 	pthread_mutex_lock(&m_colaBloqueados);
 	DTB* dtb = get_and_remove_DTB_by_ID(colaBloqueados->elements, idDTB);
 	pthread_mutex_unlock(&m_colaBloqueados);
-	finalizarDTB(dtb);
+	if(dtb != NULL){ 
+		log_trace(logger,"Se va a abortar al GDT de id: %d", idDTB);
+		finalizarDTB(dtb);
+	}
 }
 
 //FIN callable remote functions
@@ -263,15 +288,7 @@ static inline char *stringFromState(status_t status) { //Agarra un estado del en
 
 void * statusDTB(int idGDT){ //Idea de Buscar Por Cada Cola Hasta Encontrar El Id Especifico
 	DTB* dtb;
-	dtb = buscarDTB(colaNew->elements, idGDT);
-	if(dtb == NULL)
-		dtb = buscarDTB(colaReady->elements, idGDT);
-	if(dtb == NULL)
-		dtb = buscarDTB(colaBloqueados->elements, idGDT);
-	if(dtb == NULL)
-		dtb = buscarDTB(listaEjecutando, idGDT);
-	if(dtb == NULL)
-		dtb = buscarDTB(colaFinalizados->elements, idGDT);
+	dtb = buscarDTBEnElSistema(idGDT);
 	
 	if(dtb != NULL)
 		mostrarInformacionDTB(dtb);
