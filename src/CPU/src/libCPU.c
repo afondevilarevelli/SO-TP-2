@@ -250,6 +250,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					//algo
 					break;
 				case CREAR:
+
 					//Aca se incrementa el PC y SE, al final para ver si mas adelante continua o aborta
 					programCounter++;
 					sentenciasEjecutadas++;
@@ -258,11 +259,18 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					//args[0] idGDT para Bloquear
 					runFunction(socketSAFA, "finalizacionProcesamientoCPU",4,string_id, args[0],string_sentEjecutadas,"bloquear");
 					runFunction(socketDAM, "CPU_DAM_crearArchivo", 3, args[0],sentencia.p1, sentencia.p2);
-					return;
+					return ;
+
 				case BORRAR:
-					//algo
-					break;
-				
+
+					programCounter++;
+					sentenciasEjecutadas++;
+					string_sentEjecutadas[2];
+					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
+					//args[0] idGDT para Bloquear
+					runFunction(socketSAFA, "finalizacionProcesamientoCPU",4,string_id, args[0],string_sentEjecutadas,"bloquear");
+					runFunction(socketDAM, "CPU_DAM_borrarArchivo", 2, args[0],sentencia.p1);
+					return ;
 			}
 
 			programCounter++;

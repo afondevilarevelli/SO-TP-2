@@ -184,6 +184,7 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 	int quantumEjecutado = atoi( msg[2] );
 	log_info(logger, "La CPU %d ha finalizado de procesar sentencias del GDT de id %d", idCPU, idDTB);
 	CPU* cpu = buscarCPU(idCPU);
+
 	pthread_mutex_lock(&m_listaEjecutando);
 	DTB* dtb = get_and_remove_DTB_by_ID(listaEjecutando, idDTB);
 	pthread_mutex_unlock(&m_listaEjecutando);
@@ -247,18 +248,19 @@ void avisoDeDamDeResultadoDTBDummy(socket_connection* socketInfo, char** msg){
 		}				
 	}
 }
-
+//Dejando el IF mantiene el DTB en BLOCKED, Se esta generando una condicion de carrera
+//A veces dando bien el resultado y otras Seg Fault
 void desbloquearDTB(socket_connection* connection, char** msgs){
 	int idDTB = atoi(msgs[0]);
 	pthread_mutex_lock(&m_colaBloqueados);
 	DTB* dtb = get_and_remove_DTB_by_ID(colaBloqueados->elements, idDTB);
 	pthread_mutex_unlock(&m_colaBloqueados);
-	if(dtb != NULL){ 
+
 		log_info("Se va a desbloquear el ID del DTB: %d", dtb->id);
 		dtb->status = READY;
 		encolarDTB(colaReady, dtb, m_colaReady);
 		sem_post(&cantProcesosEnReady);
-	}
+
 }
 
 //Caso cuando ocurre un fallo y pasa a abortarse para la cola FINISHED
@@ -267,10 +269,8 @@ void pasarDTBAExit(socket_connection* connection, char** msgs){
 	pthread_mutex_lock(&m_colaBloqueados);
 	DTB* dtb = get_and_remove_DTB_by_ID(colaBloqueados->elements, idDTB);
 	pthread_mutex_unlock(&m_colaBloqueados);
-	if(dtb != NULL){ 
 		log_trace(logger,"Se va a abortar al GDT de id: %d", idDTB);
 		finalizarDTB(dtb);
-	}
 }
 
 //FIN callable remote functions

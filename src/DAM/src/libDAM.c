@@ -130,34 +130,46 @@ runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, pam2);
 }
 }
 
-void MDJ_DAM_verificameSiArchivoFueBorrado(socket_connection * connection,char ** args){
-estadoBorrado =atoi( args[0]);
+void MDJ_DAM_verificameSiArchivoFueBorrado(/*socket_connection * connection,char ** args*/char* pam1, char* pam2){
+
+estadoBorrado = atoi(pam1);
+
 if(estadoBorrado ==  1)
 {
 log_info(logger," El MDJ informa que se borro el archivo");
-}
-else if ( estadoBorrado == 0)
-{
-log_info(logger,"El MDJ informa que el archivo no existia,por lo que no se podia borrar");
+runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB",1, pam2);
 }
 else
 {
-log_error(logger,"Ocurrio un error al querer borrar un archivo");
+log_error(logger,"Ocurrio un error al querer borrar el archivo");
+runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, pam2);
 }
 }
 
 void crearArchivo(socket_connection* connection, char** args){
 
 	int	idDTB = atoi(args[0]);
-	printf("%d", idDTB);
+
 	char* rutaArchivo = args[1];
 	char* cantidadLineas = args[2];
 
 	//Como todavia falta desarrollo del MDJ envio por parametro los posibles resultados con el DTB a buscar
 	//runFunction(socketMDJ,"crearArchivo",2, rutaArchivo, cantidadLineas);
-	MDJ_DAM_verificarArchivoCreado("0", args[0]);
+	MDJ_DAM_verificarArchivoCreado("1", args[0]);
 
-};
+}
+
+void borrarArchivo(socket_connection* connection, char** args){
+
+	int	idDTB = atoi(args[0]);
+
+	char* rutaArchivo = args[1];
+
+	//Idem Crear Archivo
+	//runFunction(socketMDJ,"borrarArchivo",1, rutaArchivo);
+	MDJ_DAM_verificameSiArchivoFueBorrado("0", args[0]);
+
+}
 
 void existeArchivo(socket_connection* socketMDJ, char * pathFile){
  runFunction(socketMDJ,"validarArchivo",1,pathFile);
