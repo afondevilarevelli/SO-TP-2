@@ -104,7 +104,8 @@ void ejecutar(char* rutaSc){
     	strcpy(dtb->rutaScript, rutaSc);
     	dtb->PC = 0;
     	dtb->flagInicializado = 1;
-    	list_create(dtb->archivosAbiertos);
+    	dtb->archivosAbiertos = list_create();
+		dtb->recursos = list_create();
     	dtb->status = NEW;
 		dtb->quantumFaltante = 0;
 		dtb->cantSentEsperadasEnNew = 0;

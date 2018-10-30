@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "libSAFA.h"
 
+
 void encolarDTB(t_queue* c, DTB* d, pthread_mutex_t m){
 	pthread_mutex_lock(&m);
     queue_push(c, d);
@@ -19,7 +20,7 @@ CPU* buscarCPU(int id){
 	pthread_mutex_lock(&m_busqueda);
 	idCpuABuscar = id;
 	CPU* cpu = list_find(listaCPUs, (void*)closureIdCPU);
-	pthread_mutex_unlock(&m_busqueda);
+	pthread_mutex_lock(&m_busqueda);
 	return cpu;
 }
 
@@ -27,6 +28,46 @@ bool closureIdCPU(CPU* cpu){
 	return cpu->id == idCpuABuscar;
 }
 
+recurso* buscarRecurso(char* nombre){
+	pthread_mutex_lock(&m_busqueda);
+	nombreRecursoABuscar = malloc(strlen(nombre)+1);
+	strcpy(nombreRecursoABuscar, nombre);
+	recurso* r = list_find(listaDeRecursos, (void*)&closureBusquedaRecurso);
+	free(nombreRecursoABuscar);
+	pthread_mutex_unlock(&m_busqueda);
+	return r;
+}
+
+bool closureBusquedaRecurso(recurso* r){
+	return strcmp(r->nombre, nombreRecursoABuscar) == 0;
+}
+
+void destruirRecurso(recurso* r){
+        free(r->nombre);
+        list_destroy(r->GDTsEsperandoRecurso);
+        free(r);
+}
+
+void crearRecurso(char* nombre, int valor){
+	recurso* rec = malloc(sizeof(recurso));
+	rec->nombre = malloc(strlen(nombre) + 1);
+	strcpy(rec->nombre, nombre);
+	rec->valor = valor;
+	rec->GDTsEsperandoRecurso = list_create();
+	pthread_mutex_lock(&m_listaDeRecursos);
+	list_add(listaDeRecursos, rec);
+	pthread_mutex_unlock(&m_listaDeRecursos);
+}
+
+//de la listaDeRecursos
+void eliminarRecurso(recurso* r){
+		pthread_mutex_lock(&m_busqueda);
+		nombreRecursoABuscar = malloc(strlen(r->nombre)+1);
+		strcpy(nombreRecursoABuscar, r->nombre);
+		list_remove_and_destroy_by_condition(listaDeRecursos, &closureBusquedaRecurso,  (void*)&destruirRecurso);
+		free(nombreRecursoABuscar);
+		pthread_mutex_unlock(&m_busqueda);
+}
 
 DTB* buscarDTB(t_list* lista,int id){
 	pthread_mutex_lock(&m_busqueda);
@@ -97,7 +138,7 @@ DTB* get_and_remove_DTB_by_ID( t_list * lista, int id )
   return NULL;
 }
 
-DTB* buscarDTBEnElSistema(idGDT){
+DTB* buscarDTBEnElSistema(int idGDT){
 	DTB* dtb;
 	dtb = buscarDTB(colaNew->elements, idGDT);
 	if(dtb == NULL)
@@ -160,6 +201,61 @@ t_config_SAFA * read_and_log_config(char* path) {
 } // al final de esta funcion me queda la variable datosConfigSAFA con la config de SAFA
 
 //CallableRemoteFunctions
+
+//llamada por CPU al haber una sentencia de wait
+//msg[0]: idGDT, msg[1]: nombreRecurso
+void waitRecurso(socket_connection* socketInfo, char** msg){
+	recurso* rec = buscarRecurso(msg[1]);
+	if(rec == NULL){ // si no existe
+		crearRecurso(msg[1], 1);
+		//le da la orden a la cpu de ejecutar otra vez este GDT
+		//runFunction(socketInfo->socket,"AlgunaFuncionDeCPU",... );
+	}
+	else{ //si existe
+		rec->valor--;
+		if(rec->valor < 0){
+			//bloquear GDT
+		}
+		else{
+			//sigue ejecutando el GDT
+		}
+
+	}
+}
+
+//llamada por CPU al haber una sentencia de signal
+//msg[0]: idGDT, msg[1]: nombreRecurso
+void signalRecurso(socket_connection* socketInfo, char** msg){
+	recurso* rec = buscarRecurso(msg[1]);
+	if(rec == NULL){ // si no existe
+		recurso* r = malloc(sizeof(recurso));
+		r->nombre = malloc(strlen(msg[1]) + 1);
+		strcpy(r->nombre, msg[1]);
+		r->valor = 1;
+		r->GDTsEsperandoRecurso = list_create();
+		pthread_mutex_lock(&m_listaDeRecursos);
+		list_add(listaDeRecursos, r);
+		pthread_mutex_unlock(&m_listaDeRecursos);
+		//runFunction(socketInfo->socket,"AlgunaFuncionDeCPU",... );
+	}
+	else{ //si existe
+		rec->valor++;
+		pthread_mutex_lock(&m_listaDeRecursos);
+		DTB* dtbADesbloquear = list_get(rec->GDTsEsperandoRecurso, 0);
+		pthread_mutex_unlock(&m_listaDeRecursos);
+		if(dtbADesbloquear != NULL){
+			pthread_mutex_lock(&m_colaBloqueados);
+			get_and_remove_DTB_by_ID(colaBloqueados->elements, dtbADesbloquear->id);
+			pthread_mutex_unlock(&m_colaBloqueados);
+			encolarDTB(colaReady, dtbADesbloquear, m_colaReady);
+			sem_post(&cantProcesosEnReady);
+			//debería seguir ejecutando el mismo GDT
+		}	
+		else{
+			eliminarRecurso(rec);
+		}
+	}
+}
 
 //es llamada por CPU y DAM cuando se conectan, para poder manejar el estado corrupto
 void newConnection(socket_connection* socketInfo, char** msg){
@@ -248,19 +344,19 @@ void avisoDeDamDeResultadoDTBDummy(socket_connection* socketInfo, char** msg){
 		}				
 	}
 }
-//Dejando el IF mantiene el DTB en BLOCKED, Se esta generando una condicion de carrera
-//A veces dando bien el resultado y otras Seg Fault
+//Se debe verificar si no es nulo, puesto que si es nulo significa que el dtb con dicho id ya fue finalizado 
+// (por consola), y si no se verificara la nulidad tiraría segmentationFault.
 void desbloquearDTB(socket_connection* connection, char** msgs){
 	int idDTB = atoi(msgs[0]);
 	pthread_mutex_lock(&m_colaBloqueados);
 	DTB* dtb = get_and_remove_DTB_by_ID(colaBloqueados->elements, idDTB);
 	pthread_mutex_unlock(&m_colaBloqueados);
-
-		log_info("Se va a desbloquear el ID del DTB: %d", dtb->id);
+	if(dtb != NULL){ 
+		log_info(logger,"Se va a desbloquear el ID del DTB: %d", dtb->id);
 		dtb->status = READY;
 		encolarDTB(colaReady, dtb, m_colaReady);
 		sem_post(&cantProcesosEnReady);
-
+	}
 }
 
 //Caso cuando ocurre un fallo y pasa a abortarse para la cola FINISHED
@@ -269,8 +365,10 @@ void pasarDTBAExit(socket_connection* connection, char** msgs){
 	pthread_mutex_lock(&m_colaBloqueados);
 	DTB* dtb = get_and_remove_DTB_by_ID(colaBloqueados->elements, idDTB);
 	pthread_mutex_unlock(&m_colaBloqueados);
+	if(dtb != NULL){ 
 		log_trace(logger,"Se va a abortar al GDT de id: %d", idDTB);
 		finalizarDTB(dtb);
+	}
 }
 
 //FIN callable remote functions

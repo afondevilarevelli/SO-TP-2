@@ -34,6 +34,7 @@ typedef struct{
 	int PC; //program counter
 	int flagInicializado;
 	t_list* archivosAbiertos;
+	t_list* recursos; // recursos obtenidos ( para las sentencias wait y signal )
 	status_t status;
 	int quantumFaltante; //sentencias que le faltan ejecutar para terminar su quantum ( para VRR )
 	int cantSentEsperadasEnNew; //para las metricas
@@ -45,6 +46,12 @@ typedef struct{
 	sem_t aviso; //cuando CPU termina con un GDT me avisa mediante este semaforo
 }CPU;
 
+typedef struct{
+	char* nombre;
+	int valor;
+	t_list* GDTsEsperandoRecurso;
+}recurso;
+
 //--------------------------------------//
 
 
@@ -52,6 +59,7 @@ typedef struct{
 //VARIABLES GLOBALES
 int generadorDeIdsCPU;
 int idCpuABuscar;
+char* nombreRecursoABuscar;
 int idCPU;
 //semaforos
 sem_t puedeEntrarAlSistema;
@@ -64,6 +72,7 @@ pthread_mutex_t m_colaBloqueados;
 pthread_mutex_t m_colaFinalizados;
 pthread_mutex_t m_colaNew;
 pthread_mutex_t m_listaEjecutando;
+pthread_mutex_t m_listaDeRecursos;
 
 pthread_mutex_t m_busqueda;
 
@@ -81,6 +90,8 @@ t_list* listaEjecutando;
 t_list* hilos;
 
 t_list* listaCPUs; //lista de CPUs
+
+t_list* listaDeRecursos;
 
 //booleanos para manejar el estado corrupto
 bool estadoCorrupto; 
@@ -104,7 +115,15 @@ bool closureIdCPU(CPU* cpu);
 
 DTB* buscarDTB(t_list* lista,int id);
 
-DTB* buscarDTBEnElSistema(idGDT);
+DTB* buscarDTBEnElSistema(int idGDT);
+
+recurso* buscarRecurso(char* nombre);
+bool closureBusquedaRecurso(recurso* r);
+
+void destruirRecurso(recurso* r);
+
+void eliminarRecurso(recurso* r);
+void crearRecurso(char* nombre, int valor);
 
 //LOGS
 void configure_logger();
@@ -127,7 +146,8 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg);
 void avisoDeDamDeResultadoDTBDummy(socket_connection* socketInfo, char** msg);
 void desbloquearDTB(socket_connection* connection, char** msgs);
 void pasarDTBAExit(socket_connection* connection, char** msgs);
-
+void waitRecurso(socket_connection* socketInfo, char** msg);
+void signalRecurso(socket_connection* socketInfo, char** msg);
 //fin CallableRemoteFunctions
 
 void aumentarCantSentenciasEsperadasEnNew(DTB* dtb);

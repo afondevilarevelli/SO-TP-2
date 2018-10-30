@@ -22,6 +22,8 @@ int main(void){
      dictionary_put(fns, "avisoDamDTBDummy", &avisoDeDamDeResultadoDTBDummy);
      dictionary_put(fns, "DAM_SAFA_desbloquearDTB", &desbloquearDTB);
      dictionary_put(fns, "DAM_SAFA_pasarDTBAExit", &pasarDTBAExit);
+     dictionary_put(fns, "waitRecurso", &waitRecurso);
+     dictionary_put(fns, "signalRecurso", &signalRecurso);
 
         
         colaReady = queue_create();
@@ -31,6 +33,7 @@ int main(void){
         listaEjecutando = list_create();
         hilos = list_create();
         listaCPUs = list_create();
+        listaDeRecursos = list_create();
 
         pthread_t hiloConsola, hiloPLP;
         list_add(hilos, &hiloConsola);
@@ -51,6 +54,7 @@ int main(void){
         pthread_mutex_init(&m_colaFinalizados, NULL);
         pthread_mutex_init(&m_colaNew, NULL);
         pthread_mutex_init(&m_listaEjecutando, NULL);
+        pthread_mutex_init(&m_listaDeRecursos, NULL);
 
         pthread_mutex_init(&m_busqueda, NULL);
 
@@ -91,6 +95,7 @@ void cerrarPrograma() {
     pthread_mutex_destroy(&m_listaEjecutando);
     pthread_mutex_destroy(&m_busqueda);
     pthread_mutex_destroy(&m_colaFinalizados);
+    pthread_mutex_destroy(&m_listaDeRecursos);
 
     close_logger();
     dictionary_destroy(fns); 
@@ -104,6 +109,7 @@ void cerrarPrograma() {
     list_destroy(hilos);
     list_destroy_and_destroy_elements(listaCPUs, (void*)free);
     list_destroy(listaEjecutando);
+    list_destroy_and_destroy_elements(listaDeRecursos, (void*)&destruirRecurso);
 
 
     pthread_mutex_unlock(&mx_main);
