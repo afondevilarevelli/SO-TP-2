@@ -5,6 +5,7 @@
 #include <commons/string.h>
 #include <commons/collections/dictionary.h>
 #include <pthread.h>
+#include <string.h>
 #include <signal.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
