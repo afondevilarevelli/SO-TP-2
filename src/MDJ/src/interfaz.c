@@ -1,11 +1,11 @@
 #include  "interfaz.h"
+#include "libMDJ.h"
 //https://www.programacion.com.py/escritorio/c/archivos-en-c-linux
 // Con esto se maneja cada mensaje que se le mando al dam, si es 0 es porque es false, si es 1 es porque es true
-int estado;
-t_archivo archivo;
+t_archivo *  archivo;
 char strEstado[2];
 
-directorioMontaje = datosConfMDJ->ptoMontaje;
+
 
 aplicarRetardo(char *path)
 {
@@ -19,12 +19,12 @@ void  validarArchivo(socket_connection * connection,char ** args){
 archivo->path = args[0];
 archivo->fd =  verificarSiExisteArchivo(archivo->path);
 if(archivo->fd == noExiste){
-estado =noExiste;
+archivo->estado =noExiste;
 }
 else {
-estado =  existe;
+archivo->estado=  existe;
 }
-sprintf(strEstado, "%i", estado);
+sprintf(strEstado, "%i", archivo->estado);
 aplicarRetardo("MDJ.config");
 runFunction(connection->socket,"MDJ_DAM_existeArchivo",1,strEstado);
 }
@@ -42,26 +42,39 @@ void crearArchivo(socket_connection * connection ,char** args)
 
 if(archivo->fd == existe)
 {
-estado = yaCreado;
+archivo->estado = yaCreado;
 }
 else if (archivo->fd == noExiste)
 {
-archivo->mem_ptro = mmap(void,sizeText,PROT_EXEC|PROT_READ|PROT_WRITE,MAP_SHARED,archivo->fd,0);
-write(archivo->fd,"",archivo->sizeText);
-estado = recienCreado;
+flock(archivo->fd,LOCK_EX);	
+archivo->mem_ptro = mmap((void *)NULL,sizeText,PROT_EXEC|PROT_READ|PROT_WRITE,MAP_SHARED,archivo->fd,0);
+write(archivo->fd,string_repeat("\n",archivo->size),archivo->size);
+archivo->estado = recienCreado;
+flock(archivo->fd,LOCK_UN);
 }
 else
 {
-estado = noCreado;
+archivo->estado = noCreado;
 }
-sprintf(strEstado, "%i", estado);
+sprintf(strEstado, "%i", archivo->estado);
 aplicarRetardo("MDJ.config");
 runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",1,strEstado);
 }
 
 //off_t lseek(int fildes, off_t offset, int whence);
-size_t  obtenerDatos(socket_connection * connection,char * path,off_t  * offset,size_t  * size){
-
+size_t  obtenerDatos(socket_connection * connection,char ** args){
+	char* path = args[0];
+	off_t  * offset = args[1];
+	size_t sizeText = args[2];
+	archivo->fd = verificarSiExisteArchivo(path);
+if(archivo->fd == noExiste)
+{
+archivo->estado = noExiste;	
+}
+else
+{
+flock(archivo->fd,LOCK_EX);	
+}
 }
 
 void guardarDatos(socket_connection * connection ,char * path,off_t  * offset,size_t *   size,char * buffer){
@@ -73,20 +86,20 @@ archivo->fd  = verificarSiExisteArchivo(path);
 if (archivo->fd  == existe)
 {
 remove(path);
-estado = recienBorrado;
+archivo->estado = recienBorrado;
 }
 else
 {
-estado = noBorrado;
+archivo->estado = noBorrado;
 }
-sprintf(strEstado, "%i", estado);
+sprintf(strEstado, "%i", archivo->estado);
 aplicarRetardo("MDJ.config");
 runFunction(connection->socket,"MDJ_DAM_verificameSiArchivoFueBorrado",1,strEstado);
 }
 
 int verificarSiExisteArchivo(char * path){
 archivo->path = path;
-archivo->fd = open(path,O_RDONLY|0_CREAT);
+archivo->fd = open(path,O_RDONLY|O_CREAT);
 if(archivo->fd  == -1){
 return noExiste;
 }

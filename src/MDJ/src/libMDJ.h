@@ -3,9 +3,7 @@
 #include <commons/log.h>
 #include <commons/config.h>
 #include <commons/string.h>
-#include <commons/bitarray.h>
 #include <commons/collections/dictionary.h>
-#include <commons/collections/list.h>
 #include <pthread.h>
 #include <signal.h>
 #include <sys/socket.h>
@@ -30,30 +28,6 @@ typedef struct {
 	int  retardo;
 } t_config_MDJ;
 
-typedef struct {
-t_list *  directorios;
-}t_directorios;
-
-typedef struct{
-int fd;
-char * mem_ptro;
-char * path;
-}
-
-typedef struct {
-size_t tamanio_bloques;
-int cantidad_bloques;
-char * magic_number;
-}t_metadata_filesystem;
-
-typedef struct{
-t_bitarray estado_bloques; //  1 ocupado , 0 libre
-}t_metadata_bitmap;
-
-typedef struct{
-size_t  tamanio_archivo_enBytes;
-int * bloques;
-}t_metadata_filemetadata;
 
 
 
@@ -62,7 +36,6 @@ t_log* logger;
 t_dictionary *  fns;	/* Funciones de socket */
 pthread_mutex_t mx_main;	/* Semaforo de main */
 int portServer;
-char * directorioMontaje;
 t_config * conf;
 t_config_MDJ  *  datosConfMDJ;
 
