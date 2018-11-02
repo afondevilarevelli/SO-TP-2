@@ -203,21 +203,35 @@ t_config_SAFA * read_and_log_config(char* path) {
 //CallableRemoteFunctions
 
 //llamada por CPU al haber una sentencia de wait
-//msg[0]: idGDT, msg[1]: nombreRecurso
+//msg[0]: idCPU, msg[1]: idGDT, msg[2]: nombreRecurso, msg[3]: cantQuantoQueEjecutó
 void waitRecurso(socket_connection* socketInfo, char** msg){
 	recurso* rec = buscarRecurso(msg[1]);
+	int idDTB = atoi(msg[1]);
+	DTB* dtb = buscarDTBEnElSistema(idDTB);
 	if(rec == NULL){ // si no existe
+		int quantumEjecutado = atoi(msg[3]);
 		crearRecurso(msg[1], 1);
+		if(dtb != NULL){ 
+			dtb->quantumFaltante = datosConfigSAFA->quantum - quantumEjecutado;
+			dtb->PC += quantumEjecutado;
+		}
 		//le da la orden a la cpu de ejecutar otra vez este GDT
-		//runFunction(socketInfo->socket,"AlgunaFuncionDeCPU",... );
+		//runFunction(socketInfo->socket,"ejecutarCPU",... );
 	}
 	else{ //si existe
 		rec->valor--;
 		if(rec->valor < 0){
-			//bloquear GDT
+			char** params = {msg[0], msg[1], msg[3], "bloquear" };
+			finalizacionProcesamientoCPU(NULL, params);
 		}
 		else{
+			int quantumEjecutado = atoi(msg[3]);
+			if(dtb != NULL){ 
+				dtb->quantumFaltante = datosConfigSAFA->quantum - quantumEjecutado;
+				dtb->PC += quantumEjecutado;
+			}
 			//sigue ejecutando el GDT
+			//runFunction(socketInfo->socket,"ejecutarCPU",... );
 		}
 
 	}
@@ -228,15 +242,7 @@ void waitRecurso(socket_connection* socketInfo, char** msg){
 void signalRecurso(socket_connection* socketInfo, char** msg){
 	recurso* rec = buscarRecurso(msg[1]);
 	if(rec == NULL){ // si no existe
-		recurso* r = malloc(sizeof(recurso));
-		r->nombre = malloc(strlen(msg[1]) + 1);
-		strcpy(r->nombre, msg[1]);
-		r->valor = 1;
-		r->GDTsEsperandoRecurso = list_create();
-		pthread_mutex_lock(&m_listaDeRecursos);
-		list_add(listaDeRecursos, r);
-		pthread_mutex_unlock(&m_listaDeRecursos);
-		//runFunction(socketInfo->socket,"AlgunaFuncionDeCPU",... );
+		crearRecurso(msg[1], 1);
 	}
 	else{ //si existe
 		rec->valor++;
@@ -247,14 +253,16 @@ void signalRecurso(socket_connection* socketInfo, char** msg){
 			pthread_mutex_lock(&m_colaBloqueados);
 			get_and_remove_DTB_by_ID(colaBloqueados->elements, dtbADesbloquear->id);
 			pthread_mutex_unlock(&m_colaBloqueados);
+			dtbADesbloquear->status = READY;
 			encolarDTB(colaReady, dtbADesbloquear, m_colaReady);
 			sem_post(&cantProcesosEnReady);
-			//debería seguir ejecutando el mismo GDT
 		}	
 		else{
 			eliminarRecurso(rec);
 		}
 	}
+	//manda a ejecutar al mismo GDT
+	//runFunction(socketInfo->socket,"ejecutarCPU",... );
 }
 
 //es llamada por CPU y DAM cuando se conectan, para poder manejar el estado corrupto

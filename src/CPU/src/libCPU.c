@@ -238,11 +238,21 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					//algo
 					break;
 				case WAIT:
-					//algo
-					break;
+					programCounter++;
+					sentenciasEjecutadas++;
+					char string_sentEjecutadas[2];
+					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
+					//args[0] idGDT para Bloquear
+					runFunction(socketSAFA, "waitRecurso",4,string_id, args[0], sentencia.p1, string_sentEjecutadas);			
+					return ;
 			    case SIGNAL:
-					//algo
-					break;
+					programCounter++;
+					sentenciasEjecutadas++;
+					char string_sentEjecutadas[2];
+					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
+					//args[0] idGDT para Bloquear
+					runFunction(socketSAFA, "signalRecurso",4,string_id, args[0], sentencia.p1, string_sentEjecutadas);			
+					return ;
 				case FLUSH:
 					//algo
 					break;
@@ -250,7 +260,6 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					//algo
 					break;
 				case CREAR:
-
 					//Aca se incrementa el PC y SE, al final para ver si mas adelante continua o aborta
 					programCounter++;
 					sentenciasEjecutadas++;
