@@ -57,6 +57,7 @@ int main(void){
         pthread_mutex_init(&m_listaDeRecursos, NULL);
 
         pthread_mutex_init(&m_busqueda, NULL);
+        pthread_mutex_init(&m_recurso, NULL);
 
         pthread_create(&hiloConsola, NULL, (void*)&consolaSAFA, NULL);       
         pthread_create(&hiloPLP, NULL, (void*)&planificadorLargoPlazo, NULL);
@@ -96,6 +97,7 @@ void cerrarPrograma() {
     pthread_mutex_destroy(&m_busqueda);
     pthread_mutex_destroy(&m_colaFinalizados);
     pthread_mutex_destroy(&m_listaDeRecursos);
+    pthread_mutex_destroy(&m_recurso);
 
     close_logger();
     dictionary_destroy(fns); 

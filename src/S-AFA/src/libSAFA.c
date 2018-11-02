@@ -237,12 +237,15 @@ void waitRecurso(socket_connection* socketInfo, char** msg){
                                                 	string_quantumAEjecutar);
 	}
 	else{ //si existe
+		pthread_mutex_lock(&m_recurso);
 		rec->valor--;
 		if(rec->valor < 0){
+			pthread_mutex_unlock(&m_recurso);
 			char** params = (char*[]){msg[0], msg[1], msg[3], "bloquear" };
 			finalizacionProcesamientoCPU(NULL, params);
 		}
 		else{
+			pthread_mutex_unlock(&m_recurso);
 			int quantumEjecutado = atoi(msg[3]);
 			if(dtb != NULL){ 
 				dtb->quantumFaltante = datosConfigSAFA->quantum - quantumEjecutado;
@@ -280,7 +283,9 @@ void signalRecurso(socket_connection* socketInfo, char** msg){
 		crearRecurso(msg[2], 1);
 	}
 	else{ //si existe
+		pthread_mutex_lock(&m_recurso);
 		rec->valor++;
+		pthread_mutex_unlock(&m_recurso);
 		pthread_mutex_lock(&m_listaDeRecursos);
 		DTB* dtbADesbloquear = list_get(rec->GDTsEsperandoRecurso, 0);
 		pthread_mutex_unlock(&m_listaDeRecursos);

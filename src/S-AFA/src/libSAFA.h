@@ -76,6 +76,8 @@ pthread_mutex_t m_listaDeRecursos;
 
 pthread_mutex_t m_busqueda;
 
+pthread_mutex_t m_recurso;
+
 t_log* logger;
 t_config_SAFA* datosConfigSAFA;
 pthread_mutex_t mx_main;
