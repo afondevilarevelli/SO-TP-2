@@ -228,6 +228,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 			sentencia = obtenerSentenciaParseada(rutaScript, programCounter);
 			pthread_mutex_unlock(&m_puedeEjecutar);
 			char string_sentEjecutadas[2];
+			char string_quantumAEjecutar[2];
 
 			switch(sentencia.palabraReservada){
 				case ABRIR:
@@ -242,15 +243,17 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					programCounter++;
 					sentenciasEjecutadas++;
 					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
+					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
 					//args[0] idGDT para Bloquear
-					runFunction(socketSAFA, "waitRecurso",4,string_id, args[0], sentencia.p1, string_sentEjecutadas);			
+					runFunction(socketSAFA, "waitRecurso",5,string_id, args[0], sentencia.p1, string_sentEjecutadas, string_quantumAEjecutar);			
 					return ;
 			    case SIGNAL:
 					programCounter++;
-					sentenciasEjecutadas++;				
-					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
+					sentenciasEjecutadas++;	
+					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);		
+					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
 					//args[0] idGDT para Bloquear
-					runFunction(socketSAFA, "signalRecurso",4,string_id, args[0], sentencia.p1, string_sentEjecutadas);			
+					runFunction(socketSAFA, "signalRecurso",5,string_id, args[0], sentencia.p1, string_sentEjecutadas, string_quantumAEjecutar);			
 					return ;
 				case FLUSH:
 					//algo

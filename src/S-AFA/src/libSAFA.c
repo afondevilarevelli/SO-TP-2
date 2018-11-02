@@ -20,7 +20,7 @@ CPU* buscarCPU(int id){
 	pthread_mutex_lock(&m_busqueda);
 	idCpuABuscar = id;
 	CPU* cpu = list_find(listaCPUs, (void*)closureIdCPU);
-	pthread_mutex_lock(&m_busqueda);
+	pthread_mutex_unlock(&m_busqueda);
 	return cpu;
 }
 
@@ -38,8 +38,9 @@ recurso* buscarRecurso(char* nombre){
 	return r;
 }
 
-bool closureBusquedaRecurso(recurso* r){
-	return strcmp(r->nombre, nombreRecursoABuscar) == 0;
+bool closureBusquedaRecurso(void* r){
+	recurso* rec = (recurso*) r;
+	return strcmp(rec->nombre, nombreRecursoABuscar) == 0;
 }
 
 void destruirRecurso(recurso* r){
@@ -77,7 +78,8 @@ DTB* buscarDTB(t_list* lista,int id){
 
 		p = (DTB*)(pElem->data);
 		if(id == p->id){
-		return p;
+			pthread_mutex_unlock(&m_busqueda);
+			return p;
 		}
 		pElem = pElem->next;
 	}
@@ -203,25 +205,41 @@ t_config_SAFA * read_and_log_config(char* path) {
 //CallableRemoteFunctions
 
 //llamada por CPU al haber una sentencia de wait
-//msg[0]: idCPU, msg[1]: idGDT, msg[2]: nombreRecurso, msg[3]: cantQuantoQueEjecutó
+//msg[0]: idCPU, msg[1]: idGDT, msg[2]: nombreRecurso, msg[3]: cantQuantoQueEjecutó, msg[4]:quantumAEjecutar de CPU
 void waitRecurso(socket_connection* socketInfo, char** msg){
 	recurso* rec = buscarRecurso(msg[1]);
 	int idDTB = atoi(msg[1]);
+	int idCPU = atoi(msg[0]);
+	int quantumDesignadoACPU = atoi(msg[4]);
+	int cantQuantoEjecutado = atoi(msg[3]);
 	DTB* dtb = buscarDTBEnElSistema(idDTB);
+	CPU* cpu = buscarCPU(idCPU);
 	if(rec == NULL){ // si no existe
 		int quantumEjecutado = atoi(msg[3]);
-		crearRecurso(msg[1], 1);
+		crearRecurso(msg[2], 1);
+
 		if(dtb != NULL){ 
 			dtb->quantumFaltante = datosConfigSAFA->quantum - quantumEjecutado;
 			dtb->PC += quantumEjecutado;
 		}
-		//le da la orden a la cpu de ejecutar otra vez este GDT
-		//runFunction(socketInfo->socket,"ejecutarCPU",... );
+		//ejecuta el mismo GDT
+        char string_flagInicializacion[2];
+        sprintf(string_flagInicializacion, "%i", dtb->flagInicializado); 
+        char string_pc[2];
+        sprintf(string_pc, "%i", dtb->PC);
+        char string_quantumAEjecutar[2];
+        sprintf(string_quantumAEjecutar, "%i", quantumDesignadoACPU - cantQuantoEjecutado);
+		if(cpu!=NULL)
+        	runFunction(cpu->socket,"ejecutarCPU",5, msg[1],
+            										dtb->rutaScript,
+													string_pc,
+                                                	string_flagInicializacion,
+                                                	string_quantumAEjecutar);
 	}
 	else{ //si existe
 		rec->valor--;
 		if(rec->valor < 0){
-			char** params = {msg[0], msg[1], msg[3], "bloquear" };
+			char** params = (char*[]){msg[0], msg[1], msg[3], "bloquear" };
 			finalizacionProcesamientoCPU(NULL, params);
 		}
 		else{
@@ -230,19 +248,36 @@ void waitRecurso(socket_connection* socketInfo, char** msg){
 				dtb->quantumFaltante = datosConfigSAFA->quantum - quantumEjecutado;
 				dtb->PC += quantumEjecutado;
 			}
-			//sigue ejecutando el GDT
-			//runFunction(socketInfo->socket,"ejecutarCPU",... );
+			//ejecuta el mismo GDT
+     		char string_flagInicializacion[2];
+        	sprintf(string_flagInicializacion, "%i", dtb->flagInicializado); 
+        	char string_pc[2];
+        	sprintf(string_pc, "%i", dtb->PC);
+        	char string_quantumAEjecutar[2];
+        	sprintf(string_quantumAEjecutar, "%i", quantumDesignadoACPU - cantQuantoEjecutado);
+			if(cpu!=NULL)
+        		runFunction(cpu->socket,"ejecutarCPU",5, msg[1],
+            											dtb->rutaScript,
+														string_pc,
+                                                		string_flagInicializacion,
+                                                		string_quantumAEjecutar);
 		}
 
 	}
 }
 
 //llamada por CPU al haber una sentencia de signal
-//msg[0]: idGDT, msg[1]: nombreRecurso
+//msg[0]: idCPU, msg[1]: idGDT, msg[2]: nombreRecurso, msg[3]: cantQuantoQueEjecutó, msg[4]:quantumAEjecutar de CPU
 void signalRecurso(socket_connection* socketInfo, char** msg){
-	recurso* rec = buscarRecurso(msg[1]);
+	recurso* rec = buscarRecurso(msg[2]);
+	int idCPU = atoi(msg[0]);
+	int idDTB = atoi(msg[1]);
+	int quantumDesignadoACPU = atoi(msg[4]);
+	int cantQuantoEjecutado = atoi(msg[3]);
+	CPU* cpu = buscarCPU(idCPU);
+	DTB* dtb = buscarDTBEnElSistema(idDTB);
 	if(rec == NULL){ // si no existe
-		crearRecurso(msg[1], 1);
+		crearRecurso(msg[2], 1);
 	}
 	else{ //si existe
 		rec->valor++;
@@ -261,8 +296,23 @@ void signalRecurso(socket_connection* socketInfo, char** msg){
 			eliminarRecurso(rec);
 		}
 	}
-	//manda a ejecutar al mismo GDT
-	//runFunction(socketInfo->socket,"ejecutarCPU",... );
+	if(dtb != NULL){ 
+		dtb->quantumFaltante = datosConfigSAFA->quantum - cantQuantoEjecutado;
+		dtb->PC += cantQuantoEjecutado;
+	}
+	//ejecuta el mismo GDT
+    char string_flagInicializacion[2];
+    sprintf(string_flagInicializacion, "%i", dtb->flagInicializado); 
+    char string_pc[2];
+    sprintf(string_pc, "%i", dtb->PC);
+    char string_quantumAEjecutar[2];
+    sprintf(string_quantumAEjecutar, "%i", quantumDesignadoACPU - cantQuantoEjecutado);
+	if(cpu != NULL)
+		runFunction(cpu->socket,"ejecutarCPU",5, msg[1],
+            									dtb->rutaScript,
+												string_pc,
+                                                string_flagInicializacion,
+                                                string_quantumAEjecutar);
 }
 
 //es llamada por CPU y DAM cuando se conectan, para poder manejar el estado corrupto

@@ -118,7 +118,7 @@ DTB* buscarDTB(t_list* lista,int id);
 DTB* buscarDTBEnElSistema(int idGDT);
 
 recurso* buscarRecurso(char* nombre);
-bool closureBusquedaRecurso(recurso* r);
+bool closureBusquedaRecurso(void* r);
 
 void destruirRecurso(recurso* r);
 

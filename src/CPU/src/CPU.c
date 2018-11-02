@@ -20,7 +20,7 @@ int main() {
 
   socketDAM = connectServer(datosCPU->ipD, datosCPU->puertoD, callableRemoteFunctionsCPU, &disconnect, NULL);
 
-  intentandoConexionConDAM(&socketDAM);
+  intentandoConexionConDAM(socketDAM);
 
   socketSAFA = connectServer(datosCPU->ipS, datosCPU->puertoS, callableRemoteFunctionsCPU, &disconnect, NULL);
   //CUANDO ME CONECTO AL SAFA LE DIGO QUE SOY UN PROCESO CPU
@@ -30,7 +30,7 @@ int main() {
 
   socketFM9 = connectServer(datosCPU->ipF, datosCPU->puertoF, callableRemoteFunctionsCPU, &disconnect, NULL);
 
-  intentandoConexionConFM9(&socketFM9);
+  intentandoConexionConFM9(socketFM9);
   
   pthread_mutex_init(&m_main, NULL);
 	pthread_mutex_lock(&m_main);
