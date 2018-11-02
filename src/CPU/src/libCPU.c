@@ -227,6 +227,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 			pthread_mutex_lock(&m_puedeEjecutar);
 			sentencia = obtenerSentenciaParseada(rutaScript, programCounter);
 			pthread_mutex_unlock(&m_puedeEjecutar);
+			char string_sentEjecutadas[2];
 
 			switch(sentencia.palabraReservada){
 				case ABRIR:
@@ -240,15 +241,13 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 				case WAIT:
 					programCounter++;
 					sentenciasEjecutadas++;
-					char string_sentEjecutadas[2];
 					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 					//args[0] idGDT para Bloquear
 					runFunction(socketSAFA, "waitRecurso",4,string_id, args[0], sentencia.p1, string_sentEjecutadas);			
 					return ;
 			    case SIGNAL:
 					programCounter++;
-					sentenciasEjecutadas++;
-					char string_sentEjecutadas[2];
+					sentenciasEjecutadas++;				
 					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 					//args[0] idGDT para Bloquear
 					runFunction(socketSAFA, "signalRecurso",4,string_id, args[0], sentencia.p1, string_sentEjecutadas);			
@@ -263,7 +262,6 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					//Aca se incrementa el PC y SE, al final para ver si mas adelante continua o aborta
 					programCounter++;
 					sentenciasEjecutadas++;
-					char string_sentEjecutadas[2];
 					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 					//args[0] idGDT para Bloquear
 					runFunction(socketSAFA, "finalizacionProcesamientoCPU",4,string_id, args[0],string_sentEjecutadas,"bloquear");
