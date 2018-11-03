@@ -12,7 +12,6 @@
 #include <commons/collections/dictionary.h>
 #include <commons/collections/list.h>
 #include "../../sample-socket/socket.h" 
-#include "../../Utils/gestionArchConf.h"
 //el include de libSAFA es SÓLO para verificar si un archivo ya fue abierto por un GDT para la funcion ABRIR
 #include "../../S-AFA/src/libSAFA.h"
 

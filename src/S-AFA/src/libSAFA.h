@@ -14,8 +14,6 @@
 #include <commons/collections/queue.h>
 #include <commons/collections/list.h>
 #include  "../../sample-socket/socket.h"
-#include "../../Utils/gestionArchConf.h"
-
 
 //ESTRUCTURAS
 typedef enum {NEW, READY, BLOCKED, RUNNING, FINISHED } status_t;

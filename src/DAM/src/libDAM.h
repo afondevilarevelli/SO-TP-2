@@ -6,6 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <string.h>
 #include <commons/log.h>
 #include <commons/config.h>
 #include <commons/collections/dictionary.h>
@@ -28,7 +29,6 @@ typedef struct {
 
 //VARIABLES
 t_log* logger;
-t_config_DAM* _datosDAM;
 t_dictionary* callableRemoteFunctionsSAFA;
 t_dictionary* callableRemoteFunctionsFM9;
 t_dictionary* callableRemoteFunctionsMDJ;

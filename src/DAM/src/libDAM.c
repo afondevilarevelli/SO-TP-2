@@ -36,38 +36,40 @@ t_config_DAM* read_and_log_config(char* path) {
 		exit(1);
 	}
 
-       _datosDAM = malloc(sizeof(t_config_DAM));
- 	_datosDAM->puertoEscucha = config_get_int_value(archivo_Config, "PUERTO");
-        char *IPSAFA = string_new();
-	string_append(&IPSAFA, config_get_string_value(archivo_Config, "IP_SAFA"));
-         _datosDAM->IPSAFA = IPSAFA;
-	_datosDAM->puertoSAFA = config_get_int_value(archivo_Config, "PUERTO_SAFA");
-        char * IPMDJ = string_new();
-	string_append(&IPMDJ, config_get_string_value(archivo_Config, "IP_MDJ"));
-         _datosDAM->IPMDJ = IPMDJ;
-	_datosDAM->puertoMDJ = config_get_int_value(archivo_Config, "PUERTO_MDJ");
-        char *IPFM9 = string_new();
-	string_append(&IPFM9, config_get_string_value(archivo_Config, "IP_FM9"));
-         _datosDAM->IPFM9 = IPFM9;
-	_datosDAM->puertoFM9 = config_get_int_value(archivo_Config, "PUERTO_FM9");
-	_datosDAM->transferSize = config_get_int_value(archivo_Config, "TRANSFER_SIZE");
+    t_config_DAM* datosDAM = malloc(sizeof(t_config_DAM));
 
-	log_info(logger, "	PUERTO ESCUCHA: %d", _datosDAM->puertoEscucha);
-	log_info(logger, "	IP DE S-AFA: %s", _datosDAM->IPSAFA);
-	log_info(logger, "	PUERTO DE S-AFA: %d", _datosDAM->puertoSAFA);
-	log_info(logger, "	IP DE MDJ: %s", _datosDAM->IPMDJ);
-	log_info(logger, "	PUERTO DE MDJ: %d", _datosDAM->puertoMDJ);
-	log_info(logger, "	IP DE FM9: %s", _datosDAM->IPFM9);
-	log_info(logger, "	PUERTO DE FM9: %d", _datosDAM->puertoFM9);
-	log_info(logger, "	TRANSFER SIZE: %d", _datosDAM->transferSize);
+ 	datosDAM->puertoEscucha = config_get_int_value(archivo_Config, "PUERTO");
+
+    datosDAM->IPSAFA = malloc( strlen(config_get_string_value(archivo_Config, "IP_SAFA")) + 1);
+	strcpy(datosDAM->IPSAFA, config_get_string_value(archivo_Config, "IP_SAFA"));
+
+	datosDAM->puertoSAFA = config_get_int_value(archivo_Config, "PUERTO_SAFA");
+
+    datosDAM->IPMDJ = malloc( strlen(config_get_string_value(archivo_Config, "IP_MDJ")) + 1);
+	strcpy(datosDAM->IPMDJ, config_get_string_value(archivo_Config, "IP_MDJ"));
+
+	datosDAM->puertoMDJ = config_get_int_value(archivo_Config, "PUERTO_MDJ");
+
+    datosDAM->IPFM9 = malloc( strlen(config_get_string_value(archivo_Config, "IP_FM9")) + 1);
+	strcpy(datosDAM->IPFM9, config_get_string_value(archivo_Config, "IP_FM9"));
+
+	datosDAM->puertoFM9 = config_get_int_value(archivo_Config, "PUERTO_FM9");
+
+	datosDAM->transferSize = config_get_int_value(archivo_Config, "TRANSFER_SIZE");
+
+	log_info(logger, "	PUERTO ESCUCHA: %d", datosDAM->puertoEscucha);
+	log_info(logger, "	IP DE S-AFA: %s", datosDAM->IPSAFA);
+	log_info(logger, "	PUERTO DE S-AFA: %d", datosDAM->puertoSAFA);
+	log_info(logger, "	IP DE MDJ: %s", datosDAM->IPMDJ);
+	log_info(logger, "	PUERTO DE MDJ: %d", datosDAM->puertoMDJ);
+	log_info(logger, "	IP DE FM9: %s", datosDAM->IPFM9);
+	log_info(logger, "	PUERTO DE FM9: %d", datosDAM->puertoFM9);
+	log_info(logger, "	TRANSFER SIZE: %d", datosDAM->transferSize);
 
 
 	log_info(logger, "Fin de lectura");
 	config_destroy(archivo_Config);
-        free(IPSAFA);
-        free(IPMDJ);
-        free(IPFM9);
-	return _datosDAM;
+	return datosDAM;
 }
 
 void identificarProceso(socket_connection * connection ,char** args){	

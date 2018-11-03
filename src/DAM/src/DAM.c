@@ -37,11 +37,11 @@ int main(void){
       dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_crearArchivo", &crearArchivo);
       dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_borrarArchivo", &borrarArchivo);
     
-	socketSAFA = connectServer("172.17.0.1", 8001,callableRemoteFunctionsSAFA, &disconnect, NULL);
+	socketSAFA = connectServer(datosConfigDAM->IPSAFA, datosConfigDAM->puertoSAFA,callableRemoteFunctionsSAFA, &disconnect, NULL);
   //CUANDO ME CONECTO AL SAFA LE DIGO QUE SOY EL PROCESO DAM (para manejar estadoCorrupto)
   runFunction(socketSAFA,"identificarNuevaConexion",1,"DAM"); 
-	socketFM9 = connectServer("172.17.0.1",8003, callableRemoteFunctionsFM9, &disconnect, NULL);
-	socketMDJ = connectServer("172.17.0.1", 5001, callableRemoteFunctionsMDJ, &disconnect, NULL);
+	socketFM9 = connectServer(datosConfigDAM->IPFM9,datosConfigDAM->puertoFM9, callableRemoteFunctionsFM9, &disconnect, NULL);
+	socketMDJ = connectServer(datosConfigDAM->IPMDJ, datosConfigDAM->puertoMDJ, callableRemoteFunctionsMDJ, &disconnect, NULL);
          
 	
 	if(socketSAFA== -1  ){
@@ -67,9 +67,9 @@ int main(void){
        else {      
         log_info(logger,"me conecto al MDJ");
         runFunction(socketMDJ,"identificarProcesoEnMDJ",1,"DAM");
-        existeArchivo(socketMDJ,"/home/utnso/tp-2018-2c-Mi-amor-es-el-Malloc/src/MDJ/MDJ.config");
+        /*existeArchivo(socketMDJ,"/home/utnso/tp-2018-2c-Mi-amor-es-el-Malloc/src/MDJ/MDJ.config");
         existeArchivo(socketMDJ,"/home/utnso/tp-2018-2c-Mi-amor-es-el-Malloc/src/MDJ/pepe.config");
-        existeArchivo(socketMDJ,"/home/utnso/tp-2018-2c-Mi-amor-es-el-Malloc/src/MDJ/MDJ.config");
+        existeArchivo(socketMDJ,"/home/utnso/tp-2018-2c-Mi-amor-es-el-Malloc/src/MDJ/MDJ.config"); */
        }
       
 
