@@ -409,6 +409,7 @@ void avisoDeDamDeResultadoDTBDummy(socket_connection* socketInfo, char** msg){
 }
 //Se debe verificar si no es nulo, puesto que si es nulo significa que el dtb con dicho id ya fue finalizado 
 // (por consola), y si no se verificara la nulidad tiraría segmentationFault.
+// msgs[0]: idDTB
 void desbloquearDTB(socket_connection* connection, char** msgs){
 	int idDTB = atoi(msgs[0]);
 	pthread_mutex_lock(&m_colaBloqueados);
@@ -423,6 +424,7 @@ void desbloquearDTB(socket_connection* connection, char** msgs){
 }
 
 //Caso cuando ocurre un fallo y pasa a abortarse para la cola FINISHED
+//msgs[0]: idDTB
 void pasarDTBAExit(socket_connection* connection, char** msgs){
 	int idDTB = atoi(msgs[0]);
 	pthread_mutex_lock(&m_colaBloqueados);

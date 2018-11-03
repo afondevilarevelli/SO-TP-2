@@ -86,6 +86,7 @@ void solicitudCargaGDT(socket_connection* connection, char ** args){
 
 //esta funcion le avisa al SAFA el resultado de la carga del DTBDummy,
 //es llamada por el MDJ
+//algun parametro de args[] debería ser "ok" ó "error"
 void MDJ_DAM_avisarSAFAResultadoDTBDummy(socket_connection* socketInf,char ** args){
 	//algo
 
@@ -174,24 +175,8 @@ void borrarArchivo(socket_connection* connection, char** args){
 void existeArchivo(socket_connection* socketMDJ, char * pathFile){
  runFunction(socketMDJ,"validarArchivo",1,pathFile);
 }
-/*
-void abrirArchivo(char *pathDelArchivo,char *buffer,DTB* d)
-  {
-   FILE *archivo;
-   socket_connection* socketMDJ;
-   socket_connection* socketSAFA;
-   socket_connection* socketFM9;
-   runFunction(socketMDJ,"validarArchivo",1,pathDelArchivo);
-   if(estadoCreacion==0)
-   {log_info(logger, "abriendo el archivo");
-   archivo = fopen(pathDelArchivo, "r+");
-   while(fread(buffer,sizeof(buffer),1,archivo) != EOF );
-   runFunction(socketSAFA,"encolarDTB",2,colaBloqueados,d);
-   runFunction(socketFM9,"cargarArchivo",1,buffer);
-   runFunction(socketSAFA,"desencolarDTB",1,colaBloqueados);
-   }
-  }
 
+/*
 void solicitudDeFlush(char *pathDelArchivo)
 {
 	socket_connection* socketMDJ;
@@ -200,4 +185,5 @@ void solicitudDeFlush(char *pathDelArchivo)
 	
 	runFunction(socketFM9,"obtenerArchivo",2,pathDelArchivo,buffer);
 	runFunction(socketMDJ,"guardarArchivo",2,pathDelArchivo,buffer);
-}*/
+}
+*/
