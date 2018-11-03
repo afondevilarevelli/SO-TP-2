@@ -17,19 +17,18 @@ int main(void){
 	datosConfigDAM =read_and_log_config("DAM.config");
 	//diccionarios
 
-        callableRemoteFunctionsMDJ = dictionary_create();
+    callableRemoteFunctionsMDJ = dictionary_create();
 	callableRemoteFunctionsFM9 = dictionary_create();
-	 callableRemoteFunctionsSAFA = dictionary_create();
+	callableRemoteFunctionsSAFA = dictionary_create();
 	callableRemoteFunctionsCPU = dictionary_create();
 	
 	//--------------------------------------------------------------------
-	//Dicionarios del mdj
-    dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_existeArchivo", &MDJ_DAM_existeArchivo);
+	//Dicionarios del MDJ
+    dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_existeArchivo", &MDJ_DAM_avisarSAFAResultadoDTBDummy);
     dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_verificarArchivoCreado",&MDJ_DAM_verificarArchivoCreado);
     dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_verificarArchivoCreado",&MDJ_DAM_verificarArchivoCreado);
     dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_verificameSiArchivoFueBorrado",&MDJ_DAM_verificameSiArchivoFueBorrado);
-    
-    dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_avisoSAFAResultadoDTBDummy",&MDJ_DAM_avisarSAFAResultadoDTBDummy);
+
 	//--------------------------------------------------------------------
   //dicionarios de CPU
       dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_solicitudCargaGDT", &solicitudCargaGDT);

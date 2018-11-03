@@ -83,37 +83,28 @@ void solicitudCargaGDT(socket_connection* connection, char ** args){
 	char* rutaScript = args[1];
 
 	log_trace(logger, "Voy a Buscar: %s Para PID: %d",rutaScript, idGDT);
-	//(Para crear despues) runFunction(socketMDJ, "DAM_MDJ_buscarElArchivo",1, rutaScript);
+	runFunction(socketMDJ, "validarArchivo",2, args[0], rutaScript);
 }
 
 //esta funcion le avisa al SAFA el resultado de la carga del DTBDummy,
 //es llamada por el MDJ
-//algun parametro de args[] debería ser "ok" ó "error"
+//args[0]: idGDT, args[1]: estadoValidacion (1 => existe archivo, 0 => NO existe archivo)
 void MDJ_DAM_avisarSAFAResultadoDTBDummy(socket_connection* socketInf,char ** args){
-	//algo
+	estadoValidacion =atoi( args[0]);
+	if(estadoValidacion ==  1){ 
+		log_info(logger," El MDJ informa archivo existente");
+		runFunction(socketSAFA, "avisoDamDTBDummy", 2, args[0], "ok");
+	}
+	else if (estadoValidacion ==  0){ 
+		log_info(logger,"El MDJ informa archivo inexistente");
+		runFunction(socketSAFA, "avisoDamDTBDummy", 2, args[0], "error");
+	}
+	else{ 
+		log_error(logger,"Ocurrio un error al verificar si existe el archivo");
+	}
 
-	//if(todoBien){
-		runFunction(socketSAFA, "avisoDamDTBDummy", 1, "ok"); //puede llevar mas parametros
-	//} else{
-	//	runFuncion(socketSAFA, "avisoDamDTBDummy", 1, "error"); //puede llevar mas parametros
-	//}
 }
 
-void MDJ_DAM_existeArchivo(socket_connection* socketInf,char ** args){
-estadoValidacion =atoi( args[0]);
-if(estadoValidacion ==  1)
-{
-log_info(logger," El MDJ informa archivo existente");
-}
-else if (estadoValidacion ==  0)
-{
-log_info(logger,"El MDJ informa archivo inexistente");
-}
-else 
-{
-log_error(logger,"Ocurrio un error al verificar si existe el archivo");
-}
-}
 
 //Parametros cambiados para ver que hacer si se encuentra creado o no
 void MDJ_DAM_verificarArchivoCreado(/*socket_connection* conenction,char ** args*/char* pam1, char* pam2){
