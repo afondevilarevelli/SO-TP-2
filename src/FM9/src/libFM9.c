@@ -29,18 +29,44 @@ void disconnect(socket_connection* socketInfo) {
 	log_info(logger, "El socket n°%d se ha desconectado.", socketInfo->socket);
 }
 
-//SEGMENTACION
+//SEGMENTACION PURA
 void inicializarMemoriaConSegmentacion(){
-	log_info(logger, "Voy a reservar espacio para guardar los procesos");
+	log_info(logger, "Voy a reservar espacio para guardar los procesos y la tabla de segmentos");
 	memoria = calloc(1,datosConfigFM9->tamanio);
-	log_info(logger, "Espacio reservado con exito");
+	lista_tabla_segmentos = list_create();
+	log_info(logger, "Espacio reservado y tabla generada con exito");
 }
 
+//Busco entre un nodo y el siguiente si hay espacio para guardar. 
+//TODO La lista tiene que estar ordenada
+int devolverPosicionNuevoSegmento(int tamanioAPersistir){
+	int pos = 0;
+	t_tabla_segmentos* auxNodo;
+	t_tabla_segmentos* auxNodoSiguiente;
+	for(int i = 0; i<list_size(lista_tabla_segmentos); i++){
+		auxNodo = list_get(lista_tabla_segmentos, i);
+		//Si no hay nodo siguiente y no supero el maximo de memoria devuelvo la posicion siguiente al ultimo nodo
+		if(list_size(lista_tabla_segmentos)== i+1 && (auxNodo->base + auxNodo->limite < datosConfigFM9->tamanio)){
+			log_info(logger, "aca");
+			return (auxNodo->base + auxNodo->limite);
+		}
+		auxNodoSiguiente = list_get(lista_tabla_segmentos, i+1);
+		//Si hay espacio para persistir los datos entre nodos, devuelvo la posicion entre un nodo y el otro
+		if((auxNodoSiguiente->base - (auxNodo->base + auxNodo-> limite)) > tamanioAPersistir)	{
+			return (auxNodo->base + auxNodo->limite);
+		}		
+	}
+	return pos;
+}
+
+//Guardo GDT y devuelvo la posicion de memoria. Si no puedo persistirlo devuelvo -1
 void DAM_FM9_guardarGDT(socket_connection * connection ,char** args) {
-	log_info(logger, "Voy a persistir: %s . cuyo tamanio es %d", args[0], strlen(args[0]));
-	memcpy(memoria, args[0], strlen(args[0]));
+	log_info(logger, "Voy a persistir: '%s' cuyo tamanio es %d", args[0], strlen(args[0]));
+	memcpy(memoria +devolverPosicionNuevoSegmento(strlen(args[0])), args[0], strlen(args[0]));
 	log_info(logger, "Persisti el contenido");
 }
+
+
 
 //CONFIG
 t_config_FM9* read_and_log_config(char* path) {
@@ -72,8 +98,7 @@ t_config_FM9* read_and_log_config(char* path) {
 	log_info(logger, "Fin de lectura");
 
 	config_destroy(archivo_Config);
-	free(modo);
+	//free(modo);
 
 	return _datosFM9;
 }
-

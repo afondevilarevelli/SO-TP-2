@@ -3,6 +3,7 @@
 #include <commons/log.h>
 #include <commons/config.h>
 #include <commons/collections/dictionary.h>
+#include <commons/collections/list.h>
 #include <pthread.h>
 #include "socket.h"
 
@@ -15,6 +16,10 @@ typedef struct {
 	int tamanioPagina;
 } t_config_FM9;
 
+typedef struct {
+	int base;
+	int limite;
+} t_tabla_segmentos;
 
 //VARIABLES
 t_log* logger;
@@ -23,6 +28,8 @@ t_dictionary * callableRemoteFunctions;
 pthread_mutex_t mx_main;
 
 void* memoria;
+
+t_list* lista_tabla_segmentos;
 
 //FUNCIONES
 //LOGS
@@ -34,8 +41,10 @@ void identificarProceso(socket_connection * connection ,char** args);
 void disconnect(socket_connection*);
 void DAM_FM9_guardarGDT(socket_connection * connection ,char** args);
 
-//SEGMENTACION
+//SEGMENTACION PURA
 void inicializarMemoriaConSegmentacion();
+int devolverPosicionNuevoSegmento(int);
 
 //CONFIG
 t_config_FM9* read_and_log_config(char*);
+

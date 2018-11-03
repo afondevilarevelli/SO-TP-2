@@ -9,6 +9,7 @@ void cerrarPrograma() {
 	close_logger();
 	free(datosConfigFM9);
 	free(memoria);
+	list_destroy(lista_tabla_segmentos);
 	dictionary_destroy(callableRemoteFunctions);
 	pthread_mutex_unlock(&mx_main);
 	pthread_mutex_destroy(&mx_main);
@@ -22,7 +23,15 @@ int main(void) {
 
 	datosConfigFM9 = read_and_log_config("FM9.config");
 
-	//Por ahora
+	//Me fijo el modo
+	if(strcmp(datosConfigFM9->modo,"SEG")==0){
+		log_info(logger, "Modo segmentacion");
+	}
+	else{
+		log_error(logger, "Modo no reconocido");
+		cerrarPrograma();
+	}
+
 	inicializarMemoriaConSegmentacion();
 
 	callableRemoteFunctions = dictionary_create();
