@@ -23,20 +23,36 @@ typedef enum{noExiste,existe };
 typedef enum{yaCreado,recienCreado,noCreado};
 typedef enum{noBorrado,recienBorrado};
 
+//estructura por si hay que usar hilos
+typedef struct {
+socket_connection * connection;
+char ** args;
+}argumentos;
 
-
+//estructura para manejar los directorios del fs
 typedef struct {
 t_list *  directorios;
 }t_directorios;
 
+//estructura para guardar la informacion del archivo
 typedef struct{
 int fd;
 char * mem_ptro;
-size_t  size;
 char * path;
+size_t * size;
+t_dictionary * bloque; // diccionario de los bloques que posee ese archivo
 int estado;
 }t_archivo;
 
+//estructura que define al bloque
+//con un vector que acumulas los bytes, el cual es dinamico
+//un ptro a la direccion  proximo  bloque
+typedef struct {
+char * contBloque;
+int * ptroProxBloque;
+}bloque;
+
+//estructura del metadata 
 typedef struct {
 size_t tamanio_bloques;
 int cantidad_bloques;
@@ -44,12 +60,14 @@ char * magic_number;
 }t_metadata_filesystem;
 
 typedef struct{
-t_bitarray estado_bloques; //  1 ocupado , 0 libre
+t_bitarray estado_bloques;//  1 ocupado , 0 libre
+int * ptroBloque;  
 }t_metadata_bitmap;
 
 typedef struct{
+int fd;
 size_t  tamanio_archivo_enBytes;
-int * bloques;
+int  * bloques;
 }t_metadata_filemetadata;
 
 

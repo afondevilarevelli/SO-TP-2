@@ -3,7 +3,9 @@
 //https://www.programacion.com.py/escritorio/c/archivos-en-c-linux
 // Con esto se maneja cada mensaje que se le mando al dam, si es 0 es porque es false, si es 1 es porque es true
 t_archivo *  archivo;
+t_metadata_filemetadata * metadata;
 char strEstado[2];
+
 
 char * obtenerPtoMontaje()
 {
