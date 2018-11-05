@@ -169,14 +169,16 @@ void existeArchivo(socket_connection* socketMDJ, char * pathFile){
  runFunction(socketMDJ,"validarArchivo",1,pathFile);
 }
 
-/*
-void solicitudDeFlush(char *pathDelArchivo)
+//args[0]: idGDT, args[1]: rutaArchivo
+void solicitudDeFlush(socket_connection* connection, char** args)
 {
-	socket_connection* socketMDJ;
-	socket_connection* socketFM9;
-	char *buffer;
+	int idGDT = atoi(args[0]);
+	char* rutaArchivo = args[1];
 	
-	runFunction(socketFM9,"obtenerArchivo",2,pathDelArchivo,buffer);
-	runFunction(socketMDJ,"guardarArchivo",2,pathDelArchivo,buffer);
+	char* string_transferSize;
+	sprintf(string_transferSize, "%i", datosConfigDAM->transferSize);
+
+	runFunction(socketFM9,"DAM_FM9_obtenerArchivo",2, args[0], string_transferSize);
+	//runFunction(socketMDJ,"guardarArchivo",0,);
 }
-*/
+

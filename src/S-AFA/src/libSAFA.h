@@ -148,6 +148,7 @@ void desbloquearDTB(socket_connection* connection, char** msgs);
 void pasarDTBAExit(socket_connection* connection, char** msgs);
 void waitRecurso(socket_connection* socketInfo, char** msg);
 void signalRecurso(socket_connection* socketInfo, char** msg);
+void verificarEstadoArchivo(socket_connection*, char**);
 //fin CallableRemoteFunctions
 
 void aumentarCantSentenciasEsperadasEnNew(DTB* dtb);

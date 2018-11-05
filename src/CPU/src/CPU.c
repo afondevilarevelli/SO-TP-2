@@ -14,9 +14,9 @@ int main() {
   callableRemoteFunctionsCPU = dictionary_create();
   dictionary_put(callableRemoteFunctionsCPU,"ejecutarCPU",&permisoConcedidoParaEjecutar);
   dictionary_put(callableRemoteFunctionsCPU,"establecerQuantumYID",&establecerQuantumYID);
-  dictionary_put(callableRemoteFunctionsCPU,"pausarPlanificacion",&pausarPlanificacion);
-  dictionary_put(callableRemoteFunctionsCPU,"continuarPlanificacion",&continuarPlanificacion);
-  
+  dictionary_put(callableRemoteFunctionsCPU,"SAFA_CPU_pausarPlanificacion",&pausarPlanificacion);
+  dictionary_put(callableRemoteFunctionsCPU,"SAFA_CPU_continuarPlanificacion",&continuarPlanificacion);
+  dictionary_put(callableRemoteFunctionsCPU,"SAFA_CPU_continuarEjecucionFlush",&ejecucionFlush);
 
   socketDAM = connectServer(datosCPU->ipD, datosCPU->puertoD, callableRemoteFunctionsCPU, &disconnect, NULL);
 

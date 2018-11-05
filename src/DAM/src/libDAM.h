@@ -63,7 +63,7 @@ void existeArchivo(socket_connection* socketMDJ, char * pathFile);
 void crearArchivo(socket_connection* connection, char** args);
 void borrarArchivo(socket_connection* connection, char** args);
 void MDJ_DAM_avisarSAFAResultadoDTBDummy(socket_connection* socketInf,char ** args);
-
+void solicitudDeFlush(socket_connection* , char** );
 void solicitudCargaGDT(socket_connection* connection, char ** args);
 
 #endif

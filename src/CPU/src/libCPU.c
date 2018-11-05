@@ -193,6 +193,29 @@ void pausarPlanificacion(socket_connection * connection ,char** args){
 
 void continuarPlanificacion(socket_connection * connection ,char** args){
 	pthread_mutex_unlock(&m_puedeEjecutar);
+
+}
+
+//args[0]: idGDT , args[1]: rutaScript, args[2]: estadoArchivo
+void ejecucionFlush(socket_connection* connection, char** args){
+
+	estadoSituacionArchivo = atoi(args[2]);
+
+	if(estadoSituacionArchivo){
+		log_error(logger, "El Archivo Solicitado: %s No Se Encontraba Abierto", args[1]);
+		runFunction(socketSAFA, "CPU_SAFA_pasarDTBAExit", 1, args[0]);
+
+	}
+
+	else{
+	char string_id[2];
+	sprintf(string_id, "%i", idCPU);
+
+	runFunction(socketSAFA, "finalizacionProcesamientoCPU", 4,string_id, args[0], "0" ,"bloquear");
+	runFunction(socketDAM, "CPU_DAM_solicitudDeFlush", 2, args[0], args[1]);
+
+	}
+
 }
 
 //callable remote functions
@@ -232,12 +255,13 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 
 			switch(sentencia.palabraReservada){
 				case ABRIR:
+					//Trabaja con DAM
 					break;
 				case CONCENTRAR:
 					sleep(datosCPU->retardo);
 					break; 
 				case ASIGNAR:
-					//algo
+					//Trabaja con FM9
 					break;
 				case WAIT:
 					programCounter++;
@@ -256,8 +280,12 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					runFunction(socketSAFA, "signalRecurso",5,string_id, args[0], sentencia.p1, string_sentEjecutadas, string_quantumAEjecutar);			
 					return ;
 				case FLUSH:
-					//algo
-					break;
+					programCounter++;
+					sentenciasEjecutadas++;
+					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
+					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
+					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 4, string_id, args[0], string_sentEjecutadas, string_quantumAEjecutar);
+					return;
 				case CLOSE:
 					//algo
 					break;
@@ -358,7 +386,7 @@ FILE * abrirScript(char * scriptFilename)
   FILE * scriptf = fopen(ruta, "r");
   if (scriptf == NULL)
   {
-    log_error(logger, "Error al abrir el archivo %s: %s", scriptFilename, strerror(errno));
+    log_error(logger, "Error al abrir el archivo %s: %s", scriptFilename/*, strerror(errno)*/);
     exit(EXIT_FAILURE);
   }
   

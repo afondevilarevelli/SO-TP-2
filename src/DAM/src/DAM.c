@@ -35,6 +35,7 @@ int main(void){
       dictionary_put(callableRemoteFunctionsCPU, "identificarProcesoEnDAM", &identificarProceso);
       dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_crearArchivo", &crearArchivo);
       dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_borrarArchivo", &borrarArchivo);
+      dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_solicitudDeFlush", &solicitudDeFlush);
     
 	socketSAFA = connectServer(datosConfigDAM->IPSAFA, datosConfigDAM->puertoSAFA,callableRemoteFunctionsSAFA, &disconnect, NULL);
   //CUANDO ME CONECTO AL SAFA LE DIGO QUE SOY EL PROCESO DAM (para manejar estadoCorrupto)

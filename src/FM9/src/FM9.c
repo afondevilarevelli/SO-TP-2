@@ -25,6 +25,9 @@ int main(void) {
 
 	dictionary_put(callableRemoteFunctions, "identificarProcesoEnFM9", &identificarProceso);
 
+	//Funcion para iniciar la ejecucion del Flush
+	//dictionary_put(callableRemoteFunctions, "DAM_FM9_obtenerArchivo", &obtenerArchivo);
+
 	log_info(logger, "Voy a escuchar el puerto: %d", datosConfigFM9->puerto);
 
 	createListen(datosConfigFM9->puerto,NULL,

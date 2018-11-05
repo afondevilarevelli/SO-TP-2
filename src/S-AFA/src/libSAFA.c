@@ -423,18 +423,35 @@ void desbloquearDTB(socket_connection* connection, char** msgs){
 	}
 }
 
-//Caso cuando ocurre un fallo y pasa a abortarse para la cola FINISHED
+//Caso cuando ocurre un fallo sea donde este situado el DTB, pasa a abortarse para la cola FINISHED
 //msgs[0]: idDTB
 void pasarDTBAExit(socket_connection* connection, char** msgs){
+
 	int idDTB = atoi(msgs[0]);
-	pthread_mutex_lock(&m_colaBloqueados);
-	DTB* dtb = get_and_remove_DTB_by_ID(colaBloqueados->elements, idDTB);
-	pthread_mutex_unlock(&m_colaBloqueados);
-	if(dtb != NULL){ 
+	DTB* dtb = buscarDTBEnElSistema(idDTB);
+
+	if(dtb != NULL){
 		log_trace(logger,"Se va a abortar al GDT de id: %d", idDTB);
 		finalizarDTB(dtb);
 	}
 }
+
+//msgs[0]: idCPU, msgs[1]: idGDT
+void verificarEstadoArchivo(socket_connection* connection, char** msgs){
+
+	int idGDT = atoi(msgs[1]);
+	int idCPU = atoi(msgs[0]);
+	CPU* cpu = buscarCPU(idCPU);
+	DTB* dtb = buscarDTBEnElSistema(idGDT);
+
+
+	//Realiza La Verificacion del Archivo Por SI o No
+
+	//Envia El Resultado "1" si se encuentra abierto, "0" caso contrario
+	runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionFlush", 3, msgs[1], dtb->rutaScript, "0");
+	//Verifica El Archivo A Realizar La Accion
+
+};
 
 //FIN callable remote functions
 void finalizarDTB(DTB* dtb){
@@ -443,6 +460,7 @@ void finalizarDTB(DTB* dtb){
 	sem_post(&puedeEntrarAlSistema);
 }
 
+//Funciones Para El Comando Status
 static inline char *stringFromState(status_t status) { //Agarra un estado del enum y retorna el valor como String
     static const char *strings[] = { "NEW", "READY", "BLOCKED", "RUNNING", "FINISHED"};
 
