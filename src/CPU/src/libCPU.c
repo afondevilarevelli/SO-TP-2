@@ -196,25 +196,58 @@ void continuarPlanificacion(socket_connection * connection ,char** args){
 
 }
 
+//args[0]: idDTB, args[1]: rutaScript
+void ejecucionAbrir(socket_connection* connection, char** args){
+
+	estadoSituacionArchivo = atoi(args[2]);
+	char string_id[2];
+	sprintf(string_id, "%i", idCPU);
+
+	if(estadoSituacionArchivo){
+
+		runFunction(socketSAFA, "finalizacionProcesamientoCPU", 4, string_id, args[0], "0", "bloquear");
+		runFunction(socketDAM, "MDJ_DAM_existeArchivo", 2, args[0], "1");
+
+	}
+
+	else{
+
+	runFunction(socketSAFA, "finalizacionProcesamientoCPU", 4, string_id, args[0], "0", "bloquear");
+	runFunction(socketDAM, "CPU_DAM_solicitudCargaGDT", 2, args[0] ,args[1]);
+	}
+}
+
+//args[0]: idGDT
+void ejecucionAsignar(socket_connection* connection, char** args){
+
+	log_trace(logger,"Se Enviaran Los Datos Necesarios A FM9");
+	runFunction(socketFM9, "CPU_FM9_actualizarLosDatosDelArchivo", 4, args[0], sentenciasAsignar.p1,
+																			   sentenciasAsignar.p2,
+																			   sentenciasAsignar.p3);
+
+}
+
 //args[0]: idGDT , args[1]: rutaScript, args[2]: estadoArchivo
 void ejecucionFlush(socket_connection* connection, char** args){
 
 	estadoSituacionArchivo = atoi(args[2]);
 
 	if(estadoSituacionArchivo){
+		char string_id[2];
+		sprintf(string_id, "%i", idCPU);
+
+		runFunction(socketSAFA, "finalizacionProcesamientoCPU", 4,string_id, args[0], "0" ,"bloquear");
+		runFunction(socketDAM, "CPU_DAM_solicitudDeFlush", 2, args[0], args[1]);
+
+		}
+
+	else{
 		log_error(logger, "El Archivo Solicitado: %s No Se Encontraba Abierto", args[1]);
 		runFunction(socketSAFA, "CPU_SAFA_pasarDTBAExit", 1, args[0]);
 
 	}
 
-	else{
-	char string_id[2];
-	sprintf(string_id, "%i", idCPU);
 
-	runFunction(socketSAFA, "finalizacionProcesamientoCPU", 4,string_id, args[0], "0" ,"bloquear");
-	runFunction(socketDAM, "CPU_DAM_solicitudDeFlush", 2, args[0], args[1]);
-
-	}
 
 }
 
@@ -255,14 +288,25 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 
 			switch(sentencia.palabraReservada){
 				case ABRIR:
-					//Trabaja con DAM
-					break;
+					programCounter++;
+					sentenciasEjecutadas++;
+					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
+					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
+					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 5, string_id, args[0], string_sentEjecutadas, string_quantumAEjecutar, "abrir");
+					return;
 				case CONCENTRAR:
 					sleep(datosCPU->retardo);
 					break; 
 				case ASIGNAR:
-					//Trabaja con FM9
-					break;
+					programCounter++;
+					sentenciasEjecutadas++;
+					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
+					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
+					sentenciasAsignar.p1 = sentencia.p1;
+					sentenciasAsignar.p2 = sentencia.p2;
+					sentenciasAsignar.p3 = sentencia.p3;
+					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo",5,string_id, args[0], string_sentEjecutadas, string_quantumAEjecutar, "asignar");
+					return;
 				case WAIT:
 					programCounter++;
 					sentenciasEjecutadas++;
@@ -284,7 +328,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					sentenciasEjecutadas++;
 					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
-					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 4, string_id, args[0], string_sentEjecutadas, string_quantumAEjecutar);
+					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 5, string_id, args[0], string_sentEjecutadas, string_quantumAEjecutar, "flush");
 					return;
 				case CLOSE:
 					//algo

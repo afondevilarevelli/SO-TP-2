@@ -23,19 +23,23 @@ int main(void){
 	callableRemoteFunctionsCPU = dictionary_create();
 	
 	//--------------------------------------------------------------------
-	//Dicionarios del MDJ
-    dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_existeArchivo", &MDJ_DAM_avisarSAFAResultadoDTBDummy);
+	//Diccionarios del MDJ
+    dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_existeArchivo", &MDJ_DAM_avisarResultadoDTB);
     dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_verificarArchivoCreado",&MDJ_DAM_verificarArchivoCreado);
     dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_verificarArchivoCreado",&MDJ_DAM_verificarArchivoCreado);
     dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_verificameSiArchivoFueBorrado",&MDJ_DAM_verificameSiArchivoFueBorrado);
 
 	//--------------------------------------------------------------------
-  //dicionarios de CPU
+    //Diccionario dl CPU
       dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_solicitudCargaGDT", &solicitudCargaGDT);
       dictionary_put(callableRemoteFunctionsCPU, "identificarProcesoEnDAM", &identificarProceso);
       dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_crearArchivo", &crearArchivo);
       dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_borrarArchivo", &borrarArchivo);
       dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_solicitudDeFlush", &solicitudDeFlush);
+
+    //Diccionario del FM9
+      dictionary_put(callableRemoteFunctionsFM9, "FM9_DAM_cargueElArchivoCorrectamente", &archivoCargadoCorrectamente);
+
     
 	socketSAFA = connectServer(datosConfigDAM->IPSAFA, datosConfigDAM->puertoSAFA,callableRemoteFunctionsSAFA, &disconnect, NULL);
   //CUANDO ME CONECTO AL SAFA LE DIGO QUE SOY EL PROCESO DAM (para manejar estadoCorrupto)

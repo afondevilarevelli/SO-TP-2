@@ -143,7 +143,7 @@ void finalizarDTB(DTB* dtb);
 //CallableRemoteFunctions
 void newConnection(socket_connection* socketInfo, char** msg);
 void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg);
-void avisoDeDamDeResultadoDTBDummy(socket_connection* socketInfo, char** msg);
+void avisoDeDamDeResultadoDTB(socket_connection* socketInfo, char** msg);
 void desbloquearDTB(socket_connection* connection, char** msgs);
 void pasarDTBAExit(socket_connection* connection, char** msgs);
 void waitRecurso(socket_connection* socketInfo, char** msg);

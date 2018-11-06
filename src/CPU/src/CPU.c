@@ -17,6 +17,8 @@ int main() {
   dictionary_put(callableRemoteFunctionsCPU,"SAFA_CPU_pausarPlanificacion",&pausarPlanificacion);
   dictionary_put(callableRemoteFunctionsCPU,"SAFA_CPU_continuarPlanificacion",&continuarPlanificacion);
   dictionary_put(callableRemoteFunctionsCPU,"SAFA_CPU_continuarEjecucionFlush",&ejecucionFlush);
+  dictionary_put(callableRemoteFunctionsCPU, "SAFA_CPU_continuarEjecucionAbrir", &ejecucionAbrir);
+  dictionary_put(callableRemoteFunctionsCPU, "SAFA_CPU_continuarEjecucionAsignar", &ejecucionAsignar);
 
   socketDAM = connectServer(datosCPU->ipD, datosCPU->puertoD, callableRemoteFunctionsCPU, &disconnect, NULL);
 

@@ -19,7 +19,7 @@ int main(void){
      dictionary_put(fns,"identificarProcesoEnSAFA",&identificarProceso);
      dictionary_put(fns, "identificarNuevaConexion", &newConnection); 
      dictionary_put(fns, "finalizacionProcesamientoCPU", &finalizacionProcesamientoCPU);
-     dictionary_put(fns, "avisoDamDTBDummy", &avisoDeDamDeResultadoDTBDummy);
+     dictionary_put(fns, "avisoDamDTB", &avisoDeDamDeResultadoDTB);
      dictionary_put(fns, "DAM_SAFA_desbloquearDTB", &desbloquearDTB);
      dictionary_put(fns, "DAM_SAFA_pasarDTBAExit", &pasarDTBAExit);
      dictionary_put(fns, "waitRecurso", &waitRecurso);

@@ -6,7 +6,7 @@ void planificadorLargoPlazo(){
         sem_wait(&cantProcesosEnNew);
         DTB* dtbDummy = desencolarDTB(colaNew, m_colaNew);
         dtbDummy->status = READY;
-        dtbDummy->flagInicializado = 1;
+        dtbDummy->flagInicializado = 0;
         encolarDTB(colaReady, dtbDummy, m_colaReady);
         sem_post(&cantProcesosEnReady);
     }

@@ -89,18 +89,33 @@ void solicitudCargaGDT(socket_connection* connection, char ** args){
 //esta funcion le avisa al SAFA el resultado de la carga del DTBDummy,
 //es llamada por el MDJ
 //args[0]: idGDT, args[1]: estadoValidacion (1 => existe archivo, 0 => NO existe archivo)
-void MDJ_DAM_avisarSAFAResultadoDTBDummy(socket_connection* socketInf,char ** args){
-	estadoValidacion =atoi( args[0]);
+void MDJ_DAM_avisarResultadoDTB(socket_connection* socketInf,char ** args){
+	estadoValidacion =atoi( args[1]);
 	if(estadoValidacion ==  1){ 
 		log_info(logger," El MDJ informa archivo existente");
-		runFunction(socketSAFA, "avisoDamDTBDummy", 2, args[0], "ok");
+		runFunction(socketFM9, "DAM_FM9_cargarArchivo", 1, args[0]);
+
 	}
 	else if (estadoValidacion ==  0){ 
 		log_info(logger,"El MDJ informa archivo inexistente");
-		runFunction(socketSAFA, "avisoDamDTBDummy", 2, args[0], "error");
+		runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "error");
 	}
 	else{ 
 		log_error(logger,"Ocurrio un error al verificar si existe el archivo");
+	}
+
+}
+
+//args[0]: idGDT, args[1]: Por ahora ok o error
+void archivoCargadoCorrectamente(socket_connection* connection, char** args){
+
+	char* estadoCarga = args[1];
+
+	if(estadoCarga == "ok"){
+	runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "ok");
+	}
+	else{
+	runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "error");
 	}
 
 }

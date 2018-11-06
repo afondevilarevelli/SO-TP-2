@@ -23,6 +23,11 @@ t_dictionary * callableRemoteFunctions;
 pthread_mutex_t mx_main;
 
 //FUNCIONES
+
+//CallableRemoteFunctions
+void solicitudCargaArchivo(socket_connection*, char**);
+void actualizarDatosDTB(socket_connection*, char**);
+
 //LOGS
 void configure_logger();
 void close_logger();

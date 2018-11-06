@@ -68,4 +68,25 @@ t_config_FM9* read_and_log_config(char* path) {
 	return _datosFM9;
 }
 
+//args[0]: idGDT
+//Comunicacion para Desarrollar Cuando El DAM pida a FM9 cargar el archivo ya sea un DTB o el Dummy
+void solicitudCargaArchivo(socket_connection* connection, char** args){
 
+	if(1){ runFunction(connection->socket, "FM9_DAM_cargueElArchivoCorrectamente",2,args[0], "ok");}
+
+	else{ runFunction(connection->socket, "FM9_DAM_cargueElArchivoCorrectamente", 2, args[0], "error");}
+
+
+}
+
+//args[0]: idGDT, args[1]: Path, args[2]:Linea, args[3]:Datos
+void actualizarDatosDTB(socket_connection* connection, char** args){
+
+	int idGDT = atoi(args[0]);
+	char* path = args[1];
+	size_t linea = atoi(args[2]);
+	char* datos = args[3];
+
+	log_info(logger, "Del GDT: %d, recibi los siguientes Datos: %s, %d, %s", idGDT, path, linea, datos);
+
+}

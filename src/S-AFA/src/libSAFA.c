@@ -389,7 +389,9 @@ void aumentarCantSentenciasEsperadasEnNew(DTB* dtb){
 }
 
 //msg[0] = idDTB ,msg[1] = "ok" ó "error"
-void avisoDeDamDeResultadoDTBDummy(socket_connection* socketInfo, char** msg){
+//Segun la explicacion del TP, la CPU es el unico capaz de reconocer si es un DTB o un Dummy
+//Por lo tanto cuando se hace la peticion de "ABRIR" el archivo es indistinto
+void avisoDeDamDeResultadoDTB(socket_connection* socketInfo, char** msg){
 	int idDTB = atoi(msg[0]);
 	pthread_mutex_lock(&m_colaBloqueados);
 	DTB* dtb = get_and_remove_DTB_by_ID(colaBloqueados->elements, idDTB);
@@ -397,12 +399,12 @@ void avisoDeDamDeResultadoDTBDummy(socket_connection* socketInfo, char** msg){
 
 	if(dtb != NULL){ //si no ha sido finalizado...		
 		if( strcmp(msg[1], "ok") == 0 ){
-			log_info(logger,"Se finalizo OK el DTB-Dummy del GDT de id %d",dtb->id);
+			log_info(logger,"Se finalizo OK el DTB del GDT de id %d",dtb->id);
 			dtb->status = READY;
 			encolarDTB(colaReady, dtb, m_colaReady);
 			sem_post(&cantProcesosEnReady);
 		} else{ // "error"
-			log_info(logger,"Se finalizo con ERROR el DTB-Dummy del GDT de id %d",dtb->id);
+			log_info(logger,"Se finalizo con ERROR el DTB del GDT de id %d",dtb->id);
 			finalizarDTB(dtb);
 		}				
 	}
@@ -436,7 +438,7 @@ void pasarDTBAExit(socket_connection* connection, char** msgs){
 	}
 }
 
-//msgs[0]: idCPU, msgs[1]: idGDT
+//msgs[0]: idCPU, msgs[1]: idGDT, msgs[4]: abrir o flush por ahora
 void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 
 	int idGDT = atoi(msgs[1]);
@@ -444,14 +446,25 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 	CPU* cpu = buscarCPU(idCPU);
 	DTB* dtb = buscarDTBEnElSistema(idGDT);
 
-
 	//Realiza La Verificacion del Archivo Por SI o No
+    if(strcmp(msgs[4], "abrir") == 0){
+    runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAbrir", 3, msgs[1], dtb->rutaScript, "0");
+    }
+    if(strcmp(msgs[4], "asignar") == 0){
+    	if(1){//Se encuentra abierto
+    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAsignar", 1, msgs[1]);
+    	}
+    	else{//Caso Contrario
+    		finalizar(idGDT);}
+    	}
 
 	//Envia El Resultado "1" si se encuentra abierto, "0" caso contrario
+    if(strcmp(msgs[4], "flush") == 0) {
 	runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionFlush", 3, msgs[1], dtb->rutaScript, "0");
+    }
 	//Verifica El Archivo A Realizar La Accion
 
-};
+}
 
 //FIN callable remote functions
 void finalizarDTB(DTB* dtb){
