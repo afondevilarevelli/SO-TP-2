@@ -1,14 +1,14 @@
 #include "libMDJ.h"
 
-char * path = "MDJ.config";
+char * path = "/home/utnso/tp-2018-2c-Mi-amor-es-el-Malloc/src/MDJ/MDJ.config";
 
 
-void validarExistencia(socket_connection * , char ** );
+
 int main(void) {
       
      signal(SIGINT, cerrarPrograma);
      configure_logger();
-     datosConfMDJ =  read_and_log_config(path);
+     datosConfMDJ = read_and_log_config(path);
      portServer = datosConfMDJ->puerto;
      fns = dictionary_create();
      dictionary_put(fns,"validarArchivo",&validarArchivo);
@@ -17,10 +17,10 @@ int main(void) {
      dictionary_put(fns,"identificarProcesoEnMDJ",&identificarProceso);
 
        //Pongo a escuchar el server en el puerto elegido
-       int listener =  createListen(5001, NULL ,fns, &disconnect ,NULL);
+       int listener =  createListen(portServer, NULL ,fns, &disconnect ,NULL);
         if(listener == -1)
 	{ 
-               log_error(logger,"Error al crear escucha en puerto %d.\n", portServer);
+        log_error(logger,"Error al crear escucha en puerto %d.\n", portServer);
 		exit(1);
 	}
 

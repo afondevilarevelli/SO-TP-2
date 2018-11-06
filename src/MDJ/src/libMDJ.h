@@ -24,7 +24,6 @@
 //ESTRUCTURAS
 typedef struct {
 	int puerto;
-	char *  ip;
 	char * ptoMontaje;
 	int  retardo;
 } t_config_MDJ;
@@ -33,12 +32,12 @@ typedef struct {
 
 
 //VARIABLES
-t_log* logger;
+t_log * logger;
 t_dictionary *  fns;	/* Funciones de socket */
 pthread_mutex_t mx_main;	/* Semaforo de main */
 int portServer;
 t_config * conf;
-t_config_MDJ  *  datosConfMDJ;
+t_config_MDJ * datosConfMDJ;
 
 
 
@@ -46,14 +45,14 @@ t_config_MDJ  *  datosConfMDJ;
 void configure_logger();
 void close_logger();
 void cerrarPrograma();
-void validarExistencia(socket_connection * connection, char ** args);
 
 
 
 //CONFIG
 
-t_config_MDJ *  read_and_log_config(char*);
+t_config_MDJ * read_and_log_config(char*);
 
 //SOCKETS
 void disconnect(socket_connection *);
 void identificarProceso(socket_connection * connection ,char** args);
+void validarExistencia(socket_connection * , char ** );
