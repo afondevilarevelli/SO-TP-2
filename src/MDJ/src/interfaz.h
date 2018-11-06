@@ -39,8 +39,8 @@ typedef struct{
 int fd;
 char * mem_ptro;
 char * path;
-size_t * size;
-t_dictionary * bloque; // diccionario de los bloques que posee ese archivo
+char * bloques;//vector con todos los bloques
+size_t * size; 
 int estado;
 }t_archivo;
 
@@ -55,7 +55,7 @@ int * ptroProxBloque;
 //estructura del metadata 
 typedef struct {
 size_t tamanio_bloques;
-int cantidad_bloques;
+double cantidad_bloques;
 char * magic_number;
 }t_metadata_filesystem;
 
