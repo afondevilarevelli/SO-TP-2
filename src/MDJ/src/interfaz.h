@@ -72,7 +72,7 @@ int  * bloques;
 
 
 char * directorioMontaje;
-
+void aplicarRetardo();
 // devuelve un true(1) si el archivo existe, u falso(0)  si no existe
 void  validarArchivo(socket_connection * ,char**);
 //crear el archivo, cada elemento del vector sera una linea del archivo

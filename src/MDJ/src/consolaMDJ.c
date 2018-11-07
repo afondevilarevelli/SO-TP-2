@@ -81,7 +81,7 @@ void ls(char * pathD){
         }
         else if ( ( dir_ptr = opendir( dir_name) ) == NULL ) {
 		printf( " No existe  el directorio '%s'\n",dir_name );
-		return -1;
+		return;
 	     }
              else
              {
@@ -92,7 +92,7 @@ void ls(char * pathD){
              }
         /* cierra el directorio */
 	if ( dir_ptr != NULL ) closedir( dir_ptr );
-        return 0;
+        return;
 }
 
 void cd(char* pathD){
