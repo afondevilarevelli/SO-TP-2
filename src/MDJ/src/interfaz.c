@@ -22,8 +22,8 @@ return ptoMontaje;
 t_metadata_filesystem *  obtenerMetadata () {
 t_metadata_filesystem * fs = malloc(sizeof(t_metadata_filesystem));
 char * motanjeMasBin = string_new();
-string_append(&motanjeMasBin,obtenerPtoMontaje);
-string_append(&motanjeMasBin,"/metadata.bin");
+string_append(motanjeMasBin,obtenerPtoMontaje);
+string_append(motanjeMasBin,"/metadata.bin");
 t_config * metadata = config_create(motanjeMasBin);
 fs->tamanio_bloques = config_get_int_value(metadata,"TAMANIO_BLOQUES");
 fs->cantidad_bloques = config_get_double_value(metadata,"CANTIDAD_BLOQUES");
@@ -66,7 +66,7 @@ void crearArchivo(socket_connection * connection ,char** args)
 t_archivo *  archivo= malloc(sizeof(t_archivo));	
 archivo->path = args[0];
 size_t tsize = atoi(args[1]);
-archivo->size =  &tsize;
+archivo->size =  tsize;
 archivo->fd = verificarSiExisteArchivo(archivo->path);
 t_metadata_filesystem * fs = obtenerMetadata();
 archivo->bloques = malloc(fs->cantidad_bloques);
@@ -98,10 +98,11 @@ runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",1,strEstado);
 //off_t lseek(int fildes, off_t offset, int whence);
 size_t  obtenerDatos(socket_connection * connection,char ** args){
 t_archivo *  archivo= malloc(sizeof(t_archivo));
+size_t leidos;
 archivo->path = args[0];
 off_t  offset = atoi(args[1]);
 size_t tsize =  atoi(args[2]);
-archivo->size =  &tsize;	
+archivo->size =  tsize;	
 archivo->fd = verificarSiExisteArchivo(archivo->path);
 if(archivo->fd == noExiste)
 {
@@ -111,9 +112,9 @@ else
 {
 flock(archivo->fd,LOCK_EX);	
 off_t posCorrida = lseek(archivo->fd,offset,SEEK_CUR);
-long  tamanioRestante = size - posCorrida;
+long  tamanioRestante = tsize - posCorrida;
 char * bufferDeBytes = malloc(tamanioRestante);	
-size_t  leidos = read(archivo->fd,bufferDeBytes,posCorrida);
+leidos = read(archivo->fd,bufferDeBytes,posCorrida);
 flock(archivo->fd,LOCK_UN);
 }
 return leidos ;
@@ -144,9 +145,9 @@ int *  fdBloques[i];
 for(int j = 0;j< i; j++){ 
 sprintf(path, "%j.bin", j);
 char * motanjeMasBloques = string_new();
-string_append(&motanjeMasBloques,obtenerPtoMontaje);
-string_append(&motanjeMasBloques,"/Bloques");
-string_append(&motanjeMasBloques,path);
+string_append(motanjeMasBloques,obtenerPtoMontaje);
+string_append(motanjeMasBloques,"/Bloques");
+string_append(motanjeMasBloques,path);
 fdBloques[j] = creat(motanjeMasBloques,S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 lseek( fdBloques[j], size , SEEK_SET);
 }
