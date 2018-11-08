@@ -5,6 +5,10 @@
 t_metadata_filemetadata * metadata;
 char strEstado[2];
 
+
+
+
+
 char * obtenerPtoMontaje()
 {
 t_config* fileConfig  = config_create("MDJ.config");
@@ -18,7 +22,7 @@ return ptoMontaje;
 t_metadata_filesystem *  obtenerMetadata () {
 t_metadata_filesystem * fs = malloc(sizeof(t_metadata_filesystem));
 char * motanjeMasBin = string_new();
-string_append(&motanjeMasBin,obtenerPtoMontaje());
+string_append(&motanjeMasBin,obtenerPtoMontaje);
 string_append(&motanjeMasBin,"/metadata.bin");
 t_config * metadata = config_create(motanjeMasBin);
 fs->tamanio_bloques = config_get_int_value(metadata,"TAMANIO_BLOQUES");
@@ -31,7 +35,7 @@ return fs;
 }
 
 
-void aplicarRetardo()
+aplicarRetardo()
 {
 t_config* fileConfig  = config_create("MDJ.config");
 int ret = config_get_int_value(fileConfig,"RETARDO");
@@ -61,8 +65,8 @@ void crearArchivo(socket_connection * connection ,char** args)
 {
 t_archivo *  archivo= malloc(sizeof(t_archivo));	
 archivo->path = args[0];
-int intSize = atoi(args[1]);
-archivo->size = (size_t*) &intSize;
+size_t tsize = atoi(args[1]);
+archivo->size =  &tsize;
 archivo->fd = verificarSiExisteArchivo(archivo->path);
 t_metadata_filesystem * fs = obtenerMetadata();
 archivo->bloques = malloc(fs->cantidad_bloques);
@@ -72,16 +76,12 @@ archivo->estado = yaCreado;
 }
 else if (archivo->fd == noExiste)
 {
-flock(archivo->fd,LOCK_EX);
-
-//Aclaracion: 'a':char,   "a": char* (cadena)
-//OJO ACÁ: el mmap devuelve un puntero, y archivos->bloques[i] es un char (no cadena!, y por ende no un puntero)
+flock(archivo->fd,LOCK_EX);	
 for(int i = 0; i < fs->cantidad_bloques;i++){
-int * fdBloques = crearBloques(i,archivo->path,*archivo->size);
+int * fdBloques = crearBloques(i,archivo->path,archivo->size);
 archivo->bloques[i] = mmap((void *)NULL,fs->tamanio_bloques,PROT_EXEC|PROT_READ|PROT_WRITE,MAP_SHARED,fdBloques[i],0);
-char nVeces = string_repeat('\n',archivo->size); //string_repeat devuelve una cadena (char*), no un char
-strcpy(archivo->bloques[i],nVeces); //acá no se puede hacer strcpy, porque es para cadenas
-//archivo->bloques[i] = '\n'; //a cada char de archivo->bloques le asignas '\n'
+char nVeces = string_repeat("\n",archivo->size);
+strcpy(archivo->bloques[i],nVeces);
 archivo->estado = recienCreado;
 flock(archivo->fd,LOCK_UN);
 }
@@ -99,10 +99,9 @@ runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",1,strEstado);
 size_t  obtenerDatos(socket_connection * connection,char ** args){
 t_archivo *  archivo= malloc(sizeof(t_archivo));
 archivo->path = args[0];
-off_t offset = atoi(args[1]);
-int intSize = atoi(args[2]);
-archivo->size = (size_t*) &intSize;
-char * bufferDeBytes = malloc((int) *archivo->size);		
+off_t  offset = atoi(args[1]);
+size_t tsize =  atoi(args[2]);
+archivo->size =  &tsize;	
 archivo->fd = verificarSiExisteArchivo(archivo->path);
 if(archivo->fd == noExiste)
 {
@@ -111,11 +110,13 @@ archivo->estado = noExiste;
 else
 {
 flock(archivo->fd,LOCK_EX);	
-long posCorrida = lseek(archivo->fd,offset,SEEK_CUR);
-int leidos = read(archivo->fd,bufferDeBytes,posCorrida);
+off_t posCorrida = lseek(archivo->fd,offset,SEEK_CUR);
+long  tamanioRestante = size - posCorrida;
+char * bufferDeBytes = malloc(tamanioRestante);	
+size_t  leidos = read(archivo->fd,bufferDeBytes,posCorrida);
 flock(archivo->fd,LOCK_UN);
 }
-return bufferDeBytes; //OJO ACÁ: la funcion debería retornar un size_t, pero retorna un char*
+return leidos ;
 }
 
 void guardarDatos(socket_connection * connection ,char * path,off_t  * offset,size_t *  size,char * buffer){
@@ -139,17 +140,17 @@ runFunction(connection->socket,"MDJ_DAM_verificameSiArchivoFueBorrado",1,strEsta
 }
 
 int * crearBloques(int i,char * path,size_t size){
-int *  archivos[i];
+int *  fdBloques[i];
 for(int j = 0;j< i; j++){ 
-sprintf(path, "%i", j);
+sprintf(path, "%j.bin", j);
 char * motanjeMasBloques = string_new();
-string_append(&motanjeMasBloques, obtenerPtoMontaje());
+string_append(&motanjeMasBloques,obtenerPtoMontaje);
 string_append(&motanjeMasBloques,"/Bloques");
 string_append(&motanjeMasBloques,path);
-archivos[j] = creat(motanjeMasBloques,S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-fseek(archivos[j], size , SEEK_SET); //El primer argumento deberia ser de tipo FILE*, pero es de tipo int :/
-return archivos; //el return debería estar afuera del for? Sino ejecuta el ciclo for una sola vez y retorna
+fdBloques[j] = creat(motanjeMasBloques,S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+lseek( fdBloques[j], size , SEEK_SET);
 }
+return fdBloques;
 }
 
 int verificarSiExisteArchivo(char * path){
@@ -164,5 +165,3 @@ return existe;
 }
 close(archivo->fd);
 }
-
-

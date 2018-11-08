@@ -40,7 +40,7 @@ int fd;
 char * mem_ptro;
 char * path;
 char * bloques;//vector con todos los bloques
-size_t * size; 
+size_t  *  size; 
 int estado;
 }t_archivo;
 
