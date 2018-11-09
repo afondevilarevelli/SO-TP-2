@@ -451,17 +451,15 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
     runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAbrir", 3, msgs[1], dtb->rutaScript, "0");
     }
     if(strcmp(msgs[4], "asignar") == 0){
-    	if(1){//Se encuentra abierto
-    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAsignar", 1, msgs[1]);
+    	runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAsignar", 2, msgs[1], "0");
     	}
-    	else{//Caso Contrario
-    		finalizar(idGDT);}
-    	}
-
+    if(strcmp(msgs[4], "close") == 0){
+    	runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionClose", 3, msgs[1], dtb->rutaScript, "1");
+    }
 	//Envia El Resultado "1" si se encuentra abierto, "0" caso contrario
     if(strcmp(msgs[4], "flush") == 0) {
-	runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionFlush", 3, msgs[1], dtb->rutaScript, "0");
-    }
+    	runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionFlush", 3, msgs[1], dtb->rutaScript, "0");
+    	}
 	//Verifica El Archivo A Realizar La Accion
 
 }

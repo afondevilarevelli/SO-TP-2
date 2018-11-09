@@ -26,6 +26,7 @@ int main(void) {
 	dictionary_put(callableRemoteFunctions, "identificarProcesoEnFM9", &identificarProceso);
 	dictionary_put(callableRemoteFunctions, "DAM_FM9_cargarArchivo", &solicitudCargaArchivo);
 	dictionary_put(callableRemoteFunctions, "CPU_FM9_actualizarLosDatosDelArchivo", &actualizarDatosDTB);
+	dictionary_put(callableRemoteFunctions, "CPU_FM9_cerrarElArchivo", &cerrarArchivoDelDTB);
 	//Funcion para iniciar la ejecucion del Flush
 	//dictionary_put(callableRemoteFunctions, "DAM_FM9_obtenerArchivo", &obtenerArchivo);
 

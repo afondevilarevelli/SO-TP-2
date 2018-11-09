@@ -104,7 +104,9 @@ void establecerQuantumYID(socket_connection * connection ,char** args); //SAFA
 void pausarPlanificacion(socket_connection * connection ,char** args);
 void continuarPlanificacion(socket_connection * connection ,char** args);
 void ejecucionAbrir(socket_connection*, char**);
-void ejecucionAsignar(socket_connection*, char** args);
+void ejecucionAsignar(socket_connection*, char**);
+void ejecucionClose(socket_connection*, char**);
 void ejecucionFlush(socket_connection*, char**);
+void finalizacionClose(socket_connection*, char**);
 
 #endif

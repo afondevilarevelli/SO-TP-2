@@ -90,3 +90,12 @@ void actualizarDatosDTB(socket_connection* connection, char** args){
 	log_info(logger, "Del GDT: %d, recibi los siguientes Datos: %s, %d, %s", idGDT, path, linea, datos);
 
 }
+
+//args[0]: idGDT, args[1]: rutaScript
+void cerrarArchivoDelDTB(socket_connection* connection, char** args){
+
+	//Realizar Operacion de Cerrado
+
+	runFunction(connection->socket, "FM9_CPU_resultadoDeClose", 2 , args[0], "1");
+
+}

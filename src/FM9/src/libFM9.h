@@ -27,6 +27,7 @@ pthread_mutex_t mx_main;
 //CallableRemoteFunctions
 void solicitudCargaArchivo(socket_connection*, char**);
 void actualizarDatosDTB(socket_connection*, char**);
+void cerrarArchivoDelDTB(socket_connection*, char**);
 
 //LOGS
 void configure_logger();

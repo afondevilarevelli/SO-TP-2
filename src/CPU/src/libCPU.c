@@ -220,10 +220,39 @@ void ejecucionAbrir(socket_connection* connection, char** args){
 //args[0]: idGDT
 void ejecucionAsignar(socket_connection* connection, char** args){
 
+	estadoSituacionArchivo = atoi(args[2]);
+
+	if(estadoSituacionArchivo){
+
 	log_trace(logger,"Se Enviaran Los Datos Necesarios A FM9");
 	runFunction(socketFM9, "CPU_FM9_actualizarLosDatosDelArchivo", 4, args[0], sentenciasAsignar.p1,
 																			   sentenciasAsignar.p2,
 																			   sentenciasAsignar.p3);
+	}
+
+	else{
+		log_error(logger, "El Archivo Solicitado: %s No Se Encuentra Abierto", args[1]);
+		runFunction(socketSAFA, "CPU_SAFA_pasarDTBAExit", 1, args[0]);
+	}
+
+}
+
+//args[0]: idGDT, args[1]: rutaScript, args[2]: estadoArchivo
+void ejecucionClose(socket_connection* connection, char** args){
+
+	estadoSituacionArchivo = atoi(args[2]);
+
+	if(estadoSituacionArchivo){
+
+	log_trace(logger,"Se Enviaran Los Datos Necesarios A FM9 Para Cerrar El Archivo");
+	runFunction(socketFM9, "CPU_FM9_cerrarElArchivo", 2, args[0], args[1]);
+
+	}
+
+	else{
+		log_error(logger, "El Archivo Solicitado: %s No Se Encuentra Abierto", args[1]);
+		runFunction(socketSAFA, "CPU_SAFA_pasarDTBAExit", 1, args[0]);
+	}
 
 }
 
@@ -242,12 +271,31 @@ void ejecucionFlush(socket_connection* connection, char** args){
 		}
 
 	else{
-		log_error(logger, "El Archivo Solicitado: %s No Se Encontraba Abierto", args[1]);
+		log_error(logger, "El Archivo Solicitado: %s No Se Encuentra Abierto", args[1]);
 		runFunction(socketSAFA, "CPU_SAFA_pasarDTBAExit", 1, args[0]);
 
 	}
+}
 
+//args[0]: idGDT, args[1]: estadoArchivo
+void finalizacionClose(socket_connection* connection, char** args){
 
+	int idGDT = atoi(args[0]);
+	estadoSituacionArchivo = atoi(args[1]);
+
+	if(estadoSituacionArchivo){
+		char string_id[2];
+		sprintf(string_id, "%i", idCPU);
+
+		log_trace(logger, "Se va a Liberar el GDT : %d", idGDT);
+		runFunction(socketSAFA, "finalizacionProcesamientoCPU", 4, string_id, args[0], "0" ,"finalizar");
+	}
+
+	else{
+
+		log_error(logger, "No se Pudo Cerrar Correctamente El GDT");
+		runFunction(socketSAFA, "CPU_SAFA_pasarDTBAExit", 1, args[0]);
+	}
 
 }
 
@@ -331,8 +379,12 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 5, string_id, args[0], string_sentEjecutadas, string_quantumAEjecutar, "flush");
 					return;
 				case CLOSE:
-					//algo
-					break;
+					programCounter++;
+					sentenciasEjecutadas++;
+					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
+					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
+					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 5, string_id, args[0], string_sentEjecutadas, string_quantumAEjecutar, "close");
+					return;
 				case CREAR:
 					//Aca se incrementa el PC y SE, al final para ver si mas adelante continua o aborta
 					programCounter++;
