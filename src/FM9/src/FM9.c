@@ -34,18 +34,16 @@ int main(void) {
 
 	inicializarMemoriaConSegmentacion();
 
+	test();
 	callableRemoteFunctions = dictionary_create();
 
 	dictionary_put(callableRemoteFunctions, "identificarProcesoEnFM9", &identificarProceso);
-<<<<<<< HEAD
 	dictionary_put(callableRemoteFunctions, "DAM_FM9_guardarGDT", &DAM_FM9_guardarGDT);
-=======
 	dictionary_put(callableRemoteFunctions, "DAM_FM9_cargarArchivo", &solicitudCargaArchivo);
 	dictionary_put(callableRemoteFunctions, "CPU_FM9_actualizarLosDatosDelArchivo", &actualizarDatosDTB);
 	dictionary_put(callableRemoteFunctions, "CPU_FM9_cerrarElArchivo", &cerrarArchivoDelDTB);
 	//Funcion para iniciar la ejecucion del Flush
 	//dictionary_put(callableRemoteFunctions, "DAM_FM9_obtenerArchivo", &obtenerArchivo);
->>>>>>> master
 
 	log_info(logger, "Voy a escuchar el puerto: %d", datosConfigFM9->puerto);
 

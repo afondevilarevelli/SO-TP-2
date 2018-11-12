@@ -45,9 +45,12 @@ int devolverPosicionNuevoSegmento(int tamanioAPersistir){
 	t_tabla_segmentos* auxNodoSiguiente;
 	for(int i = 0; i<list_size(lista_tabla_segmentos); i++){
 		auxNodo = list_get(lista_tabla_segmentos, i);
+		//si hay espacio antes del primer nodo
+		if(auxNodo->base > tamanioAPersistir){
+			return pos;
+		}
 		//Si no hay nodo siguiente y no supero el maximo de memoria devuelvo la posicion siguiente al ultimo nodo
 		if(list_size(lista_tabla_segmentos)== i+1 && (auxNodo->base + auxNodo->limite < datosConfigFM9->tamanio)){
-			log_info(logger, "aca");
 			return (auxNodo->base + auxNodo->limite);
 		}
 		auxNodoSiguiente = list_get(lista_tabla_segmentos, i+1);
@@ -62,9 +65,20 @@ int devolverPosicionNuevoSegmento(int tamanioAPersistir){
 //Guardo GDT y devuelvo la posicion de memoria. Si no puedo persistirlo devuelvo -1
 void DAM_FM9_guardarGDT(socket_connection * connection ,char** args) {
 	log_info(logger, "Voy a persistir: '%s' cuyo tamanio es %d", args[0], strlen(args[0]));
-	memcpy(memoria +devolverPosicionNuevoSegmento(strlen(args[0])), args[0], strlen(args[0]));
+	int tamanioArchivo = strlen(args[0]);
+	int pos = devolverPosicionNuevoSegmento(tamanioArchivo);
+
+	memcpy(memoria +pos, args[0], tamanioArchivo);
 	log_info(logger, "Persisti el contenido");
-}
+
+	log_info(logger, "Voy a actualizar tabla de segmentos");
+	t_tabla_segmentos* nuevoSegmento = malloc(sizeof(t_tabla_segmentos));;
+	nuevoSegmento->base =pos;
+	nuevoSegmento->limite = tamanioArchivo;
+	list_add(lista_tabla_segmentos, nuevoSegmento);
+	list_sort(lista_tabla_segmentos, ordenarTablaSegmentos);
+	log_info(logger, "Se actualizo correctamente la tabla de segmentos");
+	}
 
 
 
@@ -102,8 +116,6 @@ t_config_FM9* read_and_log_config(char* path) {
 
 	return _datosFM9;
 }
-<<<<<<< HEAD
-=======
 
 //args[0]: idGDT
 //Comunicacion para Desarrollar Cuando El DAM pida a FM9 cargar el archivo ya sea un DTB o el Dummy
@@ -136,4 +148,8 @@ void cerrarArchivoDelDTB(socket_connection* connection, char** args){
 	runFunction(connection->socket, "FM9_CPU_resultadoDeClose", 2 , args[0], "1");
 
 }
->>>>>>> master
+
+bool ordenarTablaSegmentosDeMenorBaseAMayorBase(t_tabla_segmentos* unNodo, t_tabla_segmentos* nodoSiguiente){
+	return unNodo->base < nodoSiguiente->base;
+}
+
