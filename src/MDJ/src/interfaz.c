@@ -1,83 +1,168 @@
 #include  "interfaz.h"
-
+#include "libMDJ.h"
+//https://www.programacion.com.py/escritorio/c/archivos-en-c-linux
 // Con esto se maneja cada mensaje que se le mando al dam, si es 0 es porque es false, si es 1 es porque es true
-int estado;
-int file;
+t_metadata_filemetadata * metadata;
 char strEstado[2];
 
-aplicarRetardo(char *path)
+
+
+
+
+char * obtenerPtoMontaje()
 {
-t_config* fileConfig  = config_create(path);
+t_config* fileConfig  = config_create("MDJ.config");
+char * ptoMontaje = config_get_string_value(fileConfig,"PTO_MONTAJE");
+config_destroy(fileConfig);
+return ptoMontaje;
+}
+
+//falta probar y hacer algunos free de los malloc.
+
+t_metadata_filesystem *  obtenerMetadata () {
+t_metadata_filesystem * fs = malloc(sizeof(t_metadata_filesystem));
+char * motanjeMasBin = string_new();
+string_append(motanjeMasBin,obtenerPtoMontaje);
+string_append(motanjeMasBin,"/metadata.bin");
+t_config * metadata = config_create(motanjeMasBin);
+fs->tamanio_bloques = config_get_int_value(metadata,"TAMANIO_BLOQUES");
+fs->cantidad_bloques = config_get_double_value(metadata,"CANTIDAD_BLOQUES");
+fs->magic_number = string_new();
+char * magic_number = config_get_string_value(metadata,"MAGIC_NUMBER");
+string_append(&fs->magic_number ,magic_number);
+config_destroy(metadata);
+return fs;
+}
+
+
+aplicarRetardo()
+{
+t_config* fileConfig  = config_create("MDJ.config");
 int ret = config_get_int_value(fileConfig,"RETARDO");
 sleep(ret);
 config_destroy(fileConfig);
 }
-
+//args[0]: idGDT, args[1]: path
 void  validarArchivo(socket_connection * connection,char ** args){
-char * path = args[0];
-file = verificarSiExisteArchivo(path);
-if(file == noExiste){
-estado =noExiste;
+t_archivo *  archivo = malloc(sizeof(t_archivo));	
+archivo->path = args[1];
+archivo->fd =  verificarSiExisteArchivo(archivo->path);
+if(archivo->fd == noExiste){
+archivo->estado =noExiste;
 }
 else {
-estado =  existe;
+archivo->estado=  existe;
 }
-sprintf(strEstado, "%i", estado);
-aplicarRetardo("MDJ.config");
-runFunction(connection->socket,"MDJ_DAM_existeArchivo",1,strEstado);
+sprintf(strEstado, "%i", archivo->estado);
+aplicarRetardo();
+runFunction(connection->socket,"MDJ_DAM_existeArchivo",2, args[0], strEstado);
 }
 
-void crearArchivo(socket_connection * connection ,char * path,size_t *   sizeText)
+//void* mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
+
+//args[0]: rutaDelArchivo, args[1]: cantidadDeBytes
+void crearArchivo(socket_connection * connection ,char** args)
 {
-file = verificarSiExisteArchivo(path);
-if(file == existe)
+t_archivo *  archivo= malloc(sizeof(t_archivo));	
+archivo->path = args[0];
+size_t tsize = atoi(args[1]);
+archivo->size =  tsize;
+archivo->fd = verificarSiExisteArchivo(archivo->path);
+t_metadata_filesystem * fs = obtenerMetadata();
+archivo->bloques = malloc(fs->cantidad_bloques);
+if(archivo->fd == existe)
 {
-estado = yaCreado;
+archivo->estado = yaCreado;
 }
-else if (file == noExiste)
+else if (archivo->fd == noExiste)
 {
-estado = recienCreado;
+flock(archivo->fd,LOCK_EX);	
+for(int i = 0; i < fs->cantidad_bloques;i++){
+int * fdBloques = crearBloques(i,archivo->path,archivo->size);
+archivo->bloques[i] = mmap((void *)NULL,fs->tamanio_bloques,PROT_EXEC|PROT_READ|PROT_WRITE,MAP_SHARED,fdBloques[i],0);
+char nVeces = string_repeat("\n",archivo->size);
+strcpy(archivo->bloques[i],nVeces);
+archivo->estado = recienCreado;
+flock(archivo->fd,LOCK_UN);
+}
 }
 else
 {
-estado = noCreado;
+archivo->estado = noCreado;
 }
-sprintf(strEstado, "%i", estado);
-aplicarRetardo("MDJ.config");
+sprintf(strEstado, "%i", archivo->estado);
+aplicarRetardo();
 runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",1,strEstado);
 }
 
-size_t  obtenerDatos(socket_connection * connection,char * path,off_t  * offset,size_t  * size){
-
-}
-
-void guardarDatos(socket_connection * connection ,char * path,off_t  * offset,size_t *   size,char * buffer){
-}
-
-void borrarArchivo(socket_connection* connection,char * path){
-file = verificarSiExisteArchivo(path);
-if (file == existe)
+//off_t lseek(int fildes, off_t offset, int whence);
+size_t  obtenerDatos(socket_connection * connection,char ** args){
+t_archivo *  archivo= malloc(sizeof(t_archivo));
+size_t leidos;
+archivo->path = args[0];
+off_t  offset = atoi(args[1]);
+size_t tsize =  atoi(args[2]);
+archivo->size =  tsize;	
+archivo->fd = verificarSiExisteArchivo(archivo->path);
+if(archivo->fd == noExiste)
 {
-remove(path);
-estado = recienBorrado;
+archivo->estado = noExiste;	
 }
 else
 {
-estado = noBorrado;
+flock(archivo->fd,LOCK_EX);	
+off_t posCorrida = lseek(archivo->fd,offset,SEEK_CUR);
+long  tamanioRestante = tsize - posCorrida;
+char * bufferDeBytes = malloc(tamanioRestante);	
+leidos = read(archivo->fd,bufferDeBytes,posCorrida);
+flock(archivo->fd,LOCK_UN);
 }
-sprintf(strEstado, "%i", estado);
-aplicarRetardo("MDJ.config");
+return leidos ;
+}
+
+void guardarDatos(socket_connection * connection ,char * path,off_t  * offset,size_t *  size,char * buffer){
+}
+
+void borrarArchivo(socket_connection* connection,char ** args){
+t_archivo * archivo= malloc(sizeof(t_archivo));
+archivo->path = args[0];
+archivo->fd  = verificarSiExisteArchivo(archivo->path);
+if (archivo->fd  == existe)
+{
+archivo->estado = recienBorrado;
+}
+else
+{
+archivo->estado = noBorrado;
+}
+sprintf(strEstado, "%i", archivo->estado);
+aplicarRetardo();
 runFunction(connection->socket,"MDJ_DAM_verificameSiArchivoFueBorrado",1,strEstado);
 }
 
+int * crearBloques(int i,char * path,size_t size){
+int *  fdBloques[i];
+for(int j = 0;j< i; j++){ 
+sprintf(path, "%j.bin", j);
+char * motanjeMasBloques = string_new();
+string_append(motanjeMasBloques,obtenerPtoMontaje);
+string_append(motanjeMasBloques,"/Bloques");
+string_append(motanjeMasBloques,path);
+fdBloques[j] = creat(motanjeMasBloques,S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+lseek( fdBloques[j], size , SEEK_SET);
+}
+return fdBloques;
+}
+
 int verificarSiExisteArchivo(char * path){
-int fileState = open(path,O_RDONLY);
-if(fileState == -1){
+t_archivo *  archivo= malloc(sizeof(t_archivo));	
+archivo->path = path;
+archivo->fd = open(path,O_RDONLY|O_WRONLY);
+if(archivo->fd  == -1){
 return noExiste;
 }
 else{
 return existe;
 }
+close(archivo->fd);
 }
-
-

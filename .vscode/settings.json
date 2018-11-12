@@ -2,6 +2,7 @@
     "files.associations": {
         "queue.h": "c",
         "dictionary.h": "c",
-        "planificadores.h": "c"
+        "planificadores.h": "c",
+        "interfaz.h": "c"
     }
 }

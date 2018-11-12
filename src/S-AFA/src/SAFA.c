@@ -7,8 +7,7 @@
 
 void disconnect(socket_connection* socketInfo);
 
-int main(void){
-
+int main(void){      
         unCpuConectado = false;
         damConectado = false;
         generadorDeIdsCPU = 1;
@@ -20,6 +19,13 @@ int main(void){
      dictionary_put(fns,"identificarProcesoEnSAFA",&identificarProceso);
      dictionary_put(fns, "identificarNuevaConexion", &newConnection); 
      dictionary_put(fns, "finalizacionProcesamientoCPU", &finalizacionProcesamientoCPU);
+     dictionary_put(fns, "avisoDamDTB", &avisoDeDamDeResultadoDTB);
+     dictionary_put(fns, "DAM_SAFA_desbloquearDTB", &desbloquearDTB);
+     dictionary_put(fns, "DAM_SAFA_pasarDTBAExit", &pasarDTBAExit);
+     dictionary_put(fns, "waitRecurso", &waitRecurso);
+     dictionary_put(fns, "signalRecurso", &signalRecurso);
+     dictionary_put(fns, "CPU_SAFA_verificarEstadoArchivo", &verificarEstadoArchivo);
+     dictionary_put(fns, "CPU_SAFA_pasarDTBAExit", &pasarDTBAExit);
 
         
         colaReady = queue_create();
@@ -29,6 +35,7 @@ int main(void){
         listaEjecutando = list_create();
         hilos = list_create();
         listaCPUs = list_create();
+        listaDeRecursos = list_create();
 
         pthread_t hiloConsola, hiloPLP;
         list_add(hilos, &hiloConsola);
@@ -46,9 +53,13 @@ int main(void){
         pthread_mutex_init(&m_puedePlanificar, NULL);
         pthread_mutex_init(&m_colaReady, NULL);
 	pthread_mutex_init(&m_colaBloqueados, NULL);
+        pthread_mutex_init(&m_colaFinalizados, NULL);
         pthread_mutex_init(&m_colaNew, NULL);
         pthread_mutex_init(&m_listaEjecutando, NULL);
+        pthread_mutex_init(&m_listaDeRecursos, NULL);
+
         pthread_mutex_init(&m_busqueda, NULL);
+        pthread_mutex_init(&m_recurso, NULL);
 
         pthread_create(&hiloConsola, NULL, (void*)&consolaSAFA, NULL);       
         pthread_create(&hiloPLP, NULL, (void*)&planificadorLargoPlazo, NULL);
@@ -86,6 +97,9 @@ void cerrarPrograma() {
     pthread_mutex_destroy(&m_colaNew);
     pthread_mutex_destroy(&m_listaEjecutando);
     pthread_mutex_destroy(&m_busqueda);
+    pthread_mutex_destroy(&m_colaFinalizados);
+    pthread_mutex_destroy(&m_listaDeRecursos);
+    pthread_mutex_destroy(&m_recurso);
 
     close_logger();
     dictionary_destroy(fns); 
@@ -99,6 +113,7 @@ void cerrarPrograma() {
     list_destroy(hilos);
     list_destroy_and_destroy_elements(listaCPUs, (void*)free);
     list_destroy(listaEjecutando);
+    list_destroy_and_destroy_elements(listaDeRecursos, (void*)&destruirRecurso);
 
 
     pthread_mutex_unlock(&mx_main);

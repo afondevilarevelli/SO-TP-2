@@ -4,12 +4,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <pthread.h>
+#include <string.h>
 #include <commons/log.h>
 #include <commons/config.h>
 #include <commons/string.h>
 #include <commons/collections/dictionary.h>
+#include <commons/collections/list.h>
 #include "../../sample-socket/socket.h" 
-#include "../../Utils/gestionArchConf.h"
+//el include de libSAFA es SÓLO para verificar si un archivo ya fue abierto por un GDT para la funcion ABRIR
+#include "../../S-AFA/src/libSAFA.h"
+
 
 //ESTRUCTURA
 typedef struct {
@@ -48,8 +53,7 @@ typedef enum{
 	CLOSE, 
 	CREAR, 
 	BORRAR, 
-	NUMERAL, //para comentarios
-	BLANCO  //para señalar fin de programa
+	NUMERAL //para comentarios
 }palabraReservada_t;
 
 typedef struct{   
@@ -57,6 +61,7 @@ typedef struct{
     char* p1; //abrir, wait, signal, flush, close, borrar
     char* p2; //crear
     char* p3; //asignar
+	bool ultimaSentencia;
 }operacion_t;
 
 //VARIABLES GLOBALES
@@ -65,18 +70,29 @@ t_config* archivo_Config;
 t_config_CPU* datosCPU;
 t_dictionary * callableRemoteFunctionsCPU;
 pthread_mutex_t m_main;
+pthread_mutex_t m_busqueda;
+pthread_mutex_t m_puedeEjecutar;
+
+//VAR GLOB SOCKETS
+int socketDAM;
+int socketSAFA;
+int socketFM9;
+
+int estadoSituacionArchivo;
 
 //FUNCIONES
 
-void configure_logger();
-t_config_CPU* read_and_log_config(char*);
-void close_logger();
+void configure_loggerCPU();
+t_config_CPU* read_and_log_configCPU(char* path);
+void close_loggerCPU();
 
-void* intentandoConexionConSAFA(int* );
-void* intentandoConexionConDAM(int* );
-void* intentandoConexionConFM9(int* );
-
+void* intentandoConexionConSAFA(int );
+void* intentandoConexionConDAM(int );
+void* intentandoConexionConFM9(int );
 void disconnect();
+
+FILE * abrirScript(char * scriptFilename);
+operacion_t obtenerSentenciaParseada(char* script,int programCounter);
 
 //PARSER
 operacion_t parse(char* line);
@@ -84,6 +100,12 @@ operacion_t parse(char* line);
 //callable remote functions
 void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args); //SAFA
 void establecerQuantumYID(socket_connection * connection ,char** args); //SAFA
-
+void pausarPlanificacion(socket_connection * connection ,char** args);
+void continuarPlanificacion(socket_connection * connection ,char** args);
+void ejecucionAbrir(socket_connection*, char**);
+void ejecucionAsignar(socket_connection*, char**);
+void ejecucionClose(socket_connection*, char**);
+void ejecucionFlush(socket_connection*, char**);
+void finalizacionClose(socket_connection*, char**);
 
 #endif

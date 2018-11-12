@@ -32,6 +32,12 @@ void* memoria;
 t_list* lista_tabla_segmentos;
 
 //FUNCIONES
+
+//CallableRemoteFunctions
+void solicitudCargaArchivo(socket_connection*, char**);
+void actualizarDatosDTB(socket_connection*, char**);
+void cerrarArchivoDelDTB(socket_connection*, char**);
+
 //LOGS
 void configure_logger();
 void close_logger();

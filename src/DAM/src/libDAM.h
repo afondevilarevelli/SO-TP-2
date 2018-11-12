@@ -6,6 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <string.h>
 #include <commons/log.h>
 #include <commons/config.h>
 #include <commons/collections/dictionary.h>
@@ -28,7 +29,6 @@ typedef struct {
 
 //VARIABLES
 t_log* logger;
-t_config_DAM* _datosDAM;
 t_dictionary* callableRemoteFunctionsSAFA;
 t_dictionary* callableRemoteFunctionsFM9;
 t_dictionary* callableRemoteFunctionsMDJ;
@@ -36,6 +36,9 @@ t_dictionary* callableRemoteFunctionsCPU;
 pthread_mutex_t mx_main;	/* Semaforo de main */
 t_config_DAM*  datosConfigDAM;
 
+int socketSAFA;
+int socketFM9;
+int socketMDJ;
 
 //----------------------------//
 
@@ -51,14 +54,17 @@ void close_logger();
 //PROTOTIPOS
 void cerrarPrograma();
 void elementoDestructorDiccionario(void *);
-void existeArchivo(socket_connection* , char * );
-void verificarArchivoCreado(socket_connection* , char *);
-void verificameSiArchivoFueBorrado(socket_connection*,char *);
 
 //diccionarios
 void identificarProceso(socket_connection * connection ,char** args);
-void MDJ_DAM_existeArchivo(socket_connection*,char ** );
-void MDJ_DAM_verificarArchivoCreado(socket_connection*,char **);
-void MDJ_DAM_verificameSiArchivoFueBorrado(socket_connection*,char **);
+void MDJ_DAM_verificarArchivoCreado(/*socket_connection*,char ** */ char*, char*);
+void MDJ_DAM_verificameSiArchivoFueBorrado(/*socket_connection*,char ** */char*, char*);
+void existeArchivo(socket_connection* socketMDJ, char * pathFile);
+void crearArchivo(socket_connection* connection, char** args);
+void borrarArchivo(socket_connection* connection, char** args);
+void archivoCargadoCorrectamente(socket_connection* , char**);
+void MDJ_DAM_avisarResultadoDTB(socket_connection* socketInf,char ** args);
+void solicitudDeFlush(socket_connection* , char** );
+void solicitudCargaGDT(socket_connection* connection, char ** args);
 
 #endif

@@ -1,0 +1,8 @@
+abrir perrunoXD
+wait conmebol
+#te la comes doblada
+signal conmebol
+flush noseque
+concentrar
+crear sonido palmas
+close palmas

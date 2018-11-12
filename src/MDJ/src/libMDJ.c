@@ -32,32 +32,30 @@ void disconnect(socket_connection* socketInfo) {
 //CONFIG
 t_config_MDJ *  read_and_log_config(char* path) {
 	log_info(logger, "Voy a leer el archivo MDJ.config");
-        t_config* archivo_Config  = config_create(path);
+        t_config * archivo_Config  = config_create(path);
 	if (archivo_Config == NULL) {
 		log_error(logger, "No existe archivo de configuracion");
-		exit(1);   }
+		exit(1); 
+       }
         else
       {
-       log_info(logger,"Se verifico que existe MDJ.config"); }
-	
+       log_trace(logger,"Se verifico que existe MDJ.config");
+      }
         t_config_MDJ  * datosMDJ = malloc(sizeof(t_config_MDJ));
 	datosMDJ->puerto = config_get_int_value(archivo_Config,"PUERTO");
-	char*  ip = string_new();
-	string_append(&ip,  config_get_string_value(archivo_Config,"IP"));
-	datosMDJ->ip = ip;
-        char*  ptoMontaje = string_new();
-	string_append(&ptoMontaje, config_get_string_value(archivo_Config,"PTO_MONTAJE"));
+        char * ptoMontaje = string_new();
+	string_append(&ptoMontaje,config_get_string_value(archivo_Config,"PTO_MONTAJE"));
         datosMDJ->ptoMontaje = ptoMontaje;
 	datosMDJ->retardo= config_get_int_value(archivo_Config,"RETARDO");
-	log_info(logger, "	PUERTO: %d", datosMDJ->puerto);
-	log_info(logger, "	IP: %s", datosMDJ->ip);
-	log_info(logger, "	PTO_MONTAJE: %s", datosMDJ->ptoMontaje);
-	log_info(logger, "	RETARDO: %d", datosMDJ->retardo);
+	log_info(logger, "	PUERTO: %d",datosMDJ->puerto);
+	log_info(logger, "	PTO_MONTAJE: %s",datosMDJ->ptoMontaje);
+	log_info(logger, "	RETARDO: %d",datosMDJ->retardo);
 	log_info(logger, "Fin de lectura");
-
-       config_destroy(archivo_Config);
-       free(ip);
+        config_destroy(archivo_Config);
        free(ptoMontaje);
        return datosMDJ;
 
 }
+
+
+
