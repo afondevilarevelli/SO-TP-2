@@ -180,7 +180,7 @@ void borrarArchivo(socket_connection* connection, char** args){
 
 }
 
-void existeArchivo(socket_connection* socketMDJ, char * pathFile){
+void existeArchivo(socket_connection* socket, char * pathFile){
  runFunction(socketMDJ,"validarArchivo",1,pathFile);
 }
 

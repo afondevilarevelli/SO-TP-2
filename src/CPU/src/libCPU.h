@@ -69,7 +69,6 @@ t_log* logger;
 t_config* archivo_Config;
 t_config_CPU* datosCPU;
 t_dictionary * callableRemoteFunctionsCPU;
-operacion_t sentenciasAsignar;
 pthread_mutex_t m_main;
 pthread_mutex_t m_busqueda;
 pthread_mutex_t m_puedeEjecutar;

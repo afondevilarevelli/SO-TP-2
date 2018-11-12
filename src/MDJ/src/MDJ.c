@@ -1,6 +1,7 @@
 #include "libMDJ.h"
 
-char * path = "/home/utnso/tp-2018-2c-Mi-amor-es-el-Malloc/src/MDJ/MDJ.config";
+//PATH RELATIVO PQ SINO NO ANDA EN OTRAS COMPUS
+char * path = "MDJ.config";
 
 
 

@@ -220,14 +220,14 @@ void ejecucionAbrir(socket_connection* connection, char** args){
 //args[0]: idGDT
 void ejecucionAsignar(socket_connection* connection, char** args){
 
-	estadoSituacionArchivo = atoi(args[2]);
+	estadoSituacionArchivo = atoi(args[1]);
 
 	if(estadoSituacionArchivo){
 
 	log_trace(logger,"Se Enviaran Los Datos Necesarios A FM9");
-	runFunction(socketFM9, "CPU_FM9_actualizarLosDatosDelArchivo", 4, args[0], sentenciasAsignar.p1,
-																			   sentenciasAsignar.p2,
-																			   sentenciasAsignar.p3);
+	runFunction(socketFM9, "CPU_FM9_actualizarLosDatosDelArchivo", 4, args[0], args[2],
+																			   args[3],
+																			   args[4]);
 	}
 
 	else{
@@ -350,10 +350,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					sentenciasEjecutadas++;
 					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
-					sentenciasAsignar.p1 = sentencia.p1;
-					sentenciasAsignar.p2 = sentencia.p2;
-					sentenciasAsignar.p3 = sentencia.p3;
-					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo",5,string_id, args[0], string_sentEjecutadas, string_quantumAEjecutar, "asignar");
+					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo",8,string_id, args[0], string_sentEjecutadas, string_quantumAEjecutar, sentencia.p1, sentencia.p2, sentencia.p3, "asignar");
 					return;
 				case WAIT:
 					programCounter++;

@@ -451,7 +451,7 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
     runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAbrir", 3, msgs[1], dtb->rutaScript, "0");
     }
     if(strcmp(msgs[4], "asignar") == 0){
-    	runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAsignar", 2, msgs[1], "0");
+    	runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAsignar", 5, msgs[1], "0", msgs[4], msgs[5], msgs[6]);
     	}
     if(strcmp(msgs[4], "close") == 0){
     	runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionClose", 3, msgs[1], dtb->rutaScript, "1");
