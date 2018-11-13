@@ -36,6 +36,7 @@ typedef struct{
 	status_t status;
 	int quantumFaltante; //sentencias que le faltan ejecutar para terminar su quantum ( para VRR )
 	int cantSentEsperadasEnNew; //para las metricas
+	int cantIOs; //cant de entradas y salidas ( para IOBF )
 }DTB;
 
 typedef struct{
@@ -76,6 +77,8 @@ pthread_mutex_t m_busqueda;
 
 pthread_mutex_t m_recurso;
 
+pthread_mutex_t m_verificacion;
+
 t_log* logger;
 t_config_SAFA* datosConfigSAFA;
 pthread_mutex_t mx_main;
@@ -92,6 +95,8 @@ t_list* hilos;
 t_list* listaCPUs; //lista de CPUs
 
 t_list* listaDeRecursos;
+
+char* archAVerificar;
 
 //booleanos para manejar el estado corrupto
 bool estadoCorrupto; 
@@ -124,6 +129,8 @@ void destruirRecurso(recurso* r);
 
 void eliminarRecurso(recurso* r);
 void crearRecurso(char* nombre, int valor);
+
+bool condicionArchivoAbierto(void* arch);
 
 //LOGS
 void configure_logger();

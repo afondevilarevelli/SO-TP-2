@@ -333,13 +333,14 @@ void newConnection(socket_connection* socketInfo, char** msg){
 	}	
 }
 
-//args[0]: idCPU, args[1]: idGDT, args[2]: cantidad de quanto que ejecutó, args[3]:"finalizar","continuar" ó "bloquear"
+//args[0]: idCPU, args[1]: idGDT, args[2]: cantidad de quanto que ejecutó, args[3]:"finalizar","continuar" ó "bloquear", args[4]: 1 si hay que aumentar cantIOs
 //								  							   			   "finalizar" => finalizo GDT,		
 //								  							   			   "bloquear"  => bloqueo GDT,
 //								   							   			   "continuar" => paso a Ready GDT
 void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 	int idCPU = atoi( msg[0] );
 	int idDTB = atoi ( msg[1] );
+	int aumentar = atoi ( msg[4] );
 	int quantumEjecutado = atoi( msg[2] );
 	log_info(logger, "La CPU %d ha finalizado de procesar sentencias del GDT de id %d", idCPU, idDTB);
 	CPU* cpu = buscarCPU(idCPU);
@@ -354,6 +355,8 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 	pthread_mutex_unlock(&m_colaNew);
 
 	if(dtb != NULL){ 
+		if(aumentar)
+			dtb->cantIOs++;
 		if(dtb->status != FINISHED){ 
 			if( strcmp( msg[3], "finalizar") == 0){
 
@@ -438,7 +441,8 @@ void pasarDTBAExit(socket_connection* connection, char** msgs){
 	}
 }
 
-//msgs[0]: idCPU, msgs[1]: idGDT, msgs[4]: abrir o flush por ahora
+//msgs[0]: idCPU, msgs[1]: idGDT, msgs[2]:sentEjecutadas, msgs[3]: quantumAEjecutar, 
+//msgs[4]: funcion escriptorio, msgs[5]: archivoAVerificar
 void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 
 	int idGDT = atoi(msgs[1]);
@@ -447,21 +451,64 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 	DTB* dtb = buscarDTBEnElSistema(idGDT);
 
 	//Realiza La Verificacion del Archivo Por SI o No
-    if(strcmp(msgs[4], "abrir") == 0){
-    runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAbrir", 3, msgs[1], dtb->rutaScript, "0");
-    }
-    if(strcmp(msgs[4], "asignar") == 0){
-    	runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAsignar", 5, msgs[1], "0", msgs[4], msgs[5], msgs[6]);
-    	}
-    if(strcmp(msgs[4], "close") == 0){
-    	runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionClose", 3, msgs[1], dtb->rutaScript, "1");
-    }
 	//Envia El Resultado "1" si se encuentra abierto, "0" caso contrario
+    if(strcmp(msgs[4], "abrir") == 0){
+		pthread_mutex_lock(&m_verificacion);
+		archAVerificar = malloc(strlen(msgs[5]) + 1);
+		strcpy(archAVerificar, msgs[5]);
+		if(list_any_satisfy(dtb->archivosAbiertos, &condicionArchivoAbierto) )
+    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAbrir", 3, msgs[1], dtb->rutaScript, "1");
+		else{ 
+			dtb->cantIOs++;
+			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAbrir", 3, msgs[1], dtb->rutaScript, "0");
+		}
+		free(archAVerificar);
+		pthread_mutex_unlock(&m_verificacion);
+    }
+
+    if(strcmp(msgs[4], "asignar") == 0){
+		pthread_mutex_lock(&m_verificacion);
+		archAVerificar = malloc(strlen(msgs[5]) + 1);
+		strcpy(archAVerificar, msgs[5]);
+		if(list_any_satisfy(dtb->archivosAbiertos, &condicionArchivoAbierto) )
+    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAsignar", 5, msgs[1], "1", msgs[4], msgs[5], msgs[6]);
+		else
+			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAsignar", 5, msgs[1], "0", msgs[4], msgs[5], msgs[6]);
+		free(archAVerificar);
+		pthread_mutex_unlock(&m_verificacion);
+	}
+
+    if(strcmp(msgs[4], "close") == 0){
+		pthread_mutex_lock(&m_verificacion);
+		archAVerificar = malloc(strlen(msgs[5]) + 1);
+		strcpy(archAVerificar, msgs[5]);
+		if(list_any_satisfy(dtb->archivosAbiertos, &condicionArchivoAbierto) )
+    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionClose", 3, msgs[1], dtb->rutaScript, "1");
+		else
+			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionClose", 3, msgs[1], dtb->rutaScript, "0");
+		free(archAVerificar);
+		pthread_mutex_unlock(&m_verificacion);
+    }
+
     if(strcmp(msgs[4], "flush") == 0) {
-    	runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionFlush", 3, msgs[1], dtb->rutaScript, "0");
-    	}
+		pthread_mutex_lock(&m_verificacion);
+		archAVerificar = malloc(strlen(msgs[5]) + 1);
+		strcpy(archAVerificar, msgs[5]);
+		if(list_any_satisfy(dtb->archivosAbiertos, &condicionArchivoAbierto) )
+    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionFlush", 3, msgs[1], dtb->rutaScript, "1");
+		else{ 
+			dtb->cantIOs++;
+			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionFlush", 3, msgs[1], dtb->rutaScript, "0");
+		}
+		free(archAVerificar);
+		pthread_mutex_unlock(&m_verificacion);
+    }
 	//Verifica El Archivo A Realizar La Accion
 
+}
+
+bool condicionArchivoAbierto(void* arch){
+	return strcmp( (char*)arch, archAVerificar) == 0;
 }
 
 //FIN callable remote functions

@@ -199,20 +199,20 @@ void continuarPlanificacion(socket_connection * connection ,char** args){
 //args[0]: idDTB, args[1]: rutaScript
 void ejecucionAbrir(socket_connection* connection, char** args){
 
-	estadoSituacionArchivo = atoi(args[2]);
+	int estadoSituacionArchivo = atoi(args[2]);
 	char string_id[2];
 	sprintf(string_id, "%i", idCPU);
 
 	if(estadoSituacionArchivo){
 
-		runFunction(socketSAFA, "finalizacionProcesamientoCPU", 4, string_id, args[0], "0", "bloquear");
+		runFunction(socketSAFA, "finalizacionProcesamientoCPU", 5, string_id, args[0], "0", "bloquear", "0");
 		runFunction(socketDAM, "MDJ_DAM_existeArchivo", 2, args[0], "1");
 
 	}
 
 	else{
 
-	runFunction(socketSAFA, "finalizacionProcesamientoCPU", 4, string_id, args[0], "0", "bloquear");
+	runFunction(socketSAFA, "finalizacionProcesamientoCPU", 5, string_id, args[0], "0", "bloquear", "0");
 	runFunction(socketDAM, "CPU_DAM_solicitudCargaGDT", 2, args[0] ,args[1]);
 	}
 }
@@ -220,7 +220,7 @@ void ejecucionAbrir(socket_connection* connection, char** args){
 //args[0]: idGDT
 void ejecucionAsignar(socket_connection* connection, char** args){
 
-	estadoSituacionArchivo = atoi(args[1]);
+	int estadoSituacionArchivo = atoi(args[1]);
 
 	if(estadoSituacionArchivo){
 
@@ -240,7 +240,7 @@ void ejecucionAsignar(socket_connection* connection, char** args){
 //args[0]: idGDT, args[1]: rutaScript, args[2]: estadoArchivo
 void ejecucionClose(socket_connection* connection, char** args){
 
-	estadoSituacionArchivo = atoi(args[2]);
+	int estadoSituacionArchivo = atoi(args[2]);
 
 	if(estadoSituacionArchivo){
 
@@ -259,13 +259,13 @@ void ejecucionClose(socket_connection* connection, char** args){
 //args[0]: idGDT , args[1]: rutaScript, args[2]: estadoArchivo
 void ejecucionFlush(socket_connection* connection, char** args){
 
-	estadoSituacionArchivo = atoi(args[2]);
+	int estadoSituacionArchivo = atoi(args[2]);
 
 	if(estadoSituacionArchivo){
 		char string_id[2];
 		sprintf(string_id, "%i", idCPU);
 
-		runFunction(socketSAFA, "finalizacionProcesamientoCPU", 4,string_id, args[0], "0" ,"bloquear");
+		runFunction(socketSAFA, "finalizacionProcesamientoCPU", 5,string_id, args[0], "0" ,"bloquear", "0");
 		runFunction(socketDAM, "CPU_DAM_solicitudDeFlush", 2, args[0], args[1]);
 
 		}
@@ -281,14 +281,14 @@ void ejecucionFlush(socket_connection* connection, char** args){
 void finalizacionClose(socket_connection* connection, char** args){
 
 	int idGDT = atoi(args[0]);
-	estadoSituacionArchivo = atoi(args[1]);
+	int estadoSituacionArchivo = atoi(args[1]);
 
 	if(estadoSituacionArchivo){
 		char string_id[2];
 		sprintf(string_id, "%i", idCPU);
 
 		log_trace(logger, "Se va a Liberar el GDT : %d", idGDT);
-		runFunction(socketSAFA, "finalizacionProcesamientoCPU", 4, string_id, args[0], "0" ,"finalizar");
+		runFunction(socketSAFA, "finalizacionProcesamientoCPU", 5, string_id, args[0], "0" ,"finalizar", "0");
 	}
 
 	else{
@@ -322,7 +322,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 	if (flagInicializado == 0) { //DTB-Dummy
 		log_trace(logger,"Preparando la inicializacion de ejecucion del DTB Dummy\n");
 		runFunction(socketDAM, "CPU_DAM_solicitudCargaGDT", 2,args[0], rutaScript);
-		runFunction(socketSAFA, "finalizacionProcesamientoCPU",4, string_id, args[0], "0", "bloquear");
+		runFunction(socketSAFA, "finalizacionProcesamientoCPU",4, string_id, args[0], "0", "bloquear", "0");
 	}
 	else{
 		int sentenciasEjecutadas = 0;
@@ -340,7 +340,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					sentenciasEjecutadas++;
 					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
-					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 5, string_id, args[0], string_sentEjecutadas, string_quantumAEjecutar, "abrir");
+					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 6, string_id, args[0], string_sentEjecutadas, string_quantumAEjecutar, "abrir", sentencia.p1);
 					return;
 				case CONCENTRAR:
 					sleep(datosCPU->retardo);
@@ -350,7 +350,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					sentenciasEjecutadas++;
 					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
-					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo",8,string_id, args[0], string_sentEjecutadas, string_quantumAEjecutar, sentencia.p1, sentencia.p2, sentencia.p3, "asignar");
+					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo",8,string_id, args[0], string_sentEjecutadas, string_quantumAEjecutar, "asignar", sentencia.p1, sentencia.p2, sentencia.p3);
 					return;
 				case WAIT:
 					programCounter++;
@@ -373,14 +373,14 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					sentenciasEjecutadas++;
 					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
-					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 5, string_id, args[0], string_sentEjecutadas, string_quantumAEjecutar, "flush");
+					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 6, string_id, args[0], string_sentEjecutadas, string_quantumAEjecutar, "flush", sentencia.p1);
 					return;
 				case CLOSE:
 					programCounter++;
 					sentenciasEjecutadas++;
 					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
-					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 5, string_id, args[0], string_sentEjecutadas, string_quantumAEjecutar, "close");
+					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 6, string_id, args[0], string_sentEjecutadas, string_quantumAEjecutar, "close", sentencia.p1);
 					return;
 				case CREAR:
 					//Aca se incrementa el PC y SE, al final para ver si mas adelante continua o aborta
@@ -388,7 +388,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					sentenciasEjecutadas++;
 					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 					//args[0] idGDT para Bloquear
-					runFunction(socketSAFA, "finalizacionProcesamientoCPU",4,string_id, args[0],string_sentEjecutadas,"bloquear");
+					runFunction(socketSAFA, "finalizacionProcesamientoCPU",5,string_id, args[0],string_sentEjecutadas,"bloquear", "1");
 					runFunction(socketDAM, "CPU_DAM_crearArchivo", 3, args[0],sentencia.p1, sentencia.p2);
 					return ;
 
@@ -399,7 +399,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					string_sentEjecutadas[2];
 					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 					//args[0] idGDT para Bloquear
-					runFunction(socketSAFA, "finalizacionProcesamientoCPU",4,string_id, args[0],string_sentEjecutadas,"bloquear");
+					runFunction(socketSAFA, "finalizacionProcesamientoCPU",5,string_id, args[0],string_sentEjecutadas,"bloquear", "1"); //el uno para aumentar en uno la cantIOs
 					runFunction(socketDAM, "CPU_DAM_borrarArchivo", 2, args[0],sentencia.p1);
 					return ;
 			}
@@ -407,7 +407,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 			programCounter++;
 			if(sentencia.ultimaSentencia){
 				log_trace(logger, "El GDT de id %d FINALIZA", idGDT);			
-				runFunction(connection->socket, "finalizacionProcesamientoCPU",4, string_id, args[0],"0", "finalizar" );
+				runFunction(connection->socket, "finalizacionProcesamientoCPU",5, string_id, args[0],"0", "finalizar", "0");
 				break;
 			}
 
@@ -422,7 +422,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 			log_trace(logger, "El GDT de id %d finaliza su procesamiento en la CPU", idGDT);
 			char string_sentEjecutadas[2];
 			sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
-			runFunction(connection->socket, "finalizacionProcesamientoCPU",4, string_id, args[0], string_sentEjecutadas, "continuar");				
+			runFunction(connection->socket, "finalizacionProcesamientoCPU",5, string_id, args[0], string_sentEjecutadas, "continuar", "0");				
 		}
 	}
 }
@@ -472,7 +472,6 @@ operacion_t obtenerSentenciaParseada(char* script,int programCounter){
 FILE * abrirScript(char * scriptFilename)
 {
   char* ruta = malloc(100*sizeof(char));
-  // "/home/utnso/git/tp-2018-2c-Mi-amor-es-el-Malloc/Pto_Montaje/Scripts/" CON RUTA ABSOLUTA ME ANDA
   strcpy(ruta, "../../Scripts/");
   strcat(ruta,scriptFilename);
 

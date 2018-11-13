@@ -44,14 +44,14 @@ int quantum;
 int idCPU;
 
 typedef enum{
-	ABRIR, 
+	ABRIR, //I/O si no se encuentra abierto por el DTB
 	CONCENTRAR, 
 	ASIGNAR, 
 	WAIT, 
 	SIGNAL, 
 	FLUSH, 
 	CLOSE, 
-	CREAR, 
+	CREAR, //I/O
 	BORRAR, 
 	NUMERAL //para comentarios
 }palabraReservada_t;
@@ -77,8 +77,6 @@ pthread_mutex_t m_puedeEjecutar;
 int socketDAM;
 int socketSAFA;
 int socketFM9;
-
-int estadoSituacionArchivo;
 
 //FUNCIONES
 

@@ -109,6 +109,7 @@ void ejecutar(char* rutaSc){
     	dtb->status = NEW;
 		dtb->quantumFaltante = 0;
 		dtb->cantSentEsperadasEnNew = 0;
+		dtb->cantIOs = 0;
 
 		encolarDTB(colaNew, dtb, m_colaNew);
 		sem_post(&cantProcesosEnNew);

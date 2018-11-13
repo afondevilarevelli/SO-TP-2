@@ -117,8 +117,53 @@ void planificarSegunVRR(CPU* cpu){
     }
 }
 
-void planificarSegunAlgoritmoPropio(CPU* cpu){
-    
+//IOBF (IO Bound First): Priorización de DTBs IO bound. 
+//    Aquellos procesos que realicen muchas E/S (operaciones de MDJ) 
+//  deberán ser favorecidos a la hora de la planificación.
+void planificarSegunIOBF(CPU* cpu){
+    DTB* dtbAEjecutar;
+        while(1){
+			if(queue_size(colaReady) == 0){
+				log_trace(logger, "Se espera a que haya GDT's en la cola Ready");
+			}
+			sem_wait(&cantProcesosEnReady);
+			sleep(1);
+
+            pthread_mutex_lock(&m_puedePlanificar);
+			dtbAEjecutar = obtenerDTBAEjecutarSegunIOBF();
+            pthread_mutex_unlock(&m_puedePlanificar);
+
+            if(dtbAEjecutar != NULL){ //si no fue finalizado
+                dtbAEjecutar->status = RUNNING;
+            if(dtbAEjecutar->flagInicializado == 0){
+                log_trace(logger, "Se va a ejecutar el DTB-Dummy del GDT de id = %d", dtbAEjecutar->id);            
+            }else{
+                log_trace(logger, "Segun V-RR el DTB a ejecutar ahora es el de id = %d en la CPU de id %d", dtbAEjecutar->id, cpu->id);
+            }
+
+            char string_id[2];
+            sprintf(string_id, "%i", dtbAEjecutar->id);
+
+            char string_flagInicializacion[2];
+            sprintf(string_flagInicializacion, "%i", dtbAEjecutar->flagInicializado); 
+
+            char string_pc[2];
+            sprintf(string_pc, "%i", dtbAEjecutar->PC);
+
+            pthread_mutex_lock(&m_listaEjecutando);
+            list_add(listaEjecutando, dtbAEjecutar);
+            pthread_mutex_unlock(&m_listaEjecutando);
+
+            runFunction(cpu->socket,"ejecutarCPU",5, string_id,
+            										 dtbAEjecutar->rutaScript,
+													 string_pc,
+                                                     string_flagInicializacion,
+                                                     "100");
+
+            sem_wait(&cpu->aviso);   
+			
+	    }
+    }
 }
 
 DTB* obtenerDTBAEjecutarSegunRR(){ // como FIFO
@@ -139,7 +184,17 @@ bool closureSortVRR(DTB* p1, DTB* p2){
     return p1->quantumFaltante != 0 || p2->quantumFaltante == 0;
 } //ANDA
 
+DTB* obtenerDTBAEjecutarSegunIOBF(){
+    pthread_mutex_lock(&m_colaReady);
+    list_sort(colaReady->elements, (void*) &closureSortIOBF);
+    DTB* dtb = queue_pop(colaReady);
+    pthread_mutex_unlock(&m_colaReady);
+    return dtb;
+}
 
+bool closureSortIOBF(DTB* p1, DTB* p2){
+    return p1->cantIOs >= p2->cantIOs;
+} //ANDA
 
 //callable remote function
 //args[0]: el tipo del proceso que se conectó
@@ -169,7 +224,7 @@ void  identificarProceso(socket_connection * connection ,char** args)
 		 } else if( strcmp( datosConfigSAFA->algoritmoPlanif, "VRR") == 0 ){
 			 pthread_create(&hiloPCP, NULL, (void*)&planificarSegunVRR, cpu);
 		 } else{
-			 pthread_create(&hiloPCP, NULL, (void*)&planificarSegunAlgoritmoPropio, cpu);
+			 pthread_create(&hiloPCP, NULL, (void*)&planificarSegunIOBF, cpu);
 		 }
 		 pthread_detach(hiloPCP);
 		 list_add(hilos, &hiloPCP);
