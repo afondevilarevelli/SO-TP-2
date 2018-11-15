@@ -216,12 +216,13 @@ void waitRecurso(socket_connection* socketInfo, char** msg){
 	CPU* cpu = buscarCPU(idCPU);
 	if(rec == NULL){ // si no existe
 		int quantumEjecutado = atoi(msg[3]);
-		crearRecurso(msg[2], 1);
+		crearRecurso(msg[2], 0);
 
 		if(dtb != NULL){ 
 			dtb->quantumFaltante = datosConfigSAFA->quantum - quantumEjecutado;
 			dtb->PC += quantumEjecutado;
-		}
+		
+		log_info(logger, "Se ha creado el recurso %s, y ha sido retenido por el GDT de id %d", msg[2], idDTB);
 		//ejecuta el mismo GDT
         char string_flagInicializacion[2];
         sprintf(string_flagInicializacion, "%i", dtb->flagInicializado); 
@@ -235,12 +236,14 @@ void waitRecurso(socket_connection* socketInfo, char** msg){
 													string_pc,
                                                 	string_flagInicializacion,
                                                 	string_quantumAEjecutar);
+		}
 	}
 	else{ //si existe
 		pthread_mutex_lock(&m_recurso);
 		rec->valor--;
 		if(rec->valor < 0){
 			pthread_mutex_unlock(&m_recurso);
+			log_info(logger, "El GDT de id %d ha solicitado la retencion del recurso %s y fue bloqueado", idDTB, msg[2]);
 			char** params = (char*[]){msg[0], msg[1], msg[3], "bloquear" };
 			finalizacionProcesamientoCPU(NULL, params);
 		}
@@ -250,7 +253,8 @@ void waitRecurso(socket_connection* socketInfo, char** msg){
 			if(dtb != NULL){ 
 				dtb->quantumFaltante = datosConfigSAFA->quantum - quantumEjecutado;
 				dtb->PC += quantumEjecutado;
-			}
+			
+			log_info(logger, "El GDT de id %d ha solicitado la retencion del recurso %s y le fue concedida", idDTB, msg[2]);
 			//ejecuta el mismo GDT
      		char string_flagInicializacion[2];
         	sprintf(string_flagInicializacion, "%i", dtb->flagInicializado); 
@@ -264,6 +268,7 @@ void waitRecurso(socket_connection* socketInfo, char** msg){
 														string_pc,
                                                 		string_flagInicializacion,
                                                 		string_quantumAEjecutar);
+			}
 		}
 
 	}
@@ -281,6 +286,7 @@ void signalRecurso(socket_connection* socketInfo, char** msg){
 	DTB* dtb = buscarDTBEnElSistema(idDTB);
 	if(rec == NULL){ // si no existe
 		crearRecurso(msg[2], 1);
+		log_info(logger, "Se ha creado el recurso %s, mediante la peticion de signal del GDT de id %d", msg[2], idDTB);
 	}
 	else{ //si existe
 		pthread_mutex_lock(&m_recurso);
@@ -290,6 +296,7 @@ void signalRecurso(socket_connection* socketInfo, char** msg){
 		DTB* dtbADesbloquear = list_get(rec->GDTsEsperandoRecurso, 0);
 		pthread_mutex_unlock(&m_listaDeRecursos);
 		if(dtbADesbloquear != NULL){
+			log_info(logger, "EL GDT de id %d ha liberado el recurso %s, y se ha desbloqueado al GDT de id %d", idDTB, msg[2], dtbADesbloquear->id);
 			pthread_mutex_lock(&m_colaBloqueados);
 			get_and_remove_DTB_by_ID(colaBloqueados->elements, dtbADesbloquear->id);
 			pthread_mutex_unlock(&m_colaBloqueados);
@@ -298,13 +305,14 @@ void signalRecurso(socket_connection* socketInfo, char** msg){
 			sem_post(&cantProcesosEnReady);
 		}	
 		else{
+			log_info(logger, "EL GDT de id %d ha liberado el recurso %s", idDTB, msg[2]);
 			eliminarRecurso(rec);
 		}
 	}
 	if(dtb != NULL){ 
 		dtb->quantumFaltante = datosConfigSAFA->quantum - cantQuantoEjecutado;
 		dtb->PC += cantQuantoEjecutado;
-	}
+	
 	//ejecuta el mismo GDT
     char string_flagInicializacion[2];
     sprintf(string_flagInicializacion, "%i", dtb->flagInicializado); 
@@ -318,6 +326,7 @@ void signalRecurso(socket_connection* socketInfo, char** msg){
 												string_pc,
                                                 string_flagInicializacion,
                                                 string_quantumAEjecutar);
+	}
 }
 
 //es llamada por CPU y DAM cuando se conectan, para poder manejar el estado corrupto
@@ -330,7 +339,7 @@ void newConnection(socket_connection* socketInfo, char** msg){
 			damConectado = true;
 		}
 		estadoCorrupto = !unCpuConectado || !damConectado;		
-	}	
+	}
 }
 
 //args[0]: idCPU, args[1]: idGDT, args[2]: cantidad de quanto que ejecutó, args[3]:"finalizar","continuar" ó "bloquear", args[4]: 1 si hay que aumentar cantIOs

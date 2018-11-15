@@ -138,7 +138,7 @@ void planificarSegunIOBF(CPU* cpu){
             if(dtbAEjecutar->flagInicializado == 0){
                 log_trace(logger, "Se va a ejecutar el DTB-Dummy del GDT de id = %d", dtbAEjecutar->id);            
             }else{
-                log_trace(logger, "Segun V-RR el DTB a ejecutar ahora es el de id = %d en la CPU de id %d", dtbAEjecutar->id, cpu->id);
+                log_trace(logger, "Segun IOBF el DTB a ejecutar ahora es el de id = %d en la CPU de id %d", dtbAEjecutar->id, cpu->id);
             }
 
             char string_id[2];
