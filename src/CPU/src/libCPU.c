@@ -459,7 +459,7 @@ operacion_t obtenerSentenciaParseada(char* script,int programCounter){
 			fseek(arch, prevPos, SEEK_SET);
 	}
 	else{
-		log_error(logger, "Error al obtener sentencia del GDT ");
+		log_error(logger, "El GDT ya no tiene mas sentencias ");
 	}
 
     if (line){ 

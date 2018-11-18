@@ -85,11 +85,11 @@ void continuarPlanificacion(){
 }
 
 void iteracionPausarCPUs(CPU* cpu){
-	runFunction(cpu->socket,"pausarPlanificacion",0);
+	runFunction(cpu->socket,"SAFA_CPU_pausarPlanificacion",0);
 }
 
 void iteracionContinuarCPUs(CPU* cpu){
-	runFunction(cpu->socket,"continuarPlanificacion",0);
+	runFunction(cpu->socket,"SAFA_CPU_continuarPlanificacion",0);
 }
 
 void ejecutar(char* rutaSc){	
@@ -105,7 +105,6 @@ void ejecutar(char* rutaSc){
     	dtb->PC = 0;
     	dtb->flagInicializado = 1;
     	dtb->archivosAbiertos = list_create();
-		dtb->recursos = list_create();
     	dtb->status = NEW;
 		dtb->quantumFaltante = 0;
 		dtb->cantSentEsperadasEnNew = 0;
@@ -136,18 +135,15 @@ void finalizar(int idGDT){
 void status(int idGDT){ 
 
 	if(idGDT == 0){ // funcion status sin parametro
-		int index;
-	    DTB* datoDTB;
-
 	    log_trace(logger,"La Info De Los DTB En Cada Cola Son:\n");
 	    log_trace(logger,"Cola New:");
-		buscarDTBEnColasMostrandoInfo(idGDT, colaNew);
+		buscarDTBEnColasMostrandoInfo(colaNew);
 		log_trace(logger,"Cola Ready:");
-		buscarDTBEnColasMostrandoInfo(idGDT, colaReady);
+		buscarDTBEnColasMostrandoInfo(colaReady);
 		log_trace(logger,"Cola Blocked:");
-		buscarDTBEnColasMostrandoInfo(idGDT, colaBloqueados);
+		buscarDTBEnColasMostrandoInfo(colaBloqueados);
 		log_trace(logger,"Cola Finished:");
-		buscarDTBEnColasMostrandoInfo(idGDT, colaFinalizados);
+		buscarDTBEnColasMostrandoInfo(colaFinalizados);
 
 	    }
 	    else{ //funcion status con parametro
@@ -160,8 +156,8 @@ void status(int idGDT){
 //FALTA IMPLEMENTAR
 void metricas(int idGDT){	
 	log_trace(logger,"Cant.de sentencias ejecutadas prom. del sistema que usaron a El Diego");
-	log_trace(logger,"Cant. de sentencias ejecutadas prom. del sistema para que un DTB termine en la cola EXIT");
 	log_trace(logger,"Porcentaje de las sentencias ejecutadas promedio que fueron a El Diego");
+	log_trace(logger,"Cant. de sentencias ejecutadas prom. del sistema para que un DTB termine en la cola EXIT");
 	log_trace(logger,"Tiempo de Respuesta promedio del Sistema");
 	 
 	if(idGDT != 0){ 

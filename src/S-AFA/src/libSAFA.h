@@ -32,7 +32,6 @@ typedef struct{
 	int PC; //program counter
 	int flagInicializado;
 	t_list* archivosAbiertos;
-	t_list* recursos; // recursos obtenidos ( para las sentencias wait y signal )
 	status_t status;
 	int quantumFaltante; //sentencias que le faltan ejecutar para terminar su quantum ( para VRR )
 	int cantSentEsperadasEnNew; //para las metricas
@@ -162,6 +161,6 @@ void aumentarCantSentenciasEsperadasEnNew(DTB* dtb);
 //Funciones Para La Funcion De Status
 void mostrarInformacionDTB(DTB*);
 void* statusDTB(int);
-void* buscarDTBEnColasMostrandoInfo(int, t_queue*);
+void buscarDTBEnColasMostrandoInfo(t_queue*);
 static inline char *stringFromState(status_t);
 #endif

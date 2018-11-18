@@ -29,18 +29,15 @@ bool closureIdCPU(CPU* cpu){
 }
 
 recurso* buscarRecurso(char* nombre){
-	pthread_mutex_lock(&m_busqueda);
 	nombreRecursoABuscar = malloc(strlen(nombre)+1);
 	strcpy(nombreRecursoABuscar, nombre);
 	recurso* r = list_find(listaDeRecursos, (void*)&closureBusquedaRecurso);
 	free(nombreRecursoABuscar);
-	pthread_mutex_unlock(&m_busqueda);
 	return r;
 }
 
 bool closureBusquedaRecurso(void* r){
-	recurso* rec = (recurso*) r;
-	return strcmp(rec->nombre, nombreRecursoABuscar) == 0;
+	return strcmp( ((recurso*)r)->nombre, nombreRecursoABuscar) == 0;
 }
 
 void destruirRecurso(recurso* r){
@@ -87,7 +84,7 @@ DTB* buscarDTB(t_list* lista,int id){
 	return NULL;
 }
 
-//Se usa sólo en la funcion FINALIZAR de la consola del SAFA
+//Se usa SÓLO en la funcion FINALIZAR de la consola del SAFA!!
 DTB * quitarDTBDeSuListaActual(int idDTB)
 {
   DTB * dtb = NULL;
@@ -207,20 +204,21 @@ t_config_SAFA * read_and_log_config(char* path) {
 //llamada por CPU al haber una sentencia de wait
 //msg[0]: idCPU, msg[1]: idGDT, msg[2]: nombreRecurso, msg[3]: cantQuantoQueEjecutó, msg[4]:quantumAEjecutar de CPU
 void waitRecurso(socket_connection* socketInfo, char** msg){
-	recurso* rec = buscarRecurso(msg[1]);
 	int idDTB = atoi(msg[1]);
 	int idCPU = atoi(msg[0]);
 	int quantumDesignadoACPU = atoi(msg[4]);
 	int cantQuantoEjecutado = atoi(msg[3]);
 	DTB* dtb = buscarDTBEnElSistema(idDTB);
 	CPU* cpu = buscarCPU(idCPU);
+	pthread_mutex_lock(&m_busqueda);
+	recurso* rec = buscarRecurso(msg[2]);
 	if(rec == NULL){ // si no existe
-		int quantumEjecutado = atoi(msg[3]);
+		pthread_mutex_unlock(&m_busqueda);
 		crearRecurso(msg[2], 0);
 
 		if(dtb != NULL){ 
-			dtb->quantumFaltante = datosConfigSAFA->quantum - quantumEjecutado;
-			dtb->PC += quantumEjecutado;
+			dtb->quantumFaltante = datosConfigSAFA->quantum - cantQuantoEjecutado;
+			dtb->PC += cantQuantoEjecutado;
 		
 		log_info(logger, "Se ha creado el recurso %s, y ha sido retenido por el GDT de id %d", msg[2], idDTB);
 		//ejecuta el mismo GDT
@@ -239,12 +237,13 @@ void waitRecurso(socket_connection* socketInfo, char** msg){
 		}
 	}
 	else{ //si existe
+		pthread_mutex_unlock(&m_busqueda);
 		pthread_mutex_lock(&m_recurso);
 		rec->valor--;
 		if(rec->valor < 0){
 			pthread_mutex_unlock(&m_recurso);
 			log_info(logger, "El GDT de id %d ha solicitado la retencion del recurso %s y fue bloqueado", idDTB, msg[2]);
-			char** params = (char*[]){msg[0], msg[1], msg[3], "bloquear" };
+			char** params = (char*[]){msg[0], msg[1], msg[3], "bloquear", "0" };
 			finalizacionProcesamientoCPU(NULL, params);
 		}
 		else{
@@ -277,18 +276,21 @@ void waitRecurso(socket_connection* socketInfo, char** msg){
 //llamada por CPU al haber una sentencia de signal
 //msg[0]: idCPU, msg[1]: idGDT, msg[2]: nombreRecurso, msg[3]: cantQuantoQueEjecutó, msg[4]:quantumAEjecutar de CPU
 void signalRecurso(socket_connection* socketInfo, char** msg){
-	recurso* rec = buscarRecurso(msg[2]);
 	int idCPU = atoi(msg[0]);
 	int idDTB = atoi(msg[1]);
 	int quantumDesignadoACPU = atoi(msg[4]);
 	int cantQuantoEjecutado = atoi(msg[3]);
 	CPU* cpu = buscarCPU(idCPU);
 	DTB* dtb = buscarDTBEnElSistema(idDTB);
+	pthread_mutex_lock(&m_busqueda);
+	recurso* rec = buscarRecurso(msg[2]);
 	if(rec == NULL){ // si no existe
+		pthread_mutex_unlock(&m_busqueda);
 		crearRecurso(msg[2], 1);
 		log_info(logger, "Se ha creado el recurso %s, mediante la peticion de signal del GDT de id %d", msg[2], idDTB);
 	}
 	else{ //si existe
+		pthread_mutex_unlock(&m_busqueda);
 		pthread_mutex_lock(&m_recurso);
 		rec->valor++;
 		pthread_mutex_unlock(&m_recurso);
@@ -545,37 +547,20 @@ void * statusDTB(int idGDT){ //Idea de Buscar Por Cada Cola Hasta Encontrar El I
 
 }
 
-void * buscarDTBEnColasMostrandoInfo(int idDTB, t_queue* colaBusqueda) {
+void buscarDTBEnColasMostrandoInfo(t_queue* colaBusqueda) {
 
 	int index = 0;
 	DTB* elemento;
 
-
-	if(queue_size(colaBusqueda) == 0) {printf("La Cola Esta Vacia\n");return 0;}
+	if(queue_size(colaBusqueda) == 0) {printf("La Cola Esta Vacia\n"); return;}
 
     elemento = list_get(colaBusqueda->elements, index);
 
     while(index < queue_size(colaBusqueda)){
-
-    if(idDTB == 0) {mostrarInformacionDTB(elemento);
-					index++;
-				    elemento = list_get(colaBusqueda->elements, index);}
-
-	else if(idDTB != elemento->id) {
-
-		printf("No Se Encontro En La Cola\n");
+		mostrarInformacionDTB(elemento);
 		index++;
-	    elemento = list_get(colaBusqueda->elements, index);
+		elemento = list_get(colaBusqueda->elements, index);
 	}
-
-	else {
-
-	mostrarInformacionDTB(elemento);
-	index++;
-	elemento = list_get(colaBusqueda->elements, index);
-	}
-   }
-    return 0;
 }
 
 void mostrarInformacionDTB(DTB* unDTB){
