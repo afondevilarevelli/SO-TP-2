@@ -47,6 +47,9 @@ int main() {
 void cerrarPrograma() {
   disconnect();
   close_loggerCPU();
+  free(datosCPU->ipD);
+  free(datosCPU->ipS);
+  free(datosCPU->ipF);
   free(datosCPU);
 
   dictionary_destroy(callableRemoteFunctionsCPU);

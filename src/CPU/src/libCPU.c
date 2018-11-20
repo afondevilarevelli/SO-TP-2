@@ -65,6 +65,11 @@ operacion_t parse(char* line){
 	} 
 
 	retorno.ultimaSentencia = false;
+	free(split[0]);
+	free(split[1]);
+	free(split[2]);
+	free(split[3]);
+	free(split);
 	free(auxLine);
 	return retorno;
 }
@@ -459,6 +464,7 @@ operacion_t obtenerSentenciaParseada(char* script,int programCounter){
 			fseek(arch, prevPos, SEEK_SET);
 	}
 	else{
+		sentenciaParseada.palabraReservada == 500;
 		log_error(logger, "El GDT ya no tiene mas sentencias ");
 	}
 

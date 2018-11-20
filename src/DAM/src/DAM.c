@@ -103,6 +103,9 @@ void cerrarPrograma() {
      dictionary_destroy(callableRemoteFunctionsSAFA);
      dictionary_destroy(callableRemoteFunctionsFM9);
      dictionary_destroy(callableRemoteFunctionsMDJ);
+     free(datosConfigDAM->IPSAFA);
+     free(datosConfigDAM->IPMDJ);
+     free(datosConfigDAM->IPFM9);
      free(datosConfigDAM);
     pthread_mutex_unlock(&mx_main);
     pthread_mutex_destroy(&mx_main);
