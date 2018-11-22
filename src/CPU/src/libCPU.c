@@ -1,5 +1,14 @@
 #include "libCPU.h"
 
+void destruirOperacion(operacion_t op){
+	if(op.p1 != NULL)
+		free(op.p1);
+	if(op.p2 != NULL)
+		free(op.p2);
+	if(op.p3 != NULL)
+		free(op.p3);
+}
+
 operacion_t parse(char* line){
     operacion_t retorno;
 
@@ -66,9 +75,6 @@ operacion_t parse(char* line){
 
 	retorno.ultimaSentencia = false;
 	free(split[0]);
-	free(split[1]);
-	free(split[2]);
-	free(split[3]);
 	free(split);
 	free(auxLine);
 	return retorno;
@@ -333,9 +339,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 		int sentenciasEjecutadas = 0;
 		while(sentenciasEjecutadas < quantumAEjecutar){
 			sleep(datosCPU->retardo);
-			pthread_mutex_lock(&m_puedeEjecutar);
 			sentencia = obtenerSentenciaParseada(rutaScript, programCounter);
-			pthread_mutex_unlock(&m_puedeEjecutar);
 			char string_sentEjecutadas[2];
 			char string_quantumAEjecutar[2];
 
@@ -346,6 +350,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
 					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 6, string_id, args[0], string_sentEjecutadas, string_quantumAEjecutar, "abrir", sentencia.p1);
+					destruirOperacion(sentencia);
 					return;
 				case CONCENTRAR:
 					sleep(datosCPU->retardo);
@@ -356,6 +361,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
 					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo",8,string_id, args[0], string_sentEjecutadas, string_quantumAEjecutar, "asignar", sentencia.p1, sentencia.p2, sentencia.p3);
+					destruirOperacion(sentencia);
 					return;
 				case WAIT:
 					programCounter++;
@@ -364,6 +370,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
 					//args[0] idGDT para Bloquear
 					runFunction(socketSAFA, "waitRecurso",5,string_id, args[0], sentencia.p1, string_sentEjecutadas, string_quantumAEjecutar);			
+					destruirOperacion(sentencia);
 					return ;
 			    case SIGNAL:
 					programCounter++;
@@ -372,6 +379,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
 					//args[0] idGDT para Bloquear
 					runFunction(socketSAFA, "signalRecurso",5,string_id, args[0], sentencia.p1, string_sentEjecutadas, string_quantumAEjecutar);			
+					destruirOperacion(sentencia);
 					return ;
 				case FLUSH:
 					programCounter++;
@@ -379,6 +387,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
 					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 6, string_id, args[0], string_sentEjecutadas, string_quantumAEjecutar, "flush", sentencia.p1);
+					destruirOperacion(sentencia);
 					return;
 				case CLOSE:
 					programCounter++;
@@ -386,6 +395,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
 					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 6, string_id, args[0], string_sentEjecutadas, string_quantumAEjecutar, "close", sentencia.p1);
+					destruirOperacion(sentencia);
 					return;
 				case CREAR:
 					//Aca se incrementa el PC y SE, al final para ver si mas adelante continua o aborta
@@ -395,6 +405,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					//args[0] idGDT para Bloquear
 					runFunction(socketSAFA, "finalizacionProcesamientoCPU",5,string_id, args[0],string_sentEjecutadas,"bloquear", "1");
 					runFunction(socketDAM, "CPU_DAM_crearArchivo", 3, args[0],sentencia.p1, sentencia.p2);
+					destruirOperacion(sentencia);
 					return ;
 
 				case BORRAR:
@@ -406,6 +417,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					//args[0] idGDT para Bloquear
 					runFunction(socketSAFA, "finalizacionProcesamientoCPU",5,string_id, args[0],string_sentEjecutadas,"bloquear", "1"); //el uno para aumentar en uno la cantIOs
 					runFunction(socketDAM, "CPU_DAM_borrarArchivo", 2, args[0],sentencia.p1);
+					destruirOperacion(sentencia);
 					return ;
 			}
 
@@ -429,6 +441,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 			sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 			runFunction(connection->socket, "finalizacionProcesamientoCPU",5, string_id, args[0], string_sentEjecutadas, "continuar", "0");				
 		}
+		
 	}
 }
 
@@ -480,8 +493,10 @@ FILE * abrirScript(char * scriptFilename)
   char* ruta = malloc(100*sizeof(char));
   strcpy(ruta, "../../Scripts/");
   strcat(ruta,scriptFilename);
-
+  
+  pthread_mutex_lock(&m_puedeEjecutar);
   FILE * scriptf = fopen(ruta, "r");
+  pthread_mutex_unlock(&m_puedeEjecutar);
   if (scriptf == NULL)
   {
     log_error(logger, "Error al abrir el archivo %s: %s", scriptFilename/*, strerror(errno)*/);

@@ -12,9 +12,6 @@
 #include <commons/collections/dictionary.h>
 #include <commons/collections/list.h>
 #include "../../sample-socket/socket.h" 
-//el include de libSAFA es SÓLO para verificar si un archivo ya fue abierto por un GDT para la funcion ABRIR
-#include "../../S-AFA/src/libSAFA.h"
-
 
 //ESTRUCTURA
 typedef struct {
@@ -94,12 +91,13 @@ operacion_t obtenerSentenciaParseada(char* script,int programCounter);
 
 //PARSER
 operacion_t parse(char* line);
+void destruirOperacion(operacion_t op);
 
 //callable remote functions
 void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args); //SAFA
 void establecerQuantumYID(socket_connection * connection ,char** args); //SAFA
-void pausarPlanificacion(socket_connection * connection ,char** args);
-void continuarPlanificacion(socket_connection * connection ,char** args);
+void pausarPlanificacion(socket_connection* ,char**);
+void continuarPlanificacion(socket_connection*,char**);
 void ejecucionAbrir(socket_connection*, char**);
 void ejecucionAsignar(socket_connection*, char**);
 void ejecucionClose(socket_connection*, char**);
