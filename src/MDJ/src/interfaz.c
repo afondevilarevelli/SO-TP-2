@@ -142,14 +142,14 @@ runFunction(connection->socket,"MDJ_DAM_verificameSiArchivoFueBorrado",1,strEsta
 
 int * crearBloques(int i,char * path,size_t size){
 int *  fdBloques[i];
+char * nVeces = string_new();
+char * destino = string_new();
+string_append(&destino,path);
+nVeces = string_repeat('/n',size);
 for(int j = 0;j< i; j++){ 
-sprintf(path, "%j.bin", j);
-char * motanjeMasBloques = string_new();
-string_append(motanjeMasBloques,obtenerPtoMontaje);
-string_append(motanjeMasBloques,"/Bloques");
-string_append(motanjeMasBloques,path);
-fdBloques[j] = creat(motanjeMasBloques,S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-lseek( fdBloques[j], size , SEEK_SET);
+sprintf(destino, "%s/Bloques/%d.bin",path,j);
+fdBloques[j] = open(path, O_RDWR | O_CREAT);
+//lseek( fdBloques[j], size , SEEK_SET);
 }
 return fdBloques;
 }
