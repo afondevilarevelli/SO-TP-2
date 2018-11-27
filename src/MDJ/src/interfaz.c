@@ -78,8 +78,8 @@ else if (archivo->fd == noExiste)
 {
 flock(archivo->fd,LOCK_EX);	
 for(int i = 0; i < fs->cantidad_bloques;i++){
-int * fdBloques = crearBloques(i,archivo->path,archivo->size);
-archivo->bloques[i] = mmap((void *)NULL,fs->tamanio_bloques,PROT_EXEC|PROT_READ|PROT_WRITE,MAP_SHARED,fdBloques[i],0);
+//int * fdBloques = crearBloques(i,archivo->path,archivo->size);
+//archivo->bloques[i] = mmap((void *)NULL,fs->tamanio_bloques,PROT_EXEC|PROT_READ|PROT_WRITE,MAP_SHARED,fdBloques[i],0);
 char nVeces = string_repeat("\n",archivo->size);
 strcpy(archivo->bloques[i],nVeces);
 archivo->estado = recienCreado;
@@ -140,15 +140,17 @@ aplicarRetardo();
 runFunction(connection->socket,"MDJ_DAM_verificameSiArchivoFueBorrado",1,strEstado);
 }
 
-int * crearBloques(int i,char * path,size_t size){
+int * crearBloques(socket_connection* connection,char ** args){
+ int i = atoi(args[0]);
+ char * path = args[1];
+ int size = atoi(args[2]);   
 int *  fdBloques[i];
 char * nVeces = string_new();
 char * destino = string_new();
-string_append(&destino,path);
 nVeces = string_repeat('/n',size);
 for(int j = 0;j< i; j++){ 
-sprintf(destino, "%s/Bloques/%d.bin",path,j);
-fdBloques[j] = open(path, O_RDWR | O_CREAT);
+sprintf(destino,"%s/Bloque/%d.bin",path,j);
+fdBloques[j] = open(destino,O_RDWR | O_CREAT);
 //lseek( fdBloques[j], size , SEEK_SET);
 }
 return fdBloques;
