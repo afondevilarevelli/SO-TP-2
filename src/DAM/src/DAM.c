@@ -64,9 +64,9 @@ int main(void){
         }
        else {      
         log_info(logger,"me conecto al MDJ");
-        //runFunction(socketMDJ,"identificarProcesoEnMDJ",1,"DAM");
-        runFunction(socketMDJ,"crearBloques",3,"4","/home/utnso/Escritorio/fifa-checkpoint","100");
-        
+        runFunction(socketMDJ,"identificarProcesoEnMDJ",1,"DAM");
+        //runFunction(socketMDJ,"crearArchivo",2,"/home/utnso/Escritorio/fifa-checkpoint","256");
+        runFunction(socketMDJ,"obtenerMetadata",0);
        }
       
 

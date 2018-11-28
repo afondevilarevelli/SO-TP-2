@@ -16,7 +16,7 @@ int main(void) {
      dictionary_put(fns,"crearArchivo",&crearArchivo);
      dictionary_put(fns,"borrarArchivo",&borrarArchivo);
      dictionary_put(fns,"identificarProcesoEnMDJ",&identificarProceso);
-     dictionary_put(fns,"crearBloques",&crearBloques);
+     dictionary_put(fns,"obtenerMetadata",&obtenerMetadata);
 
        //Pongo a escuchar el server en el puerto elegido
        int listener =  createListen(portServer, NULL ,fns, &disconnect ,NULL);
@@ -42,7 +42,7 @@ void cerrarPrograma() {
     log_info(logger, "Voy a cerrar MDJ");
     close_logger();
     dictionary_destroy(fns);
-    free(datosConfMDJ->ptoMontaje);
+    //free(datosConfMDJ->ptoMontaje);
     free(datosConfMDJ);
     pthread_mutex_unlock(&mx_main);
     pthread_mutex_destroy(&mx_main);

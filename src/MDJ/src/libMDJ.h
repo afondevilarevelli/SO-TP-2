@@ -56,3 +56,4 @@ t_config_MDJ * read_and_log_config(char*);
 void disconnect(socket_connection *);
 void identificarProceso(socket_connection * connection ,char** args);
 void validarExistencia(socket_connection * , char ** );
+t_metadata_filesystem * obtenerMetadata ();

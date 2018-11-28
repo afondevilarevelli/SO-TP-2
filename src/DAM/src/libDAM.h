@@ -57,7 +57,7 @@ void elementoDestructorDiccionario(void *);
 
 //diccionarios
 void identificarProceso(socket_connection * connection ,char** args);
-void MDJ_DAM_verificarArchivoCreado(/*socket_connection*,char ** */ char*, char*);
+void MDJ_DAM_verificarArchivoCreado(socket_connection*,char ** );
 void MDJ_DAM_verificameSiArchivoFueBorrado(/*socket_connection*,char ** */char*, char*);
 void existeArchivo(socket_connection* socketMDJ, char * pathFile);
 void crearArchivo(socket_connection* connection, char** args);

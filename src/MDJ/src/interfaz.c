@@ -1,19 +1,23 @@
 #include  "interfaz.h"
 #include "libMDJ.h"
-//https://www.programacion.com.py/escritorio/c/archivos-en-c-linux
 // Con esto se maneja cada mensaje que se le mando al dam, si es 0 es porque es false, si es 1 es porque es true
 t_metadata_filemetadata * metadata;
 char strEstado[2];
 
 
-
-
-
 char * obtenerPtoMontaje()
 {
 t_config* fileConfig  = config_create("MDJ.config");
-char * ptoMontaje = config_get_string_value(fileConfig,"PTO_MONTAJE");
+char * ptoMontaje = string_new();
+string_append(&ptoMontaje,config_get_string_value(fileConfig,"PTO_MONTAJE"));
 config_destroy(fileConfig);
+if( strcmp(ptoMontaje,"") > 0){
+log_trace(logger,"Se obtuvo correctamente el pto de montaje");
+}
+else
+{
+log_error(logger,"No se puedo obtener el pto de montaje");
+}
 return ptoMontaje;
 }
 
@@ -22,24 +26,32 @@ return ptoMontaje;
 t_metadata_filesystem *  obtenerMetadata () {
 t_metadata_filesystem * fs = malloc(sizeof(t_metadata_filesystem));
 char * motanjeMasBin = string_new();
-string_append(motanjeMasBin,obtenerPtoMontaje);
-string_append(motanjeMasBin,"/metadata.bin");
-t_config * metadata = config_create(motanjeMasBin);
+//string_append(motanjeMasBin,obtenerPtoMontaje ());
+//string_append(motanjeMasBin,"/home/utnso/Escritorio/fifa-checkpoint/Metadata");
+t_config * metadata = config_create("/home/utnso/Escritorio/fifa-checkpoint/Metadata/Metadata.bin");
 fs->tamanio_bloques = config_get_int_value(metadata,"TAMANIO_BLOQUES");
 fs->cantidad_bloques = config_get_double_value(metadata,"CANTIDAD_BLOQUES");
-fs->magic_number = string_new();
-char * magic_number = config_get_string_value(metadata,"MAGIC_NUMBER");
-string_append(&fs->magic_number ,magic_number);
-config_destroy(metadata);
+char * magic_number = string_new();
+string_append(&magic_number,config_get_string_value(metadata,"MAGIC_NUMBER"));
+fs->magic_number = magic_number;
+if( strcmp(magic_number,"") > 0 && fs->tamanio_bloques != 0 && fs->cantidad_bloques != 0){
+log_trace(logger,"Se obtuvo correctamente la metadata");
+}
+else
+{
+log_error(logger,"No se puedo obtener la metadata");
+}
+//config_destroy(metadata);
+//free(magic_number);
 return fs;
 }
 
 
-aplicarRetardo()
+void aplicarRetardo()
 {
 t_config* fileConfig  = config_create("MDJ.config");
 int ret = config_get_int_value(fileConfig,"RETARDO");
-sleep(ret);
+usleep(ret);
 config_destroy(fileConfig);
 }
 //args[0]: idGDT, args[1]: path
@@ -70,6 +82,7 @@ archivo->size =  tsize;
 archivo->fd = verificarSiExisteArchivo(archivo->path);
 t_metadata_filesystem * fs = obtenerMetadata();
 archivo->bloques = malloc(fs->cantidad_bloques);
+char *  nVeces = string_repeat('\n',archivo->size);
 if(archivo->fd == existe)
 {
 archivo->estado = yaCreado;
@@ -78,10 +91,9 @@ else if (archivo->fd == noExiste)
 {
 flock(archivo->fd,LOCK_EX);	
 for(int i = 0; i < fs->cantidad_bloques;i++){
-//int * fdBloques = crearBloques(i,archivo->path,archivo->size);
-//archivo->bloques[i] = mmap((void *)NULL,fs->tamanio_bloques,PROT_EXEC|PROT_READ|PROT_WRITE,MAP_SHARED,fdBloques[i],0);
-char nVeces = string_repeat("\n",archivo->size);
-strcpy(archivo->bloques[i],nVeces);
+int * fdBloques = crearBloques(i,archivo->path,archivo->size);
+archivo->bloques[i] = mmap(0,fs->tamanio_bloques,PROT_EXEC|PROT_READ|PROT_WRITE,MAP_SHARED,fdBloques[i],0);
+//strcpy(archivo->bloques[i],nVeces);
 archivo->estado = recienCreado;
 flock(archivo->fd,LOCK_UN);
 }
@@ -92,7 +104,7 @@ archivo->estado = noCreado;
 }
 sprintf(strEstado, "%i", archivo->estado);
 aplicarRetardo();
-runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",1,strEstado);
+runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",2,strEstado,archivo->path);
 }
 
 //off_t lseek(int fildes, off_t offset, int whence);
@@ -140,10 +152,7 @@ aplicarRetardo();
 runFunction(connection->socket,"MDJ_DAM_verificameSiArchivoFueBorrado",1,strEstado);
 }
 
-int * crearBloques(socket_connection* connection,char ** args){
- int i = atoi(args[0]);
- char * path = args[1];
- int size = atoi(args[2]);   
+int * crearBloques(int i,char * path,size_t size){ 
 int *  fdBloques[i];
 char * nVeces = string_new();
 char * destino = string_new();

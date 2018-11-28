@@ -82,6 +82,5 @@ size_t   obtenerDatos(socket_connection *,char **);
 void guardarDatos(socket_connection *,char * ,off_t  *,size_t * ,char *);
 void borrarArchivo(socket_connection *,char **);
 int verificarSiExisteArchivo(char * path);
-int * crearBloques(socket_connection* connection,char ** args);
-
+int *  crearBloques(int i,char *,size_t);
 #endif
