@@ -16,7 +16,7 @@ int main(void) {
      dictionary_put(fns,"crearArchivo",&crearArchivo);
      dictionary_put(fns,"borrarArchivo",&borrarArchivo);
      dictionary_put(fns,"identificarProcesoEnMDJ",&identificarProceso);
-     dictionary_put(fns,"obtenerMetadata",&obtenerMetadata);
+     //dictionary_put(fns,"verificarSiExisteArchivo",&verificarSiExisteArchivo);
 
        //Pongo a escuchar el server en el puerto elegido
        int listener =  createListen(portServer, NULL ,fns, &disconnect ,NULL);

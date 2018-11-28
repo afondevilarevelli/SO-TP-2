@@ -11,11 +11,7 @@ t_config* fileConfig  = config_create("MDJ.config");
 char * ptoMontaje = string_new();
 string_append(&ptoMontaje,config_get_string_value(fileConfig,"PTO_MONTAJE"));
 config_destroy(fileConfig);
-if( strcmp(ptoMontaje,"") > 0){
-log_trace(logger,"Se obtuvo correctamente el pto de montaje");
-}
-else
-{
+if( strcmp(ptoMontaje,"") == 0){
 log_error(logger,"No se puedo obtener el pto de montaje");
 }
 return ptoMontaje;
@@ -23,26 +19,26 @@ return ptoMontaje;
 
 //falta probar y hacer algunos free de los malloc.
 
-t_metadata_filesystem *  obtenerMetadata () {
+t_metadata_filesystem *  obtenerMetadata() {
 t_metadata_filesystem * fs = malloc(sizeof(t_metadata_filesystem));
 char * motanjeMasBin = string_new();
-//string_append(motanjeMasBin,obtenerPtoMontaje ());
-//string_append(motanjeMasBin,"/home/utnso/Escritorio/fifa-checkpoint/Metadata");
-t_config * metadata = config_create("/home/utnso/Escritorio/fifa-checkpoint/Metadata/Metadata.bin");
+string_append(&motanjeMasBin,obtenerPtoMontaje());
+string_append(&motanjeMasBin,"/Metadata/Metadata.bin");
+t_config * metadata = config_create(motanjeMasBin);
 fs->tamanio_bloques = config_get_int_value(metadata,"TAMANIO_BLOQUES");
-fs->cantidad_bloques = config_get_double_value(metadata,"CANTIDAD_BLOQUES");
+fs->cantidad_bloques = config_get_int_value(metadata,"CANTIDAD_BLOQUES");
 char * magic_number = string_new();
 string_append(&magic_number,config_get_string_value(metadata,"MAGIC_NUMBER"));
 fs->magic_number = magic_number;
 if( strcmp(magic_number,"") > 0 && fs->tamanio_bloques != 0 && fs->cantidad_bloques != 0){
-log_trace(logger,"Se obtuvo correctamente la metadata");
+log_trace(logger,"Se obtuvo correctamente la metadata y el pto montaje");
 }
 else
 {
-log_error(logger,"No se puedo obtener la metadata");
+log_error(logger,"No se puedo obtener la metadata ni el pto montaje");
 }
-//config_destroy(metadata);
-//free(magic_number);
+config_destroy(metadata);
+free(magic_number);
 return fs;
 }
 
@@ -58,7 +54,7 @@ config_destroy(fileConfig);
 void  validarArchivo(socket_connection * connection,char ** args){
 t_archivo *  archivo = malloc(sizeof(t_archivo));	
 archivo->path = args[1];
-archivo->fd =  verificarSiExisteArchivo(archivo->path);
+archivo->fd =  1;//verificarSiExisteArchivo(archivo->path);
 if(archivo->fd == noExiste){
 archivo->estado =noExiste;
 }
@@ -67,6 +63,7 @@ archivo->estado=  existe;
 }
 sprintf(strEstado, "%i", archivo->estado);
 aplicarRetardo();
+free(archivo);
 runFunction(connection->socket,"MDJ_DAM_existeArchivo",2, args[0], strEstado);
 }
 
@@ -82,16 +79,28 @@ archivo->size =  tsize;
 archivo->fd = verificarSiExisteArchivo(archivo->path);
 t_metadata_filesystem * fs = obtenerMetadata();
 archivo->bloques = malloc(fs->cantidad_bloques);
-char *  nVeces = string_repeat('\n',archivo->size);
-if(archivo->fd == existe)
+int * fdBloques = malloc(fs->cantidad_bloques);
+int tam = sizeof(crearBloques(fs->cantidad_bloques,archivo->path,archivo->size));
+/*if(archivo->fd != noExiste)
 {
 archivo->estado = yaCreado;
 }
 else if (archivo->fd == noExiste)
 {
+char * pathMasArchivos = string_new();
+string_append(&pathMasArchivos,obtenerPtoMontaje());
+string_append(&pathMasArchivos,"/Archivos/scripts/");
+archivo-> fd = open(pathMasArchivos,O_RDWR | O_CREAT);
 flock(archivo->fd,LOCK_EX);	
+char *  nVeces = string_repeat('\n',archivo->size);
+lseek(archivo->fd,archivo->size, SEEK_SET);
+write(archivo->fd, "", 1);
+char * file = mmap(0, archivo->size, PROT_READ | PROT_WRITE, MAP_SHARED, archivo->fd, 0);
+memcpy(file,nVeces,strlen(nVeces));
+msync(file,archivo->size, MS_SYNC);
+munmap(file,archivo->size);
+close(archivo->fd);
 for(int i = 0; i < fs->cantidad_bloques;i++){
-int * fdBloques = crearBloques(i,archivo->path,archivo->size);
 archivo->bloques[i] = mmap(0,fs->tamanio_bloques,PROT_EXEC|PROT_READ|PROT_WRITE,MAP_SHARED,fdBloques[i],0);
 //strcpy(archivo->bloques[i],nVeces);
 archivo->estado = recienCreado;
@@ -100,11 +109,11 @@ flock(archivo->fd,LOCK_UN);
 }
 else
 {
-archivo->estado = noCreado;
-}
-sprintf(strEstado, "%i", archivo->estado);
+archivo->estado = noCreado;*/
+//}
+//sprintf(strEstado, "%i", archivo->estado);
 aplicarRetardo();
-runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",2,strEstado,archivo->path);
+//runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",2,strEstado,archivo->path);
 }
 
 //off_t lseek(int fildes, off_t offset, int whence);
@@ -115,7 +124,7 @@ archivo->path = args[0];
 off_t  offset = atoi(args[1]);
 size_t tsize =  atoi(args[2]);
 archivo->size =  tsize;	
-archivo->fd = verificarSiExisteArchivo(archivo->path);
+archivo->fd = 1;//verificarSiExisteArchivo(archivo->path);
 if(archivo->fd == noExiste)
 {
 archivo->estado = noExiste;	
@@ -138,7 +147,7 @@ void guardarDatos(socket_connection * connection ,char * path,off_t  * offset,si
 void borrarArchivo(socket_connection* connection,char ** args){
 t_archivo * archivo= malloc(sizeof(t_archivo));
 archivo->path = args[0];
-archivo->fd  = verificarSiExisteArchivo(archivo->path);
+archivo->fd  = 1; //verificarSiExisteArchivo(archivo->path);
 if (archivo->fd  == existe)
 {
 archivo->estado = recienBorrado;
@@ -156,7 +165,6 @@ int * crearBloques(int i,char * path,size_t size){
 int *  fdBloques[i];
 char * nVeces = string_new();
 char * destino = string_new();
-nVeces = string_repeat('/n',size);
 for(int j = 0;j< i; j++){ 
 sprintf(destino,"%s/Bloque/%d.bin",path,j);
 fdBloques[j] = open(destino,O_RDWR | O_CREAT);
@@ -167,13 +175,18 @@ return fdBloques;
 
 int verificarSiExisteArchivo(char * path){
 t_archivo *  archivo= malloc(sizeof(t_archivo));	
-archivo->path = path;
-archivo->fd = open(path,O_RDONLY|O_WRONLY);
-if(archivo->fd  == -1){
-return noExiste;
-}
-else{
-return existe;
-}
+char * pathMasArchivos = string_new();
+string_append(&pathMasArchivos,obtenerPtoMontaje());
+string_append(&pathMasArchivos,"/Archivos/scripts/");
+string_append(&pathMasArchivos,path);
+archivo->fd = open(pathMasArchivos,O_RDONLY|O_WRONLY);
 close(archivo->fd);
+return archivo->fd;
+}
+
+int * intdup(int const * src, size_t len)
+{
+   int * p = malloc(len * sizeof(int));
+   memcpy(p, src, len * sizeof(int));
+   return p;
 }
