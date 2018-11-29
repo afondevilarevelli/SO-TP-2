@@ -499,7 +499,7 @@ FILE * abrirScript(char * scriptFilename)
   pthread_mutex_unlock(&m_puedeEjecutar);
   if (scriptf == NULL)
   {
-    log_error(logger, "Error al abrir el archivo %s: %s", scriptFilename/*, strerror(errno)*/);
+    log_error(logger, "Error al abrir el archivo %s", scriptFilename);
     exit(EXIT_FAILURE);
   }
   

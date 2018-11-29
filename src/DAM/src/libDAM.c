@@ -88,13 +88,12 @@ void solicitudCargaGDT(socket_connection* connection, char ** args){
 
 //esta funcion le avisa al SAFA el resultado de la carga del DTBDummy,
 //es llamada por el MDJ
-//args[0]: idGDT, args[1]: estadoValidacion (1 => existe archivo, 0 => NO existe archivo)
+//args[0]: idGDT, args[1]: estadoValidacion (1 => existe archivo, 0 => NO existe archivo), args[2]:path
 void MDJ_DAM_avisarResultadoDTB(socket_connection* socketInf,char ** args){
 	estadoValidacion =atoi( args[1]);
 	if(estadoValidacion ==  1){ 
 		log_info(logger," El MDJ informa archivo existente");
 		runFunction(socketFM9, "DAM_FM9_cargarArchivo", 1, args[0]);
-
 	}
 	else if (estadoValidacion ==  0){ 
 		log_info(logger,"El MDJ informa archivo inexistente");
@@ -112,10 +111,11 @@ void archivoCargadoCorrectamente(socket_connection* connection, char** args){
 	char* estadoCarga = args[1];
 
 	if(estadoCarga == "ok"){
-	runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "ok");
+		crearScriptCompleto(args[2]);
+		runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "ok");
 	}
 	else{
-	runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "error");
+		runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "error");
 	}
 
 }
@@ -198,3 +198,112 @@ void solicitudDeFlush(socket_connection* connection, char** args)
 	//runFunction(socketMDJ,"guardarArchivo",0,);
 }
 
+void crearScriptCompleto(char* nomArchivo){
+	char * line = NULL;
+    size_t len = 0;
+    ssize_t read;
+	int bloques[50];
+	int i = 0;
+	int j = 0;
+	int k;
+	char bloque[3];
+	int cant = 0;
+	char scriptCompleto[1000];
+	int contadorScript = 0;
+	int c;
+	char* ruta;
+
+	FILE* arch = abrirArchivoScript(nomArchivo);
+	getline(&line, &len, arch);
+	if( read = getline(&line, &len, arch) != -1){
+		while(line[i] != '['){			
+			i++;
+		}
+		i++;
+
+		while(line[i] != ']'){ 
+			while(line[i] != ','){
+				if(line[i] == ']'){
+					break;
+				}
+				else{
+					bloque[j] = line[i];
+					i++;
+					j++;
+				}	
+			}
+			if(line[i] != ']'){ 
+				bloques[cant] = atoi(bloque);
+				cant++;
+				j = 0;
+				i++;
+			}
+		}
+
+		bloques[cant] = atoi(bloque);
+	} // bloques ya obtenidos, tiene ( cant+1 ) bloques
+
+	if (line){ 
+        free(line);
+	}
+	fclose(arch);
+
+	for(k = 0; k <= cant; k++){
+		FILE* bf = abrirArchivoBloque(bloques[k]);
+		if(bf!=NULL){
+			while( ( c=fgetc(bf) ) != EOF){
+				scriptCompleto[contadorScript] = c;
+				contadorScript++;
+			}
+		fclose(bf);
+		}
+	}
+	//printf("%s",scriptCompleto);
+	ruta = malloc(100*sizeof(char));
+  	strcpy(ruta, "../../Scripts/");
+  	strcat(ruta,nomArchivo);
+	FILE* archCreadoScript = fopen(ruta, "wt");
+	if(archCreadoScript != NULL){
+		for(i=0; i<contadorScript; i++){
+			fputc(scriptCompleto[i], archCreadoScript);
+		}
+	}
+}
+
+FILE * abrirArchivoScript(char * nomArchivo)
+{
+  char* ruta = malloc(100*sizeof(char));
+  strcpy(ruta, "../../fifa-entrega-Scripts/Archivos/scripts/");
+  strcat(ruta,nomArchivo);
+  
+  FILE * scriptf = fopen(ruta, "r");
+  if (scriptf == NULL)
+  {
+    log_error(logger, "Error al abrir el archivo %s", nomArchivo);
+    exit(EXIT_FAILURE);
+  }
+  
+  free(ruta);
+  return scriptf;
+}
+
+FILE * abrirArchivoBloque(int numBloque)
+{
+  char bloque[5];
+  sprintf(bloque, "%i", numBloque);
+  char* ruta = malloc(100*sizeof(char));
+  char* ext = ".bin";
+  strcpy(ruta, "../../fifa-entrega-Scripts/Bloques/");
+  strcat(ruta,bloque);
+  strcat(ruta, ext);
+  
+  FILE * scriptf = fopen(ruta, "r");
+  if (scriptf == NULL)
+  {
+    log_error(logger, "Error al abrir el archivo %s", nomArchivo);
+    exit(EXIT_FAILURE);
+  }
+  
+  free(ruta);
+  return scriptf;
+}

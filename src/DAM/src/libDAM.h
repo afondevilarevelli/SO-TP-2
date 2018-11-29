@@ -54,6 +54,9 @@ void close_logger();
 //PROTOTIPOS
 void cerrarPrograma();
 void elementoDestructorDiccionario(void *);
+void crearScriptCompleto(char* nomArchivo);
+FILE * abrirArchivoScript(char * ruta);
+FILE * abrirArchivoBloque(int numBloque);
 
 //diccionarios
 void identificarProceso(socket_connection * connection ,char** args);
