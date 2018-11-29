@@ -75,43 +75,52 @@ void crearArchivo(socket_connection * connection ,char** args)
 t_archivo *  archivo= malloc(sizeof(t_archivo));	
 archivo->path = args[0];
 size_t tsize = atoi(args[1]);
-archivo->size =  tsize;
-archivo->fd = verificarSiExisteArchivo(archivo->path);
+archivo->size =  (tsize - 1);
 t_metadata_filesystem * fs = obtenerMetadata();
 archivo->bloques = malloc(fs->cantidad_bloques);
 int * fdBloques = malloc(fs->cantidad_bloques);
-int tam = sizeof(crearBloques(fs->cantidad_bloques,archivo->path,archivo->size));
-/*if(archivo->fd != noExiste)
-{
-archivo->estado = yaCreado;
-}
-else if (archivo->fd == noExiste)
+size_t tamanioBloques = (fs->tamanio_bloques - 1);
+archivo->fd = verificarSiExisteArchivo(archivo->path);
+if(archivo->fd == -1)
 {
 char * pathMasArchivos = string_new();
 string_append(&pathMasArchivos,obtenerPtoMontaje());
 string_append(&pathMasArchivos,"/Archivos/scripts/");
-archivo-> fd = open(pathMasArchivos,O_RDWR | O_CREAT);
-flock(archivo->fd,LOCK_EX);	
+string_append(&pathMasArchivos,archivo->path);
+archivo-> fd = open(pathMasArchivos,O_RDWR|O_CREAT);
+flock(archivo->fd,LOCK_SH);	
 char *  nVeces = string_repeat('\n',archivo->size);
 lseek(archivo->fd,archivo->size, SEEK_SET);
-write(archivo->fd, "", 1);
+write(archivo->fd, "",1);
 char * file = mmap(0, archivo->size, PROT_READ | PROT_WRITE, MAP_SHARED, archivo->fd, 0);
 memcpy(file,nVeces,strlen(nVeces));
 msync(file,archivo->size, MS_SYNC);
 munmap(file,archivo->size);
 close(archivo->fd);
-for(int i = 0; i < fs->cantidad_bloques;i++){
-archivo->bloques[i] = mmap(0,fs->tamanio_bloques,PROT_EXEC|PROT_READ|PROT_WRITE,MAP_SHARED,fdBloques[i],0);
-//strcpy(archivo->bloques[i],nVeces);
-archivo->estado = recienCreado;
+log_trace(logger,"Archivo %s creado correctamente en %s/Archivos/scripts",archivo->path,obtenerPtoMontaje());
 flock(archivo->fd,LOCK_UN);
+char * destino = string_new();
+for(int j = 0;j< fs->cantidad_bloques; j++){ 
+sprintf(destino,"%s/Bloque/%d.bin",archivo->path,j);
+fdBloques[j] = open(destino,O_RDWR | O_CREAT);
+flock(fdBloques[j],LOCK_EX);
+lseek(fdBloques[j],tamanioBloques, SEEK_SET);
+write(fdBloques[j],"",1);
+archivo->bloques[j] = mmap(0,fs->tamanio_bloques,PROT_EXEC|PROT_READ|PROT_WRITE,MAP_SHARED,fdBloques[j],0);
+memcpy(file,nVeces,strlen(nVeces));
+msync(file,archivo->size, MS_SYNC);
+munmap(file,archivo->size);
+flock(archivo->fd,LOCK_UN);
+close(archivo->fd);
+}
+/*archivo->estado = recienCreado;
 }
 }
 else
 {
 archivo->estado = noCreado;*/
 //}
-//sprintf(strEstado, "%i", archivo->estado);
+//sprintf(strEstado, "%i", archivo->estado);*/
 aplicarRetardo();
 //runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",2,strEstado,archivo->path);
 }
@@ -163,7 +172,6 @@ runFunction(connection->socket,"MDJ_DAM_verificameSiArchivoFueBorrado",1,strEsta
 
 int * crearBloques(int i,char * path,size_t size){ 
 int *  fdBloques[i];
-char * nVeces = string_new();
 char * destino = string_new();
 for(int j = 0;j< i; j++){ 
 sprintf(destino,"%s/Bloque/%d.bin",path,j);
@@ -173,20 +181,17 @@ fdBloques[j] = open(destino,O_RDWR | O_CREAT);
 return fdBloques;
 }
 
-int verificarSiExisteArchivo(char * path){
-t_archivo *  archivo= malloc(sizeof(t_archivo));	
+int verificarSiExisteArchivo(char * path){	
 char * pathMasArchivos = string_new();
 string_append(&pathMasArchivos,obtenerPtoMontaje());
 string_append(&pathMasArchivos,"/Archivos/scripts/");
 string_append(&pathMasArchivos,path);
-archivo->fd = open(pathMasArchivos,O_RDONLY|O_WRONLY);
-close(archivo->fd);
-return archivo->fd;
-}
-
-int * intdup(int const * src, size_t len)
+int fd = open(pathMasArchivos,O_RDONLY);
+if(fd < 0)
+return -1;
+else
 {
-   int * p = malloc(len * sizeof(int));
-   memcpy(p, src, len * sizeof(int));
-   return p;
+return fd;
+}
+close(fd);
 }
