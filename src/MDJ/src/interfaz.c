@@ -61,7 +61,7 @@ archivo->estado =noExiste;
 else {
 archivo->estado=  existe;
 }
-sprintf(strEstado, "%i", archivo->estado);
+sprintf(strEstado,"%i", archivo->estado);
 aplicarRetardo();
 free(archivo);
 runFunction(connection->socket,"MDJ_DAM_existeArchivo",3, args[0], strEstado, args[1]);
@@ -84,8 +84,14 @@ archivo->fd = verificarSiExisteArchivo(archivo->path);
 if(archivo->fd == -1)
 {
 char * pathMasArchivos = string_new();
+char * tamBloq = string_new();
+char * tam = malloc(archivo->size); 
+char * bloq = malloc(sizeof(archivo->bloques));
+sprintf(tam,"%i",tsize);
+string_append(&tamBloq,"TAMANIO=");
+string_append(&tamBloq,tam);
 string_append(&pathMasArchivos,obtenerPtoMontaje());
-string_append(&pathMasArchivos,"/Archivos/scripts/");
+string_append(&pathMasArchivos,"/Archivos/");
 string_append(&pathMasArchivos,archivo->path);
 archivo-> fd = open(pathMasArchivos,O_RDWR|O_CREAT);
 flock(archivo->fd,LOCK_SH);	
@@ -94,14 +100,17 @@ lseek(archivo->fd,archivo->size, SEEK_SET);
 write(archivo->fd, "",1);
 char * file = mmap(0, archivo->size, PROT_READ | PROT_WRITE, MAP_SHARED, archivo->fd, 0);
 memcpy(file,nVeces,strlen(nVeces));
+memcpy(file,tamBloq,strlen(tamBloq));
 msync(file,archivo->size, MS_SYNC);
 munmap(file,archivo->size);
 close(archivo->fd);
-log_trace(logger,"Archivo %s creado correctamente en %s/Archivos/scripts",archivo->path,obtenerPtoMontaje());
+log_trace(logger,"Archivo %s creado correctamente en %s/Archivos",archivo->path,obtenerPtoMontaje());
 flock(archivo->fd,LOCK_UN);
-char * destino = string_new();
+char * bloques = string_new();
+
+/*char * destino = string_new();
 for(int j = 0;j< fs->cantidad_bloques; j++){ 
-sprintf(destino,"%s/Bloque/%d.bin",archivo->path,j);
+sprintf(destino,"%s/Bloques/%d.bin",archivo->path,j);
 fdBloques[j] = open(destino,O_RDWR | O_CREAT);
 flock(fdBloques[j],LOCK_EX);
 lseek(fdBloques[j],tamanioBloques, SEEK_SET);
@@ -171,6 +180,7 @@ aplicarRetardo();
 runFunction(connection->socket,"MDJ_DAM_verificameSiArchivoFueBorrado",1,strEstado);
 }
 
+/*
 int * crearBloques(int i,char * path,size_t size){ 
 int *  fdBloques[i];
 char * destino = string_new();
@@ -181,13 +191,13 @@ fdBloques[j] = open(destino,O_RDWR | O_CREAT);
 }
 return fdBloques;
 }
+*/
 
-//el close nunca se ejecuta, dsp del return no sigue la funcion...
-//estaría bueno que devuelva -1 si no existe, y 1 si existe
+
 int verificarSiExisteArchivo(char * path){	
 char * pathMasArchivos = string_new();
 string_append(&pathMasArchivos,obtenerPtoMontaje());
-string_append(&pathMasArchivos,"/Archivos/scripts/");
+string_append(&pathMasArchivos,"/Archivos/");
 string_append(&pathMasArchivos,path);
 int fd = open(pathMasArchivos,O_RDONLY);
 if(fd < 0){
