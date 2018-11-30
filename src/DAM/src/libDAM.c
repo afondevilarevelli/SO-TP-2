@@ -264,10 +264,13 @@ void crearScriptCompleto(char* nomArchivo){
   	strcat(ruta,nomArchivo);
 	FILE* archCreadoScript = fopen(ruta, "wt");
 	if(archCreadoScript != NULL){
-		for(i=0; i<contadorScript; i++){
-			fputc(scriptCompleto[i], archCreadoScript);
+		if(( c=fgetc(archCreadoScript) ) != '\n' ){ 
+			for(i=0; i<contadorScript; i++){
+				fputc(scriptCompleto[i], archCreadoScript);
+			}
 		}
 	}
+	
 }
 
 FILE * abrirArchivoScript(char * nomArchivo)
@@ -279,7 +282,7 @@ FILE * abrirArchivoScript(char * nomArchivo)
   FILE * scriptf = fopen(ruta, "r");
   if (scriptf == NULL)
   {
-    log_error(logger, "Error al abrir el archivo %s", nomArchivo);
+    //log_error(logger, "Error al abrir el archivo %s", nomArchivo);
     exit(EXIT_FAILURE);
   }
   
@@ -300,7 +303,7 @@ FILE * abrirArchivoBloque(int numBloque)
   FILE * scriptf = fopen(ruta, "r");
   if (scriptf == NULL)
   {
-    log_error(logger, "Error al abrir el archivo del bloque %d", numBloque);
+    //log_error(logger, "Error al abrir el archivo del bloque %d", numBloque);
     exit(EXIT_FAILURE);
   }
   
