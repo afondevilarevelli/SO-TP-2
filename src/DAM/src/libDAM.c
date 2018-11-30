@@ -300,7 +300,7 @@ FILE * abrirArchivoBloque(int numBloque)
   FILE * scriptf = fopen(ruta, "r");
   if (scriptf == NULL)
   {
-    log_error(logger, "Error al abrir el archivo %s", nomArchivo);
+    log_error(logger, "Error al abrir el archivo del bloque %d", numBloque);
     exit(EXIT_FAILURE);
   }
   

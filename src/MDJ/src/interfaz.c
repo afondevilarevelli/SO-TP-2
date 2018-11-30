@@ -124,6 +124,7 @@ archivo->estado = noCreado;*/
 aplicarRetardo();
 //runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",2,strEstado,archivo->path);
 }
+}
 
 //off_t lseek(int fildes, off_t offset, int whence);
 size_t  obtenerDatos(socket_connection * connection,char ** args){
@@ -181,17 +182,21 @@ fdBloques[j] = open(destino,O_RDWR | O_CREAT);
 return fdBloques;
 }
 
+//el close nunca se ejecuta, dsp del return no sigue la funcion...
+//estaría bueno que devuelva -1 si no existe, y 1 si existe
 int verificarSiExisteArchivo(char * path){	
 char * pathMasArchivos = string_new();
 string_append(&pathMasArchivos,obtenerPtoMontaje());
 string_append(&pathMasArchivos,"/Archivos/scripts/");
 string_append(&pathMasArchivos,path);
 int fd = open(pathMasArchivos,O_RDONLY);
-if(fd < 0)
-return -1;
+if(fd < 0){
+    close(fd);
+    return -1;
+}
 else
 {
-return fd;
+    close(fd);
+    return 1;
 }
-close(fd);
 }
