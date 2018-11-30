@@ -197,6 +197,6 @@ if(fd < 0){
 else
 {
     close(fd);
-    return 1;
+    return fd;
 }
 }
