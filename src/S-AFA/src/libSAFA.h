@@ -55,6 +55,8 @@ typedef struct{
 
 
 //VARIABLES GLOBALES
+int cantSentenciasEjecutadas;
+int cantSentConDiego;
 int generadorDeIdsCPU;
 int idCpuABuscar;
 char* nombreRecursoABuscar;
@@ -77,6 +79,9 @@ pthread_mutex_t m_busqueda;
 pthread_mutex_t m_recurso;
 
 pthread_mutex_t m_verificacion;
+
+pthread_mutex_t m_cantSent;
+pthread_mutex_t m_cantDiego;
 
 t_log* logger;
 t_config_SAFA* datosConfigSAFA;

@@ -10,8 +10,6 @@
 void disconnect(socket_connection* socketInfo);
 
 int main(void){
-    crearScriptCompleto("simple.escriptorio");
-     /*
 	 signal(SIGINT, cerrarPrograma);
 	
        	configure_logger();
@@ -80,7 +78,6 @@ int main(void){
 	pthread_mutex_lock(&mx_main);
 	pthread_mutex_lock(&mx_main);
 
-*/
 	return EXIT_SUCCESS;
 }
 

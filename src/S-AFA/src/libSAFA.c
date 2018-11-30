@@ -344,14 +344,15 @@ void newConnection(socket_connection* socketInfo, char** msg){
 	}
 }
 
-//args[0]: idCPU, args[1]: idGDT, args[2]: cantidad de quanto que ejecutó, args[3]:"finalizar","continuar" ó "bloquear", args[4]: 1 si hay que aumentar cantIOs
+//args[0]: idCPU, args[1]: idGDT, args[2]: cantidad de quanto que ejecutó, args[3]:"finalizar","continuar" ó "bloquear", args[4]: 1 si hay que aumentar cantIOs, args[5]: 1 si hay que aumentar cantSentConDiego 
 //								  							   			   "finalizar" => finalizo GDT,		
 //								  							   			   "bloquear"  => bloqueo GDT,
 //								   							   			   "continuar" => paso a Ready GDT
 void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 	int idCPU = atoi( msg[0] );
 	int idDTB = atoi ( msg[1] );
-	int aumentar = atoi ( msg[4] );
+	int aumentarIO = atoi ( msg[4] );
+	int aumentarDiego = atoi ( msg[5] );
 	int quantumEjecutado = atoi( msg[2] );
 	log_info(logger, "La CPU %d ha finalizado de procesar sentencias del GDT de id %d", idCPU, idDTB);
 	CPU* cpu = buscarCPU(idCPU);
@@ -366,8 +367,14 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 	pthread_mutex_unlock(&m_colaNew);
 
 	if(dtb != NULL){ 
-		if(aumentar)
+		if(aumentarIO)
 			dtb->cantIOs++;
+		if(aumentarDiego){
+			pthread_mutex_lock(&m_cantDiego);
+			cantSentConDiego++;
+			pthread_mutex_unlock(&m_cantDiego);
+		}
+
 		if(dtb->status != FINISHED){ 
 			if( strcmp( msg[3], "finalizar") == 0){
 
@@ -381,6 +388,9 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 				dtb->PC += quantumEjecutado;
 				encolarDTB(colaReady, dtb, m_colaReady);
 				sem_post(&cantProcesosEnReady);
+				pthread_mutex_lock(&m_cantSent);
+				cantSentenciasEjecutadas++;
+				pthread_mutex_unlock(&m_cantSent);
 
 			} else{ // "bloquear"
 				dtb->status = BLOCKED;
@@ -388,7 +398,9 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 				dtb->PC += quantumEjecutado;
 				encolarDTB(colaBloqueados, dtb, m_colaBloqueados);
     			log_info(logger, "El DTB paso al Estado Blocked");
-
+				pthread_mutex_lock(&m_cantSent);
+				cantSentenciasEjecutadas++;
+				pthread_mutex_unlock(&m_cantSent);
 			}
 		} else{
 			finalizarDTB(dtb);
@@ -422,6 +434,7 @@ void avisoDeDamDeResultadoDTB(socket_connection* socketInfo, char** msg){
 			finalizarDTB(dtb);
 		}				
 	}
+	
 }
 //Se debe verificar si no es nulo, puesto que si es nulo significa que el dtb con dicho id ya fue finalizado 
 // (por consola), y si no se verificara la nulidad tiraría segmentationFault.
@@ -437,6 +450,7 @@ void desbloquearDTB(socket_connection* connection, char** msgs){
 		encolarDTB(colaReady, dtb, m_colaReady);
 		sem_post(&cantProcesosEnReady);
 	}
+	
 }
 
 //Caso cuando ocurre un fallo sea donde este situado el DTB, pasa a abortarse para la cola FINISHED
