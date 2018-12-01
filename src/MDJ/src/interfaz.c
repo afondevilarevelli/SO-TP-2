@@ -43,6 +43,7 @@ return fs;
 }
 
 
+
 void aplicarRetardo()
 {
 t_config* fileConfig  = config_create("MDJ.config");
@@ -72,22 +73,37 @@ runFunction(connection->socket,"MDJ_DAM_existeArchivo",3, args[0], strEstado, ar
 //args[0]: rutaDelArchivo, args[1]: cantidadDeBytes
 void crearArchivo(socket_connection * connection ,char** args)
 {
-t_archivo *  archivo= malloc(sizeof(t_archivo));	
+t_archivo *  archivo= malloc(sizeof(t_archivo));
+t_metadata_bitmap * bitMap = malloc(sizeof(t_metadata_bitmap));	
 archivo->path = args[0];
 size_t tsize = atoi(args[1]);
+t_list * bloquesLibres = list_create();
+t_list * bloquesOcupados = list_create();
 archivo->size =  (tsize - 1);
 t_metadata_filesystem * fs = obtenerMetadata();
-archivo->bloques = malloc(fs->cantidad_bloques);
-int * fdBloques = malloc(fs->cantidad_bloques);
 size_t tamanioBloques = (fs->tamanio_bloques - 1);
+char * pathMasArchivos = string_new();
+char * tam = malloc(archivo->size); 
+char * bloques = malloc(sizeof(fs->cantidad_bloques));
+char * montajeMasBitmap = string_new();
+string_append(&montajeMasBitmap,obtenerPtoMontaje());
+string_append(&montajeMasBitmap,"/Metadata/Bitmap.bin");
+bitMap->bitarray = bitarray_create_with_mode(montajeMasBitmap,fs->cantidad_bloques,MSB_FIRST);
+for(int i = 0; i < fs->cantidad_bloques; i++)
+{
+if(bitarray_test_bit(bitMap->bitarray,i) == 0)
+{
+list_add(bloquesLibres,i);    
+}
+else
+{
+ list_add(bloquesOcupados,i);  
+}
+}
 archivo->fd = verificarSiExisteArchivo(archivo->path);
 if(archivo->fd == -1)
 {
-char * pathMasArchivos = string_new();
-char * tamBloq = string_new();
-char * tam = malloc(archivo->size); 
-char * bloq = malloc(sizeof(archivo->bloques));
-sprintf(tam,"%i",tsize);
+/*sprintf(tam,"%i",tsize);
 string_append(&tamBloq,"TAMANIO=");
 string_append(&tamBloq,tam);
 string_append(&pathMasArchivos,obtenerPtoMontaje());
@@ -106,8 +122,16 @@ munmap(file,archivo->size);
 close(archivo->fd);
 log_trace(logger,"Archivo %s creado correctamente en %s/Archivos",archivo->path,obtenerPtoMontaje());
 flock(archivo->fd,LOCK_UN);
-char * bloques = string_new();
-
+archivo->estado = recienCreado;
+}
+else
+{
+archivo->estado = noCreado;
+}
+sprintf(strEstado, "%i", archivo->estado);
+aplicarRetardo();
+runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",2,strEstado,archivo->path);
+}
 /*char * destino = string_new();
 for(int j = 0;j< fs->cantidad_bloques; j++){ 
 sprintf(destino,"%s/Bloques/%d.bin",archivo->path,j);
@@ -120,19 +144,17 @@ memcpy(file,nVeces,strlen(nVeces));
 msync(file,archivo->size, MS_SYNC);
 munmap(file,archivo->size);
 flock(archivo->fd,LOCK_UN);
-close(archivo->fd);
+close(archivo->fd);*/
 }
-/*archivo->estado = recienCreado;
-}
-}
-else
+for(int z = 0 ; z < list_size(bloquesOcupados); z++)
 {
-archivo->estado = noCreado;*/
-//}
-//sprintf(strEstado, "%i", archivo->estado);*/
-aplicarRetardo();
-//runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",2,strEstado,archivo->path);
+printf("%i \n",list_get(bloquesOcupados,z));    
 }
+free(archivo);
+free(bitMap);
+list_destroy(bloquesLibres);
+list_destroy(bloquesOcupados);
+//list_destroy_and_destroy_elements(bloquesLibres,(void*) free);
 }
 
 //off_t lseek(int fildes, off_t offset, int whence);
@@ -157,7 +179,7 @@ char * bufferDeBytes = malloc(tamanioRestante);
 leidos = read(archivo->fd,bufferDeBytes,posCorrida);
 flock(archivo->fd,LOCK_UN);
 }
-return leidos ;
+return leidos;
 }
 
 void guardarDatos(socket_connection * connection ,char * path,off_t  * offset,size_t *  size,char * buffer){
@@ -194,7 +216,8 @@ return fdBloques;
 */
 
 
-int verificarSiExisteArchivo(char * path){	
+int verificarSiExisteArchivo(char * path)
+{	
 char * pathMasArchivos = string_new();
 string_append(&pathMasArchivos,obtenerPtoMontaje());
 string_append(&pathMasArchivos,"/Archivos/");

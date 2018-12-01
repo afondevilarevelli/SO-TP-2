@@ -60,8 +60,7 @@ char * magic_number;
 }t_metadata_filesystem;
 
 typedef struct{
-t_bitarray estado_bloques;//  1 ocupado , 0 libre
-int * ptroBloque;  
+t_bitarray * bitarray;//  1 ocupado , 0 libre  
 }t_metadata_bitmap;
 
 typedef struct{
