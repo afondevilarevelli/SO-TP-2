@@ -397,7 +397,7 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 				dtb->quantumFaltante = datosConfigSAFA->quantum - quantumEjecutado;
 				dtb->PC += quantumEjecutado;
 				encolarDTB(colaBloqueados, dtb, m_colaBloqueados);
-    			log_info(logger, "El DTB paso al Estado Blocked");
+    			log_info(logger, "El DTB %d ha sido bloqueado",dtb->id);
 				pthread_mutex_lock(&m_cantSent);
 				cantSentenciasEjecutadas++;
 				pthread_mutex_unlock(&m_cantSent);

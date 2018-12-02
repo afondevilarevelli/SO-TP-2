@@ -69,11 +69,15 @@ t_dictionary * callableRemoteFunctionsCPU;
 pthread_mutex_t m_main;
 pthread_mutex_t m_busqueda;
 pthread_mutex_t m_puedeEjecutar;
+sem_t sem_esperaAbrir;
 
 //VAR GLOB SOCKETS
 int socketDAM;
 int socketSAFA;
 int socketFM9;
+
+bool archivoExistente;
+bool archivoAbierto;
 
 //FUNCIONES
 

@@ -217,7 +217,7 @@ void ejecucionAbrir(socket_connection* connection, char** args){
 	if(estadoSituacionArchivo){
 
 		runFunction(socketSAFA, "finalizacionProcesamientoCPU", 6, string_id, args[0], "0", "bloquear", "0", "1");
-		runFunction(socketDAM, "MDJ_DAM_existeArchivo", 2, args[0], "1");
+		runFunction(socketDAM, "CPU_DAM_existeArchivo", 2, args[0], args[1]);
 
 	}
 
@@ -333,7 +333,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 	if (flagInicializado == 0) { //DTB-Dummy
 		log_trace(logger,"Preparando la inicializacion de ejecucion del DTB Dummy\n");
 		runFunction(socketDAM, "CPU_DAM_solicitudCargaGDT", 2,args[0], rutaScript);
-		runFunction(socketSAFA, "finalizacionProcesamientoCPU",6, string_id, args[0], "0", "bloquear", "0","0","0");
+		runFunction(socketSAFA, "finalizacionProcesamientoCPU",6, string_id, args[0], "0", "bloquear", "0","0");
 	}
 	else{
 		int sentenciasEjecutadas = 0;
@@ -350,8 +350,21 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
 					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 6, string_id, args[0], string_sentEjecutadas, string_quantumAEjecutar, "abrir", sentencia.p1);
+					runFunction(socketDAM, "CPU_DAM_existeArchivo", 2, args[0], args[1]);
 					destruirOperacion(sentencia);
-					return;
+					sem_wait(&sem_esperaAbrir);
+					sem_wait(&sem_esperaAbrir);
+					if(!archivoExistente){
+						runFunction(socketSAFA, "finalizacionProcesamientoCPU",6,string_id, args[0],string_sentEjecutadas,"finalizar", "1", "1");
+						return;
+					}
+					else{
+						if(!archivoAbierto){
+							runFunction(socketSAFA, "finalizacionProcesamientoCPU", 6, string_id, args[0], "0", "bloquear", "0", "1");
+							runFunction(socketDAM, "CPU_DAM_solicitudCargaGDT", 2, args[0] ,args[1]);
+							return;
+						}
+					}
 				case CONCENTRAR:
 					sleep(datosCPU->retardo);
 					break; 

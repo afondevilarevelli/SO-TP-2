@@ -181,8 +181,15 @@ void borrarArchivo(socket_connection* connection, char** args){
 
 }
 
-void existeArchivo(socket_connection* socket, char * pathFile){
- runFunction(socketMDJ,"validarArchivo",1,pathFile);
+//args[0]: idGDT, args[1]: path
+void existeArchivo(socket_connection* socket, char** args){
+ runFunction(socketMDJ,"validarArchivo",2,args[0], args[1]);
+}
+
+//args[0]: idGDT, args[1]: path, args[2]: -1 -> si no existe, 
+//										   1 -> si existe
+void MDJ_DAM_existeArchivo(socket_connection* socket, char** args){
+	runFunction(socketMDJ,"validarArchivo",2,args[0], args[1]);
 }
 
 //args[0]: idGDT, args[1]: rutaArchivo

@@ -2,7 +2,6 @@
 #include "libMDJ.h"
 // Con esto se maneja cada mensaje que se le mando al dam, si es 0 es porque es false, si es 1 es porque es true
 t_metadata_filemetadata * metadata;
-char strEstado[2];
 
 
 char * obtenerPtoMontaje()
@@ -53,8 +52,9 @@ config_destroy(fileConfig);
 }
 //args[0]: idGDT, args[1]: path
 void  validarArchivo(socket_connection * connection,char ** args){
+char strEstado[2];
 t_archivo *  archivo = malloc(sizeof(t_archivo));	
-archivo->path = args[1];
+archivo->path = args[0];
 archivo->fd =  1;//verificarSiExisteArchivo(archivo->path);
 if(archivo->fd == noExiste){
 archivo->estado =noExiste;
@@ -65,7 +65,7 @@ archivo->estado=  existe;
 sprintf(strEstado,"%i", archivo->estado);
 aplicarRetardo();
 free(archivo);
-runFunction(connection->socket,"MDJ_DAM_existeArchivo",3, args[0], strEstado, args[1]);
+runFunction(connection->socket,"MDJ_DAM_existeArchivo",3, args[0], args[1], strEstado);
 }
 
 //void* mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
@@ -186,6 +186,7 @@ void guardarDatos(socket_connection * connection ,char * path,off_t  * offset,si
 }
 
 void borrarArchivo(socket_connection* connection,char ** args){
+char strEstado[2];
 t_archivo * archivo= malloc(sizeof(t_archivo));
 archivo->path = args[0];
 archivo->fd  = 1; //verificarSiExisteArchivo(archivo->path);

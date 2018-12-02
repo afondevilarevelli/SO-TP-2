@@ -24,13 +24,14 @@ int main(void){
 	
 	//--------------------------------------------------------------------
 	//Dicionarios del mdj
-    //dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_existeArchivo", &MDJ_DAM_existeArchivo);
+    dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_existeArchivo", &MDJ_DAM_existeArchivo);
     dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_verificarArchivoCreado",&MDJ_DAM_verificarArchivoCreado);
     dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_verificameSiArchivoFueBorrado",&MDJ_DAM_verificameSiArchivoFueBorrado);
     //dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_avisoSAFAResultadoDTBDummy",&MDJ_DAM_avisarSAFAResultadoDTBDummy);
 	//--------------------------------------------------------------------
   //dicionarios de CPU
       dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_solicitudCargaGDT", &solicitudCargaGDT);
+      dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_existeArchivo", &existeArchivo);
       
       
     //dictionary_put(callableRemoteFunctionsCPU, "identificarProcesoEnDAM", &identificarProcesoEnDAM);
