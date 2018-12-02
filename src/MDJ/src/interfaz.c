@@ -85,10 +85,7 @@ size_t tamanioBloques = (fs->tamanio_bloques - 1);
 char * pathMasArchivos = string_new();
 char * tam = malloc(archivo->size); 
 char * bloques = malloc(sizeof(fs->cantidad_bloques));
-char * montajeMasBitmap = string_new();
-string_append(&montajeMasBitmap,obtenerPtoMontaje());
-string_append(&montajeMasBitmap,"/Metadata/Bitmap.bin");
-bitMap->bitarray = bitarray_create_with_mode(montajeMasBitmap,fs->cantidad_bloques,MSB_FIRST);
+bitMap->bitarray = crearBitmap(fs->cantidad_bloques);
 for(int i = 0; i < fs->cantidad_bloques; i++)
 {
 if(bitarray_test_bit(bitMap->bitarray,i) == 0)
@@ -146,14 +143,8 @@ munmap(file,archivo->size);
 flock(archivo->fd,LOCK_UN);
 close(archivo->fd);*/
 }
-for(int z = 0 ; z < list_size(bloquesOcupados); z++)
-{
-printf("%i \n",list_get(bloquesOcupados,z));    
-}
 free(archivo);
 free(bitMap);
-list_destroy(bloquesLibres);
-list_destroy(bloquesOcupados);
 //list_destroy_and_destroy_elements(bloquesLibres,(void*) free);
 }
 
@@ -203,18 +194,24 @@ aplicarRetardo();
 runFunction(connection->socket,"MDJ_DAM_verificameSiArchivoFueBorrado",1,strEstado);
 }
 
-/*
-int * crearBloques(int i,char * path,size_t size){ 
-int *  fdBloques[i];
-char * destino = string_new();
-for(int j = 0;j< i; j++){ 
-sprintf(destino,"%s/Bloque/%d.bin",path,j);
-fdBloques[j] = open(destino,O_RDWR | O_CREAT);
-//lseek( fdBloques[j], size , SEEK_SET);
+t_bitarray * crearBitmap(int  size){
+char * montajeMasBitmap = string_new();
+string_append(&montajeMasBitmap,obtenerPtoMontaje());
+string_append(&montajeMasBitmap,"/Metadata/Bitmap.bin");
+int bitmap = open(montajeMasBitmap,O_RDWR);
+struct stat mystat;
+if (fstat(bitmap, &mystat) < 0) {
+	printf("Error al establecer fstat\n");
+	close(bitmap);
+	}
+char * bmap = mmap(0,mystat.st_size,PROT_EXEC | PROT_WRITE | PROT_READ, MAP_SHARED, bitmap, 0);
+if (bmap == MAP_FAILED) {
+			printf("Error al mapear a memoria: %s\n", strerror(errno));
+
+	}
+t_bitarray * bitarray = bitarray_create_with_mode(bmap,size/8,MSB_FIRST);
+return bitarray;
 }
-return fdBloques;
-}
-*/
 
 
 int verificarSiExisteArchivo(char * path)
