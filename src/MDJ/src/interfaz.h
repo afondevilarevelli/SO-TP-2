@@ -39,7 +39,7 @@ typedef struct{
 int fd;
 char * mem_ptro;
 char * path;
-char * bloques;//vector con todos los bloques
+int * bloques;//vector con todos los bloques
 size_t  *  size; 
 int estado;
 }t_archivo;
@@ -83,5 +83,6 @@ void borrarArchivo(socket_connection *,char **);
 int verificarSiExisteArchivo(char * );
 int * crearBloques(int, char * ,size_t);
 char * obtenerPtoMontaje();
+t_bitarray * crearBitmap(int);
 t_metadata_filesystem * obtenerMetadata ();
 #endif
