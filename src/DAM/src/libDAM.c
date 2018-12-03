@@ -88,13 +88,12 @@ void solicitudCargaGDT(socket_connection* connection, char ** args){
 
 //esta funcion le avisa al SAFA el resultado de la carga del DTBDummy,
 //es llamada por el MDJ
-//args[0]: idGDT, args[1]: estadoValidacion (1 => existe archivo, 0 => NO existe archivo)
+//args[0]: idGDT, args[1]: estadoValidacion (1 => existe archivo, 0 => NO existe archivo), args[2]:path
 void MDJ_DAM_avisarResultadoDTB(socket_connection* socketInf,char ** args){
 	estadoValidacion =atoi( args[1]);
 	if(estadoValidacion ==  1){ 
 		log_info(logger," El MDJ informa archivo existente");
 		runFunction(socketFM9, "DAM_FM9_cargarArchivo", 1, args[0]);
-
 	}
 	else if (estadoValidacion ==  0){ 
 		log_info(logger,"El MDJ informa archivo inexistente");
@@ -112,30 +111,31 @@ void archivoCargadoCorrectamente(socket_connection* connection, char** args){
 	char* estadoCarga = args[1];
 
 	if(estadoCarga == "ok"){
-	runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "ok");
+		crearScriptCompleto(args[2]);
+		runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "ok");
 	}
 	else{
-	runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "error");
+		runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "error");
 	}
 
 }
 
 
 //Parametros cambiados para ver que hacer si se encuentra creado o no
-void MDJ_DAM_verificarArchivoCreado(/*socket_connection* conenction,char ** args*/char* pam1, char* pam2){
+void MDJ_DAM_verificarArchivoCreado(socket_connection* conenction,char ** args/*char* pam1, char* pam2*/){
 
-estadoCreacion = atoi( pam1);
-
+estadoCreacion = atoi(args[0]);
+char * path = args[1];
 if(estadoCreacion ==  1)
 {
-log_trace(logger," El MDJ informa que se creo el archivo %s",pam2);
-runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB",1, pam2);
+log_trace(logger," El MDJ informa que se creo el archivo %s",path);
+runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB",1, path);
 
 }
 else
 {
-log_error(logger,"Ocurrio un error al querer crear el archivo %s",pam2);
-runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, pam2);
+log_error(logger,"Ocurrio un error al querer crear el archivo %s",path);
+runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, path);
 }
 }
 
@@ -155,18 +155,19 @@ runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, pam2);
 }
 }
 
-void crearArchivo(socket_connection* connection, char** args){
+/*void crearArchivo(socket_connection* connection, char** args){
 
-	int	idDTB = atoi(args[0]);
+	//int	idDTB = atoi(args[0]);
 
-	char* rutaArchivo = args[1];
-	char* cantidadBytes = args[2];
+	char* rutaArchivo = args[0];
+	size_t cantidadBytes = atoi(args[1]);
 
 	//Como todavia falta desarrollo del MDJ envio por parametro los posibles resultados con el DTB a buscar
-	//runFunction(socketMDJ,"crearArchivo",2, rutaArchivo, cantidadBytes);
-	MDJ_DAM_verificarArchivoCreado("1", args[0]);
+	runFunction(socketMDJ,"crearArchivo",2, rutaArchivo, cantidadBytes);
+	//MDJ_DAM_verificarArchivoCreado("1", args[0]);
 
 }
+*/
 
 void borrarArchivo(socket_connection* connection, char** args){
 
@@ -180,8 +181,18 @@ void borrarArchivo(socket_connection* connection, char** args){
 
 }
 
-void existeArchivo(socket_connection* socket, char * pathFile){
- runFunction(socketMDJ,"validarArchivo",1,pathFile);
+//args[0]: path
+void existeArchivo(socket_connection* socket, char** args){
+	char string_socket[2];
+	sprintf(string_socket, "%i", socket->socket);
+    runFunction(socketMDJ,"validarArchivo",2,args[0], string_socket);
+}
+
+//args[0]: -1 -> si no existe, args[1]: socketCPU
+//			1 -> si existe
+void MDJ_DAM_existeArchivo(socket_connection* socket, char** args){
+	int socketCPU = atoi(args[1]);
+	runFunction(socketCPU,"CPU_DAM_continuacionExistenciaAbrir",1,args[0]);
 }
 
 //args[0]: idGDT, args[1]: rutaArchivo
@@ -197,3 +208,115 @@ void solicitudDeFlush(socket_connection* connection, char** args)
 	//runFunction(socketMDJ,"guardarArchivo",0,);
 }
 
+void crearScriptCompleto(char* nomArchivo){
+	char * line = NULL;
+    size_t len = 0;
+    ssize_t read;
+	int bloques[50];
+	int i = 0;
+	int j = 0;
+	int k;
+	char bloque[3];
+	int cant = 0;
+	char scriptCompleto[1000];
+	int contadorScript = 0;
+	int c;
+	char* ruta;
+
+	FILE* arch = abrirArchivoScript(nomArchivo);
+	getline(&line, &len, arch);
+	if( read = getline(&line, &len, arch) != -1){
+		while(line[i] != '['){			
+			i++;
+		}
+		i++;
+
+		while(line[i] != ']'){ 
+			while(line[i] != ','){
+				if(line[i] == ']'){
+					break;
+				}
+				else{
+					bloque[j] = line[i];
+					i++;
+					j++;
+				}	
+			}
+			if(line[i] != ']'){ 
+				bloques[cant] = atoi(bloque);
+				cant++;
+				j = 0;
+				i++;
+			}
+		}
+
+		bloques[cant] = atoi(bloque);
+	} // bloques ya obtenidos, tiene ( cant+1 ) bloques
+
+	if (line){ 
+        free(line);
+	}
+	fclose(arch);
+
+	for(k = 0; k <= cant; k++){
+		FILE* bf = abrirArchivoBloque(bloques[k]);
+		if(bf!=NULL){
+			while( ( c=fgetc(bf) ) != EOF){
+				scriptCompleto[contadorScript] = c;
+				contadorScript++;
+			}
+		fclose(bf);
+		}
+	}
+	//printf("%s",scriptCompleto);
+	ruta = malloc(100*sizeof(char));
+  	strcpy(ruta, "../../Scripts/");
+  	strcat(ruta,nomArchivo);
+	FILE* archCreadoScript = fopen(ruta, "wt");
+	if(archCreadoScript != NULL){
+		if(( c=fgetc(archCreadoScript) ) != '\n' ){ 
+			for(i=0; i<contadorScript; i++){
+				fputc(scriptCompleto[i], archCreadoScript);
+			}
+		}
+	}
+	
+}
+
+FILE * abrirArchivoScript(char * nomArchivo)
+{
+  char* ruta = malloc(100*sizeof(char));
+  strcpy(ruta, "../../fifa-entrega-Scripts/Archivos/scripts/");
+  strcat(ruta,nomArchivo);
+  
+  FILE * scriptf = fopen(ruta, "r");
+  if (scriptf == NULL)
+  {
+    //log_error(logger, "Error al abrir el archivo %s", nomArchivo);
+    exit(EXIT_FAILURE);
+  }
+  
+  free(ruta);
+  return scriptf;
+}
+
+FILE * abrirArchivoBloque(int numBloque)
+{
+  char bloque[5];
+  sprintf(bloque, "%i", numBloque);
+  char* ruta = malloc(100*sizeof(char));
+  char* ext = ".bin";
+  strcpy(ruta, "../../fifa-entrega-Scripts/Bloques/");
+  strcat(ruta,bloque);
+  strcat(ruta, ext);
+  
+  FILE * scriptf = fopen(ruta, "r");
+  if (scriptf == NULL)
+  {
+    //log_error(logger, "Error al abrir el archivo del bloque %d", numBloque);
+    exit(EXIT_FAILURE);
+  }
+  
+  free(ruta);
+  return scriptf;
+}

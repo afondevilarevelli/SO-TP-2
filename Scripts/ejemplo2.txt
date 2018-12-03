@@ -1,8 +1,3 @@
-abrir perrunoXD
-wait conmebol
-#te la comes doblada
+wait AFA
+#alto comentario pa
 signal conmebol
-flush noseque
-concentrar
-crear sonido palmas
-close palmas

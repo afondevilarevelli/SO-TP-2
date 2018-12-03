@@ -11,10 +11,8 @@
 #include <commons/string.h>
 #include <commons/collections/dictionary.h>
 #include <commons/collections/list.h>
+#include <semaphore.h>
 #include "../../sample-socket/socket.h" 
-//el include de libSAFA es SÓLO para verificar si un archivo ya fue abierto por un GDT para la funcion ABRIR
-#include "../../S-AFA/src/libSAFA.h"
-
 
 //ESTRUCTURA
 typedef struct {
@@ -44,14 +42,14 @@ int quantum;
 int idCPU;
 
 typedef enum{
-	ABRIR, 
+	ABRIR, //I/O si no se encuentra abierto por el DTB
 	CONCENTRAR, 
 	ASIGNAR, 
 	WAIT, 
 	SIGNAL, 
 	FLUSH, 
 	CLOSE, 
-	CREAR, 
+	CREAR, //I/O
 	BORRAR, 
 	NUMERAL //para comentarios
 }palabraReservada_t;
@@ -73,12 +71,19 @@ pthread_mutex_t m_main;
 pthread_mutex_t m_busqueda;
 pthread_mutex_t m_puedeEjecutar;
 
+sem_t sem_esperaAbrir;
+sem_t sem_esperaAsignar;
+sem_t sem_esperaWait;
+
 //VAR GLOB SOCKETS
 int socketDAM;
 int socketSAFA;
 int socketFM9;
 
-int estadoSituacionArchivo;
+bool archivoExistente;
+bool archivoAbiertoAbrir;
+bool archivoAbiertoAsignar;
+bool resultadoWaitOk;
 
 //FUNCIONES
 
@@ -96,16 +101,19 @@ operacion_t obtenerSentenciaParseada(char* script,int programCounter);
 
 //PARSER
 operacion_t parse(char* line);
+void destruirOperacion(operacion_t op);
 
 //callable remote functions
 void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args); //SAFA
 void establecerQuantumYID(socket_connection * connection ,char** args); //SAFA
-void pausarPlanificacion(socket_connection * connection ,char** args);
-void continuarPlanificacion(socket_connection * connection ,char** args);
+void pausarPlanificacion(socket_connection* ,char**);
+void continuarPlanificacion(socket_connection*,char**);
 void ejecucionAbrir(socket_connection*, char**);
+void ejecucionAbrirExistencia(socket_connection*, char**);
 void ejecucionAsignar(socket_connection*, char**);
 void ejecucionClose(socket_connection*, char**);
 void ejecucionFlush(socket_connection*, char**);
+void ejecucionWait(socket_connection*, char**);
 void finalizacionClose(socket_connection*, char**);
 
 #endif
