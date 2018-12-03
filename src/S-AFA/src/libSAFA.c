@@ -202,12 +202,10 @@ t_config_SAFA * read_and_log_config(char* path) {
 //CallableRemoteFunctions
 
 //llamada por CPU al haber una sentencia de wait
-//msg[0]: idCPU, msg[1]: idGDT, msg[2]: nombreRecurso, msg[3]: cantQuantoQueEjecutó, msg[4]:quantumAEjecutar de CPU
+//msg[0]: idCPU, msg[1]: idGDT, msg[2]: nombreRecurso
 void waitRecurso(socket_connection* socketInfo, char** msg){
 	int idDTB = atoi(msg[1]);
 	int idCPU = atoi(msg[0]);
-	int quantumDesignadoACPU = atoi(msg[4]);
-	int cantQuantoEjecutado = atoi(msg[3]);
 	DTB* dtb = buscarDTBEnElSistema(idDTB);
 	CPU* cpu = buscarCPU(idCPU);
 	pthread_mutex_lock(&m_busqueda);
@@ -216,25 +214,10 @@ void waitRecurso(socket_connection* socketInfo, char** msg){
 		pthread_mutex_unlock(&m_busqueda);
 		crearRecurso(msg[2], 0);
 
-		if(dtb != NULL){ 
-			dtb->quantumFaltante = datosConfigSAFA->quantum - cantQuantoEjecutado;
-			dtb->PC += cantQuantoEjecutado;
-		
-		log_info(logger, "Se ha creado el recurso %s, y ha sido retenido por el GDT de id %d", msg[2], idDTB);
-		//ejecuta el mismo GDT
-        char string_flagInicializacion[2];
-        sprintf(string_flagInicializacion, "%i", dtb->flagInicializado); 
-        char string_pc[2];
-        sprintf(string_pc, "%i", dtb->PC);
-        char string_quantumAEjecutar[2];
-        sprintf(string_quantumAEjecutar, "%i", quantumDesignadoACPU - cantQuantoEjecutado);
-		if(cpu!=NULL)
-        	runFunction(cpu->socket,"ejecutarCPU",5, msg[1],
-            										dtb->rutaScript,
-													string_pc,
-                                                	string_flagInicializacion,
-                                                	string_quantumAEjecutar);
-		}
+		if(dtb != NULL)
+			log_info(logger, "Se ha creado el recurso %s, y ha sido retenido por el GDT de id %d", msg[2], idDTB);
+		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionWait", 1, "1");	
+	
 	}
 	else{ //si existe
 		pthread_mutex_unlock(&m_busqueda);
@@ -243,43 +226,23 @@ void waitRecurso(socket_connection* socketInfo, char** msg){
 		if(rec->valor < 0){
 			pthread_mutex_unlock(&m_recurso);
 			log_info(logger, "El GDT de id %d ha solicitado la retencion del recurso %s y fue bloqueado", idDTB, msg[2]);
-			char** params = (char*[]){msg[0], msg[1], msg[3], "bloquear", "0" };
-			finalizacionProcesamientoCPU(NULL, params);
+			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionWait", 1, "0");
 		}
 		else{
 			pthread_mutex_unlock(&m_recurso);
-			int quantumEjecutado = atoi(msg[3]);
-			if(dtb != NULL){ 
-				dtb->quantumFaltante = datosConfigSAFA->quantum - quantumEjecutado;
-				dtb->PC += quantumEjecutado;
-			
+			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionWait", 1, "1");
 			log_info(logger, "El GDT de id %d ha solicitado la retencion del recurso %s y le fue concedida", idDTB, msg[2]);
-			//ejecuta el mismo GDT
-     		char string_flagInicializacion[2];
-        	sprintf(string_flagInicializacion, "%i", dtb->flagInicializado); 
-        	char string_pc[2];
-        	sprintf(string_pc, "%i", dtb->PC);
-        	char string_quantumAEjecutar[2];
-        	sprintf(string_quantumAEjecutar, "%i", quantumDesignadoACPU - cantQuantoEjecutado);
-			if(cpu!=NULL)
-        		runFunction(cpu->socket,"ejecutarCPU",5, msg[1],
-            											dtb->rutaScript,
-														string_pc,
-                                                		string_flagInicializacion,
-                                                		string_quantumAEjecutar);
-			}
+		
 		}
 
 	}
 }
 
 //llamada por CPU al haber una sentencia de signal
-//msg[0]: idCPU, msg[1]: idGDT, msg[2]: nombreRecurso, msg[3]: cantQuantoQueEjecutó, msg[4]:quantumAEjecutar de CPU
+//msg[0]: idCPU, msg[1]: idGDT, msg[2]: nombreRecurso
 void signalRecurso(socket_connection* socketInfo, char** msg){
 	int idCPU = atoi(msg[0]);
 	int idDTB = atoi(msg[1]);
-	int quantumDesignadoACPU = atoi(msg[4]);
-	int cantQuantoEjecutado = atoi(msg[3]);
 	CPU* cpu = buscarCPU(idCPU);
 	DTB* dtb = buscarDTBEnElSistema(idDTB);
 	pthread_mutex_lock(&m_busqueda);
@@ -310,24 +273,6 @@ void signalRecurso(socket_connection* socketInfo, char** msg){
 			log_info(logger, "EL GDT de id %d ha liberado el recurso %s", idDTB, msg[2]);
 			eliminarRecurso(rec);
 		}
-	}
-	if(dtb != NULL){ 
-		dtb->quantumFaltante = datosConfigSAFA->quantum - cantQuantoEjecutado;
-		dtb->PC += cantQuantoEjecutado;
-	
-	//ejecuta el mismo GDT
-    char string_flagInicializacion[2];
-    sprintf(string_flagInicializacion, "%i", dtb->flagInicializado); 
-    char string_pc[2];
-    sprintf(string_pc, "%i", dtb->PC);
-    char string_quantumAEjecutar[2];
-    sprintf(string_quantumAEjecutar, "%i", quantumDesignadoACPU - cantQuantoEjecutado);
-	if(cpu != NULL)
-		runFunction(cpu->socket,"ejecutarCPU",5, msg[1],
-            									dtb->rutaScript,
-												string_pc,
-                                                string_flagInicializacion,
-                                                string_quantumAEjecutar);
 	}
 }
 
@@ -466,8 +411,8 @@ void pasarDTBAExit(socket_connection* connection, char** msgs){
 	}
 }
 
-//msgs[0]: idCPU, msgs[1]: idGDT, msgs[2]:sentEjecutadas, msgs[3]: quantumAEjecutar, 
-//msgs[4]: funcion escriptorio, msgs[5]: archivoAVerificar
+//msgs[0]: idCPU, msgs[1]: idGDT, 
+//msgs[2]: funcion escriptorio, msgs[3]: archivoAVerificar
 void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 
 	int idGDT = atoi(msgs[1]);
@@ -477,36 +422,36 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 
 	//Realiza La Verificacion del Archivo Por SI o No
 	//Envia El Resultado "1" si se encuentra abierto, "0" caso contrario
-    if(strcmp(msgs[4], "abrir") == 0){
+    if(strcmp(msgs[2], "abrir") == 0){
 		pthread_mutex_lock(&m_verificacion);
-		archAVerificar = malloc(strlen(msgs[5]) + 1);
-		strcpy(archAVerificar, msgs[5]);
+		archAVerificar = malloc(strlen(msgs[3]) + 1);
+		strcpy(archAVerificar, msgs[3]);
 		if(list_any_satisfy(dtb->archivosAbiertos, &condicionArchivoAbierto) )
-    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAbrir", 3, msgs[1], dtb->rutaScript, "1");
+    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAbrir", 1, "1");
 		else{ 
 			dtb->cantIOs++;
-			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAbrir", 3, msgs[1], dtb->rutaScript, "0");
+			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAbrir", 1, "0");
 		}
 		free(archAVerificar);
 		pthread_mutex_unlock(&m_verificacion);
     }
 
-    if(strcmp(msgs[4], "asignar") == 0){
+    if(strcmp(msgs[2], "asignar") == 0){
 		pthread_mutex_lock(&m_verificacion);
-		archAVerificar = malloc(strlen(msgs[5]) + 1);
-		strcpy(archAVerificar, msgs[5]);
+		archAVerificar = malloc(strlen(msgs[3]) + 1);
+		strcpy(archAVerificar, msgs[3]);
 		if(list_any_satisfy(dtb->archivosAbiertos, &condicionArchivoAbierto) )
-    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAsignar", 5, msgs[1], "1", msgs[4], msgs[5], msgs[6]);
+    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAsignar", 1, "1");
 		else
-			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAsignar", 5, msgs[1], "0", msgs[4], msgs[5], msgs[6]);
+			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAsignar", 1, "0");
 		free(archAVerificar);
 		pthread_mutex_unlock(&m_verificacion);
 	}
 
-    if(strcmp(msgs[4], "close") == 0){
+    if(strcmp(msgs[2], "close") == 0){
 		pthread_mutex_lock(&m_verificacion);
-		archAVerificar = malloc(strlen(msgs[5]) + 1);
-		strcpy(archAVerificar, msgs[5]);
+		archAVerificar = malloc(strlen(msgs[3]) + 1);
+		strcpy(archAVerificar, msgs[3]);
 		if(list_any_satisfy(dtb->archivosAbiertos, &condicionArchivoAbierto) )
     		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionClose", 3, msgs[1], dtb->rutaScript, "1");
 		else
@@ -515,10 +460,10 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 		pthread_mutex_unlock(&m_verificacion);
     }
 
-    if(strcmp(msgs[4], "flush") == 0) {
+    if(strcmp(msgs[2], "flush") == 0) {
 		pthread_mutex_lock(&m_verificacion);
-		archAVerificar = malloc(strlen(msgs[5]) + 1);
-		strcpy(archAVerificar, msgs[5]);
+		archAVerificar = malloc(strlen(msgs[3]) + 1);
+		strcpy(archAVerificar, msgs[3]);
 		if(list_any_satisfy(dtb->archivosAbiertos, &condicionArchivoAbierto) )
     		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionFlush", 3, msgs[1], dtb->rutaScript, "1");
 		else{ 
@@ -528,7 +473,6 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 		free(archAVerificar);
 		pthread_mutex_unlock(&m_verificacion);
     }
-	//Verifica El Archivo A Realizar La Accion
 
 }
 

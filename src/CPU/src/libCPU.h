@@ -11,6 +11,7 @@
 #include <commons/string.h>
 #include <commons/collections/dictionary.h>
 #include <commons/collections/list.h>
+#include <semaphore.h>
 #include "../../sample-socket/socket.h" 
 
 //ESTRUCTURA
@@ -69,7 +70,10 @@ t_dictionary * callableRemoteFunctionsCPU;
 pthread_mutex_t m_main;
 pthread_mutex_t m_busqueda;
 pthread_mutex_t m_puedeEjecutar;
+
 sem_t sem_esperaAbrir;
+sem_t sem_esperaAsignar;
+sem_t sem_esperaWait;
 
 //VAR GLOB SOCKETS
 int socketDAM;
@@ -77,7 +81,9 @@ int socketSAFA;
 int socketFM9;
 
 bool archivoExistente;
-bool archivoAbierto;
+bool archivoAbiertoAbrir;
+bool archivoAbiertoAsignar;
+bool resultadoWaitOk;
 
 //FUNCIONES
 
@@ -103,9 +109,11 @@ void establecerQuantumYID(socket_connection * connection ,char** args); //SAFA
 void pausarPlanificacion(socket_connection* ,char**);
 void continuarPlanificacion(socket_connection*,char**);
 void ejecucionAbrir(socket_connection*, char**);
+void ejecucionAbrirExistencia(socket_connection*, char**);
 void ejecucionAsignar(socket_connection*, char**);
 void ejecucionClose(socket_connection*, char**);
 void ejecucionFlush(socket_connection*, char**);
+void ejecucionWait(socket_connection*, char**);
 void finalizacionClose(socket_connection*, char**);
 
 #endif

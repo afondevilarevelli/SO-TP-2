@@ -181,15 +181,18 @@ void borrarArchivo(socket_connection* connection, char** args){
 
 }
 
-//args[0]: idGDT, args[1]: path
+//args[0]: path
 void existeArchivo(socket_connection* socket, char** args){
- runFunction(socketMDJ,"validarArchivo",2,args[0], args[1]);
+	char string_socket[2];
+	sprintf(string_socket, "%i", socket->socket);
+    runFunction(socketMDJ,"validarArchivo",2,args[0], string_socket);
 }
 
-//args[0]: idGDT, args[1]: path, args[2]: -1 -> si no existe, 
-//										   1 -> si existe
+//args[0]: -1 -> si no existe, args[1]: socketCPU
+//			1 -> si existe
 void MDJ_DAM_existeArchivo(socket_connection* socket, char** args){
-	runFunction(socketMDJ,"validarArchivo",2,args[0], args[1]);
+	int socketCPU = atoi(args[1]);
+	runFunction(socketCPU,"CPU_DAM_continuacionExistenciaAbrir",1,args[0]);
 }
 
 //args[0]: idGDT, args[1]: rutaArchivo

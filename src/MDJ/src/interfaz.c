@@ -50,7 +50,7 @@ int ret = config_get_int_value(fileConfig,"RETARDO");
 usleep(ret);
 config_destroy(fileConfig);
 }
-//args[0]: idGDT, args[1]: path
+//args[0]: path, args[1]: socketCPU
 void  validarArchivo(socket_connection * connection,char ** args){
 char strEstado[2];
 t_archivo *  archivo = malloc(sizeof(t_archivo));	
@@ -65,7 +65,7 @@ archivo->estado=  existe;
 sprintf(strEstado,"%i", archivo->estado);
 aplicarRetardo();
 free(archivo);
-runFunction(connection->socket,"MDJ_DAM_existeArchivo",3, args[0], args[1], strEstado);
+runFunction(connection->socket,"MDJ_DAM_existeArchivo",2, strEstado, args[1]);
 }
 
 //void* mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
