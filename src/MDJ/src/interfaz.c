@@ -75,12 +75,12 @@ void crearArchivo(socket_connection * connection ,char** args)
 {
 t_archivo *  archivo= malloc(sizeof(t_archivo));
 t_metadata_bitmap * bitMap = malloc(sizeof(t_metadata_bitmap));	
+t_metadata_filesystem * fs = obtenerMetadata();
 archivo->path = args[0];
 size_t tsize = atoi(args[1]);
 t_list * bloquesLibres = list_create();
 t_list * bloquesOcupados = list_create();
 archivo->size =  (tsize - 1);
-t_metadata_filesystem * fs = obtenerMetadata();
 size_t tamanioBloques = (fs->tamanio_bloques - 1);
 char * pathMasArchivos = string_new();
 char * tam = malloc(archivo->size); 
@@ -97,10 +97,11 @@ else
  list_add(bloquesOcupados,i);  
 }
 }
+t_bloques * bloques = asignarBloques(bloquesLibres,bloquesOcupados,archivo->size);
 archivo->fd = verificarSiExisteArchivo(archivo->path);
 if(archivo->fd == -1)
 {
-/*sprintf(tam,"%i",tsize);
+sprintf(tam,"%i",tsize);
 string_append(&tamBloq,"TAMANIO=");
 string_append(&tamBloq,tam);
 string_append(&pathMasArchivos,obtenerPtoMontaje());
@@ -129,7 +130,7 @@ sprintf(strEstado, "%i", archivo->estado);
 aplicarRetardo();
 runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",2,strEstado,archivo->path);
 }
-/*char * destino = string_new();
+char * destino = string_new();
 for(int j = 0;j< fs->cantidad_bloques; j++){ 
 sprintf(destino,"%s/Bloques/%d.bin",archivo->path,j);
 fdBloques[j] = open(destino,O_RDWR | O_CREAT);
@@ -141,7 +142,7 @@ memcpy(file,nVeces,strlen(nVeces));
 msync(file,archivo->size, MS_SYNC);
 munmap(file,archivo->size);
 flock(archivo->fd,LOCK_UN);
-close(archivo->fd);*/
+close(archivo->fd);
 }
 free(archivo);
 free(bitMap);
@@ -210,6 +211,35 @@ if (bmap == MAP_FAILED) {
 	}
 t_bitarray * bitarray = bitarray_create_with_mode(bmap,size/8,MSB_FIRST);
 return bitarray;
+}
+
+
+t_bloques *  asignarBloques(t_list * libres,t_list * ocupados ,size_t size)
+{
+t_metadata_filesystem * fs = obtenerMetadata();
+t_bloques * bloques = malloc(sizeof(t_bloques));
+t_list * temp = list_create();
+t_bitarray * bitarray = crearBitmap(fs->cantidad_bloques);
+int nBloques = 0;
+if(size % fs->tamanio_bloques == 0)
+{
+nBLoques = size / fs->tamanio_bloques;
+}
+else
+{
+nBLoques = (size / fs->tamanio_bloques) + 1;    
+}
+if (list_size(libres) >= nBloques){
+temp  = list_take_and_remove(libres,nBloques);
+list_add_all(ocupados,temp);
+}
+else
+{
+log_error("No hay bloques disponibles , vuelva a intentarlo");
+}
+bloques->bloqLibres = list_duplicate(libres);
+bloques->bloqOcupados = list_duplicate(ocupados);
+return bloques;
 }
 
 

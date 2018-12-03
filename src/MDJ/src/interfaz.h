@@ -31,8 +31,11 @@ char ** args;
 
 //estructura para manejar los directorios del fs
 typedef struct {
-t_list *  directorios;
-}t_directorios;
+t_list *  bloqLibres;
+t_list * bloqOcupados;
+}t_bloques;
+
+
 
 //estructura para guardar la informacion del archivo
 typedef struct{
