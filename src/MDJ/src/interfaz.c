@@ -65,7 +65,7 @@ archivo->estado=  existe;
 sprintf(strEstado,"%i", archivo->estado);
 aplicarRetardo();
 free(archivo);
-runFunction(connection->socket,"MDJ_DAM_existeArchivo",1, strEstado);
+runFunction(connection->socket,"MDJ_DAM_existeArchivo",2, strEstado, args[1]);
 }
 
 //void* mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);

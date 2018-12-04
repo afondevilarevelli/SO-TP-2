@@ -39,7 +39,6 @@ t_config_DAM*  datosConfigDAM;
 int socketSAFA;
 int socketFM9;
 int socketMDJ;
-int socketCPU;
 
 //----------------------------//
 
@@ -61,7 +60,6 @@ FILE * abrirArchivoBloque(int numBloque);
 
 //diccionarios
 void identificarProceso(socket_connection * connection ,char** args);
-void identificarProcesoCPU(socket_connection * connection ,char** args);
 void MDJ_DAM_verificarArchivoCreado(socket_connection*,char ** );
 void MDJ_DAM_existeArchivo(socket_connection*,char ** );
 void MDJ_DAM_verificameSiArchivoFueBorrado(/*socket_connection*,char ** */char*, char*);
