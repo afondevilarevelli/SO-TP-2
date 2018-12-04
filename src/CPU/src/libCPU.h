@@ -40,6 +40,9 @@ typedef struct {
 
 int quantum;
 int idCPU;
+pthread_t hiloAbrir;
+pthread_t hiloWait;
+pthread_t hiloAsignar;
 
 typedef enum{
 	ABRIR, //I/O si no se encuentra abierto por el DTB
@@ -67,6 +70,7 @@ t_log* logger;
 t_config* archivo_Config;
 t_config_CPU* datosCPU;
 t_dictionary * callableRemoteFunctionsCPU;
+
 pthread_mutex_t m_main;
 pthread_mutex_t m_busqueda;
 pthread_mutex_t m_puedeEjecutar;
@@ -115,5 +119,7 @@ void ejecucionClose(socket_connection*, char**);
 void ejecucionFlush(socket_connection*, char**);
 void ejecucionWait(socket_connection*, char**);
 void finalizacionClose(socket_connection*, char**);
-
+void funcionHiloAbrir();
+void funcionHiloWait();
+void funcionHiloAsignar();
 #endif

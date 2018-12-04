@@ -1,3 +1,2 @@
 wait AFA
-#alto comentario pa
-signal conmebol
+asignar /equipos/Racing.txt 9 GustavoBou

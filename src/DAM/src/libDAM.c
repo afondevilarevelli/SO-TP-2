@@ -76,6 +76,11 @@ void identificarProceso(socket_connection * connection ,char** args){
     log_info(logger,"Se ha conectado %s en el socket NRO %d  con IP %s,  PUERTO %d\n", args[0],connection->socket,connection->ip,connection-> port);   
 }
 
+void identificarProcesoCPU(socket_connection* connection, char** args){
+	socketCPU = connection->socket;
+	log_info(logger,"Se ha conectado %s en el socket NRO %d  con IP %s,  PUERTO %d\n", args[0],connection->socket,connection->ip,connection-> port);
+}
+
 //Comunicacion entre CPU-DAM para Cargar GDT
 void solicitudCargaGDT(socket_connection* connection, char ** args){
 
@@ -184,14 +189,15 @@ void borrarArchivo(socket_connection* connection, char** args){
 //args[0]: path
 void existeArchivo(socket_connection* socket, char** args){
 	char string_socket[2];
+	log_info(logger, "Archivo Recibido");
 	sprintf(string_socket, "%i", socket->socket);
-    runFunction(socketMDJ,"validarArchivo",2,args[0], string_socket);
+    runFunction(socketMDJ,"validarArchivo",1,args[0]);
 }
 
-//args[0]: -1 -> si no existe, args[1]: socketCPU
+//args[0]: -1 -> si no existe
 //			1 -> si existe
 void MDJ_DAM_existeArchivo(socket_connection* socket, char** args){
-	int socketCPU = atoi(args[1]);
+	log_info(logger, "Continua Su Ejecucion");
 	runFunction(socketCPU,"CPU_DAM_continuacionExistenciaAbrir",1,args[0]);
 }
 
