@@ -289,8 +289,8 @@ void newConnection(socket_connection* socketInfo, char** msg){
 	}
 }
 
-//args[0]: idCPU, args[1]: idGDT, args[2]: cantidad de quanto que ejecutó, args[3]:"finalizar","continuar" ó "bloquear", args[4]: 1 si hay que aumentar cantIOs, args[5]: 1 si hay que aumentar cantSentConDiego 
-//								  							   			   "finalizar" => finalizo GDT,		
+//args[0]: idCPU, args[1]: idGDT, args[2]: cantidad de quanto que ejecutó, args[3]:"finalizar","continuar" ó "bloquear", args[4]: 1 si hay que aumentar cantIOs, args[5]: 1 si hay que aumentar cantSentConDiego,
+//								  							   			   "finalizar" => finalizo GDT,		      args[6]: si es DTB-Dummy (1) ó no (0)
 //								  							   			   "bloquear"  => bloqueo GDT,
 //								   							   			   "continuar" => paso a Ready GDT
 void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
@@ -338,14 +338,19 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 				pthread_mutex_unlock(&m_cantSent);
 
 			} else{ // "bloquear"
+				int i;
 				dtb->status = BLOCKED;
-				dtb->quantumFaltante = datosConfigSAFA->quantum - quantumEjecutado;
-				dtb->PC += quantumEjecutado;
+				if(strcmp(args[6], "0") == 0){
+					dtb->quantumFaltante = datosConfigSAFA->quantum - quantumEjecutado;
+					dtb->PC += quantumEjecutado;
+					pthread_mutex_lock(&m_cantSent);
+					for(i=0;i<quantumEjecutado; i++){
+						cantSentenciasEjecutadas++;
+					}
+					pthread_mutex_unlock(&m_cantSent);
+				}
 				encolarDTB(colaBloqueados, dtb, m_colaBloqueados);
     			log_info(logger, "El DTB %d ha sido bloqueado",dtb->id);
-				pthread_mutex_lock(&m_cantSent);
-				cantSentenciasEjecutadas++;
-				pthread_mutex_unlock(&m_cantSent);
 			}
 		} else{
 			finalizarDTB(dtb);

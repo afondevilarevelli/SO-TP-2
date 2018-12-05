@@ -82,8 +82,8 @@ void solicitudCargaGDT(socket_connection* connection, char ** args){
 	int idGDT = atoi(args[0]);
 	char* rutaScript = args[1];
 
-	log_trace(logger, "Voy a Buscar: %s Para PID: %d",rutaScript, idGDT);
-	runFunction(socketMDJ, "validarArchivo",2, args[0], rutaScript);
+	log_trace(logger, "Voy a Buscar: %s Para GDT de id %d",rutaScript, idGDT);
+	runFunction(socketMDJ, "validarArchivo",3, args[0], rutaScript,"0");
 }
 
 //esta funcion le avisa al SAFA el resultado de la carga del DTBDummy,
@@ -181,12 +181,12 @@ void borrarArchivo(socket_connection* connection, char** args){
 
 }
 
-//args[0]: path
+//args[0]: idGDT, args[1]: path
 void existeArchivo(socket_connection* socket, char** args){
 	char string_socket[2];
 	log_info(logger, "Archivo Recibido");
 	sprintf(string_socket, "%i", socket->socket);
-    runFunction(socketMDJ,"validarArchivo",2,args[0], string_socket);
+    runFunction(socketMDJ,"validarArchivo",3,args[0],args[1], string_socket);
 }
 
 //args[0]: 1 -> si existe,   args[1]: socketCPU
