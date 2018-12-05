@@ -40,9 +40,8 @@ typedef struct {
 
 int quantum;
 int idCPU;
-pthread_t hiloAbrir;
-pthread_t hiloWait;
-pthread_t hiloAsignar;
+//Variable Solamente Para Mantener El Seguimiento de la Cantidad de Ejecucion
+char* string_sentQueEjecuto;
 
 typedef enum{
 	ABRIR, //I/O si no se encuentra abierto por el DTB
@@ -76,8 +75,7 @@ pthread_mutex_t m_busqueda;
 pthread_mutex_t m_puedeEjecutar;
 
 sem_t sem_esperaAbrir;
-sem_t sem_esperaAsignar;
-sem_t sem_esperaWait;
+sem_t sem_esperaEjecucion;
 
 //VAR GLOB SOCKETS
 int socketDAM;
@@ -87,7 +85,10 @@ int socketFM9;
 bool archivoExistente;
 bool archivoAbiertoAbrir;
 bool archivoAbiertoAsignar;
+bool archivoAbiertoFlush;
+bool archivoParaRealizarClose;
 bool resultadoWaitOk;
+
 
 //FUNCIONES
 
@@ -120,6 +121,5 @@ void ejecucionFlush(socket_connection*, char**);
 void ejecucionWait(socket_connection*, char**);
 void finalizacionClose(socket_connection*, char**);
 void funcionHiloAbrir();
-void funcionHiloWait();
-void funcionHiloAsignar();
+void funcionHilo(char*);
 #endif

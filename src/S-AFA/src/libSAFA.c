@@ -340,7 +340,7 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 			} else{ // "bloquear"
 				int i;
 				dtb->status = BLOCKED;
-				if(strcmp(args[6], "0") == 0){
+				if(strcmp(msg[6], "0") == 0){
 					dtb->quantumFaltante = datosConfigSAFA->quantum - quantumEjecutado;
 					dtb->PC += quantumEjecutado;
 					pthread_mutex_lock(&m_cantSent);

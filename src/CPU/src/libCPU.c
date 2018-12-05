@@ -244,7 +244,7 @@ void ejecucionAsignar(socket_connection* connection, char** args){
 	else
 		archivoAbiertoAsignar = false;
 
-	sem_post(&sem_esperaAsignar);
+	sem_post(&sem_esperaEjecucion);
 }
 
 //args[0]: idGDT, args[1]: rutaScript, args[2]: estadoArchivo
@@ -252,17 +252,14 @@ void ejecucionClose(socket_connection* connection, char** args){
 
 	int estadoSituacionArchivo = atoi(args[2]);
 
-	if(estadoSituacionArchivo){
+	if(estadoSituacionArchivo == 1){
 
-	log_trace(logger,"Se Enviaran Los Datos Necesarios A FM9 Para Cerrar El Archivo");
-	runFunction(socketFM9, "CPU_FM9_cerrarElArchivo", 2, args[0], args[1]);
-
+		archivoParaRealizarClose = true;
 	}
-
-	else{
-		log_error(logger, "El Archivo Solicitado: %s No Se Encuentra Abierto", args[1]);
-		runFunction(socketSAFA, "CPU_SAFA_pasarDTBAExit", 1, args[0]);
+	else {
+		archivoParaRealizarClose = false;
 	}
+	sem_post(&sem_esperaEjecucion);
 
 }
 
@@ -271,20 +268,15 @@ void ejecucionFlush(socket_connection* connection, char** args){
 
 	int estadoSituacionArchivo = atoi(args[2]);
 
-	if(estadoSituacionArchivo){
-		char string_id[2];
-		sprintf(string_id, "%i", idCPU);
-
-		runFunction(socketSAFA, "finalizacionProcesamientoCPU", 7,string_id, args[0], "0" ,"bloquear", "0", "1","0");
-		runFunction(socketDAM, "CPU_DAM_solicitudDeFlush", 2, args[0], args[1]);
-
-		}
-
-	else{
-		log_error(logger, "El Archivo Solicitado: %s No Se Encuentra Abierto", args[1]);
-		runFunction(socketSAFA, "CPU_SAFA_pasarDTBAExit", 1, args[0]);
-
+	if(estadoSituacionArchivo == 1){
+		archivoAbiertoFlush = true;
 	}
+	else{
+		archivoAbiertoFlush = false;
+	}
+
+	sem_post(&sem_esperaEjecucion);
+
 }
 
 //args[0]: 1 ó 0
@@ -296,7 +288,7 @@ void ejecucionWait(socket_connection* connection, char** args){
 	else
 		resultadoWaitOk = false;
 
-	sem_post(&sem_esperaWait);
+	sem_post(&sem_esperaEjecucion);
 }
 
 //args[0]: idGDT, args[1]: estadoArchivo
@@ -310,7 +302,7 @@ void finalizacionClose(socket_connection* connection, char** args){
 		sprintf(string_id, "%i", idCPU);
 
 		log_trace(logger, "Se va a Liberar el GDT : %d", idGDT);
-		runFunction(socketSAFA, "finalizacionProcesamientoCPU", 7, string_id, args[0], "0" ,"finalizar", "0", "0","0");
+		runFunction(socketSAFA, "finalizacionProcesamientoCPU", 7, string_id, args[0], string_sentQueEjecuto ,"finalizar", "0", "0", "0");
 	}
 
 	else{
@@ -324,6 +316,8 @@ void finalizacionClose(socket_connection* connection, char** args){
 //callable remote functions
 //args[0]: idGDT, args[1]: rutaScript, args[2]: PC, args[3]: flagInicializacionGDT, args[4]: quantum a ejecutar
 void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
+	pthread_t hiloAbrir;
+	pthread_t hiloEjecucion;
 	int cantComentarios = 0;
 	int idGDT = atoi(args[0]);
 	int quantumAEjecutar = atoi(args[4]);
@@ -344,8 +338,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 	if (flagInicializado == 0) { //DTB-Dummy
 		log_trace(logger,"Preparando la inicializacion de ejecucion del DTB Dummy\n");
 		runFunction(socketDAM, "CPU_DAM_solicitudCargaGDT", 2,args[0], rutaScript);
-		runFunction(socketSAFA, "finalizacionProcesamientoCPU",7, string_id, args[0], "0", "bloquear", "0","0","1");
-		return;
+		runFunction(socketSAFA, "finalizacionProcesamientoCPU",7, string_id, args[0], "0", "bloquear", "0","0", "1");
 	}
 	else{
 		int sentenciasEjecutadas = 0;
@@ -358,7 +351,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 			switch(sentencia.palabraReservada){
 				case ABRIR:
 					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 4, string_id, args[0], "abrir", sentencia.p1);
-					runFunction(socketDAM, "CPU_DAM_existeArchivo", 2, args[0] ,rutaScript);
+					runFunction(socketDAM, "CPU_DAM_existeArchivo", 2, args[0], rutaScript);
 
 					pthread_create(&hiloAbrir, NULL, (void*)&funcionHiloAbrir, NULL);
 
@@ -376,7 +369,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 							sentenciasEjecutadas++;
 							sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 							log_trace(logger,"El archivo no se encuentra abierto por el GDT");
-							runFunction(socketSAFA, "finalizacionProcesamientoCPU", 7, string_id, idGDT, string_sentEjecutadas, "bloquear", "1", "1","0");
+							runFunction(socketSAFA, "finalizacionProcesamientoCPU", 7, string_id, idGDT, string_sentEjecutadas, "bloquear", "1", "1", "0");
 							runFunction(socketDAM, "CPU_DAM_solicitudCargaGDT", 2, idGDT ,rutaScript);
 							destruirOperacion(sentencia);
 							pthread_detach(hiloAbrir);
@@ -390,13 +383,13 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					break; 
 				case ASIGNAR:
 					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo",4,string_id, args[0], "asignar", sentencia.p1);
-					pthread_create(&hiloAbrir, NULL, (void*)&funcionHiloAbrir, NULL);
+					pthread_create(&hiloEjecucion, NULL, (void*)&funcionHilo, "ASIGNAR");
 					if(archivoAbiertoAsignar){
 						log_trace(logger,"Se Enviaran Los Datos Necesarios A FM9 para actualizar los datos del archivo %s", args[1]);
 						runFunction(socketFM9, "CPU_FM9_actualizarLosDatosDelArchivo", 4, args[0], sentencia.p1,
 																			   					   sentencia.p2,
 																			                       sentencia.p3);	
-						pthread_detach(hiloAsignar);
+						pthread_detach(hiloEjecucion);
 						return;
 					//No se bloquea ya que el enunciado dice que cada vez que interfiera el DAM se lo bloquea al proceso
 					//Al ser la comunicacion entre CPU y FM9 nadie interviene
@@ -406,23 +399,24 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 						log_error(logger, "El archivo %s no se encuentra abierto por el GDT %s, en consecuencia se va a abortar", args[1], args[0]);
 						runFunction(socketSAFA, "CPU_SAFA_pasarDTBAExit", 1, args[0]);
 						destruirOperacion(sentencia);
-						pthread_detach(hiloAsignar);
+						pthread_detach(hiloEjecucion);
 						return; 
 					}
 					break;
-				case WAIT:			
+				case WAIT:
 					//args[0] idGDT para Bloquear
+					pthread_create(&hiloEjecucion, NULL, (void*)&funcionHilo, "WAIT");
 					runFunction(socketSAFA, "waitRecurso",3,string_id, args[0], sentencia.p1);
 
-					pthread_create(&hiloWait, NULL, (void*)&funcionHiloWait, NULL);
+					//Intento Con el JOIN pero sigue bloqueado
+					pthread_join(hiloEjecucion, NULL);
 
 					if(!resultadoWaitOk){
 						log_trace(logger,"Se va a bloquear al GDT");
 						sentenciasEjecutadas++;
 						sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
-						runFunction(socketSAFA, "finalizacionProcesamientoCPU", 7, string_id, args[0], string_sentEjecutadas, "bloquear", "0", "0","0");
+						runFunction(socketSAFA, "finalizacionProcesamientoCPU", 7, string_id, args[0], string_sentEjecutadas, "bloquear", "0", "0", "0");
 						destruirOperacion(sentencia);
-						pthread_detach(hiloWait);
 						return ;
 					}	
 					log_trace(logger,"Recurso asignado");
@@ -432,27 +426,67 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					log_trace(logger,"Recurso liberado");	
 					break;		
 				case FLUSH:
-					sentenciasEjecutadas++;
-					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
+
 					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
 					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 4, string_id, args[0], "flush", sentencia.p1);
-					destruirOperacion(sentencia);
-					return;
+
+
+					pthread_create(&hiloEjecucion, NULL, (void*)funcionHilo, "FLUSH");
+
+					if(!archivoAbiertoFlush){
+							sentenciasEjecutadas++;
+							sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
+
+							runFunction(socketSAFA, "finalizacionProcesamientoCPU", 6,string_id, args[0], string_sentEjecutadas ,"bloquear", "0", "1", "0");
+							runFunction(socketDAM, "CPU_DAM_solicitudDeFlush", 2, args[0], args[1]);
+							destruirOperacion(sentencia);
+							pthread_detach(hiloEjecucion);
+							return;
+							}
+
+					else{
+							log_error(logger, "El Archivo Solicitado: %s No Se Encuentra Abierto", args[1]);
+							runFunction(socketSAFA, "CPU_SAFA_pasarDTBAExit", 1, args[0]);
+							destruirOperacion(sentencia);
+							pthread_detach(hiloEjecucion);
+							return;
+						}
+
 					break;
 				case CLOSE:
-					sentenciasEjecutadas++;
-					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
+
 					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
 					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 4, string_id, args[0], "close", sentencia.p1);
-					destruirOperacion(sentencia);
-					return;
+
+					sentenciasEjecutadas++;
+					sprintf(string_sentQueEjecuto, "%i", sentenciasEjecutadas+cantComentarios);
+
+					pthread_create(&hiloEjecucion, NULL, (void*)funcionHilo, "CLOSE");
+
+					if(!archivoParaRealizarClose){
+
+						log_trace(logger,"Se Enviaran Los Datos Necesarios A FM9 Para Cerrar El Archivo");
+						runFunction(socketFM9, "CPU_FM9_cerrarElArchivo", 2, args[0], args[1]);
+						destruirOperacion(sentencia);
+						pthread_detach(hiloEjecucion);
+						return;
+						}
+
+						else{
+							log_error(logger, "El Archivo Solicitado: %s No Se Encuentra Abierto", args[1]);
+							runFunction(socketSAFA, "CPU_SAFA_pasarDTBAExit", 1, args[0]);
+							destruirOperacion(sentencia);
+							pthread_detach(hiloEjecucion);
+							return;
+						}
+
 					break;
 				case CREAR:
 					//Aca se incrementa el PC y SE, al final para ver si mas adelante continua o aborta
 					sentenciasEjecutadas++;
 					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 					//args[0] idGDT para Bloquear
-					runFunction(socketSAFA, "finalizacionProcesamientoCPU",7,string_id, args[0],string_sentEjecutadas,"bloquear", "1","1","0");
+					runFunction(socketSAFA, "finalizacionProcesamientoCPU",7,string_id, args[0],string_sentEjecutadas,"bloquear", "1","1", "0");
 					runFunction(socketDAM, "CPU_DAM_crearArchivo", 3, args[0],sentencia.p1, sentencia.p2);
 					destruirOperacion(sentencia);
 					return ;
@@ -463,7 +497,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 					string_sentEjecutadas[2];
 					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 					//args[0] idGDT para Bloquear
-					runFunction(socketSAFA, "finalizacionProcesamientoCPU",7,string_id, args[0],string_sentEjecutadas,"bloquear", "1", "1","0"); //el uno para aumentar en uno la cantIOs
+					runFunction(socketSAFA, "finalizacionProcesamientoCPU",7,string_id, args[0],string_sentEjecutadas,"bloquear", "1", "1", "0"); //el uno para aumentar en uno la cantIOs
 					runFunction(socketDAM, "CPU_DAM_borrarArchivo", 2, args[0],sentencia.p1);
 					destruirOperacion(sentencia);
 					return ;
@@ -473,7 +507,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 			programCounter++;
 			if(sentencia.ultimaSentencia){
 				log_trace(logger, "El GDT de id %d FINALIZA", idGDT);			
-				runFunction(connection->socket, "finalizacionProcesamientoCPU",7, string_id, args[0],"0", "finalizar", "0", "0","0");
+				runFunction(connection->socket, "finalizacionProcesamientoCPU",7, string_id, args[0],"0", "finalizar", "0", "0", "0");
 				break;
 			}
 
@@ -488,7 +522,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 			log_trace(logger, "El GDT de id %d finaliza su procesamiento en la CPU", idGDT);
 			char string_sentEjecutadas[2];
 			sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
-			runFunction(connection->socket, "finalizacionProcesamientoCPU",7, string_id, args[0], string_sentEjecutadas, "continuar", "0", "0","0");				
+			runFunction(connection->socket, "finalizacionProcesamientoCPU",7, string_id, args[0], string_sentEjecutadas, "continuar", "0", "0", "0");
 		}
 		
 	}
@@ -562,12 +596,8 @@ void funcionHiloAbrir(){
 	log_trace(logger, "Continuando Ejecucion Abrir");
 }
 
-void funcionHiloWait(){
-	sem_wait(&sem_esperaWait);
-	log_trace(logger, "Continuando Ejecucion Wait");
-}
+void funcionHilo(char* tipoEjecucion){
 
-void funcionHiloAsignar(){
-	sem_wait(&sem_esperaAsignar);
-	log_trace(logger, "Continuando Ejecucion Asignar");
+	sem_wait(&sem_esperaEjecucion);
+	log_trace(logger, "Continuando Ejecucion: %s", tipoEjecucion);
 }

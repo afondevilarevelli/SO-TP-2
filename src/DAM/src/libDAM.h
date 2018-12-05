@@ -40,6 +40,9 @@ int socketSAFA;
 int socketFM9;
 int socketMDJ;
 
+//Esta Variable es Solo para Recordar el Id del DTB, Cuando MDJ Responde al DAM Si Creo El Archivo o No
+int idGDT;
+
 //----------------------------//
 
 
