@@ -25,6 +25,13 @@ typedef struct {
 	int retardo;
 } t_config_CPU;
 
+typedef struct{
+	int idGDT;
+	char rutaScript[40];
+	int programCounter; 
+	int flagInicializado;
+	int quantumAEjecutar;
+}parametros;
 //EJEMPLOS DE SENTENCIAS
 /*
 -abrir /equipos/Racing.txt
@@ -108,6 +115,7 @@ operacion_t obtenerSentenciaParseada(char* script,int programCounter);
 operacion_t parse(char* line);
 void destruirOperacion(operacion_t op);
 
+void permisoDeEjecucion(parametros* parms);
 //callable remote functions
 void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args); //SAFA
 void establecerQuantumYID(socket_connection * connection ,char** args); //SAFA
