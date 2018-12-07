@@ -105,6 +105,7 @@ void MDJ_DAM_avisarResultadoDTB(socket_connection* socketInf,char ** args){
 
 }
 
+//lamada por el FM9
 //args[0]: idGDT, args[1]: Por ahora ok o error
 void archivoCargadoCorrectamente(socket_connection* connection, char** args){
 
