@@ -538,4 +538,4 @@ void mostrarInformacionDTB(DTB* unDTB){
     	printf("Estado: %s\n", estado);
     	printf("----------------------\n");
 
-    }
+}

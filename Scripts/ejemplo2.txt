@@ -1,2 +1,13 @@
-wait AFA
-asignar /equipos/Racing.txt 9 GustavoBou
+wait AFA11
+wait conmebol11
+wait perro11
+wait tevez11
+wait macho11
+wait loco11
+#alto comentario pa
+signal AFA11
+signal conmebol11
+signal perro11
+signal tevez11
+signal macho11
+signal loco11

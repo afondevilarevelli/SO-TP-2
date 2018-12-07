@@ -1,2 +1,13 @@
 wait AFA
+wait conmebol
+wait perro
+wait tevez
+wait macho
+wait loco
 #alto comentario pa
+signal AFA
+signal conmebol
+signal perro
+signal tevez
+signal macho
+signal loco

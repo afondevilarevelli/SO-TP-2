@@ -204,7 +204,6 @@ void pausarPlanificacion(socket_connection * connection ,char** args){
 
 void continuarPlanificacion(socket_connection * connection ,char** args){
 	pthread_mutex_unlock(&m_puedeEjecutar);
-
 }
 
 //args[0]: 1 ó 0
@@ -354,12 +353,15 @@ void permisoDeEjecucion(parametros* params){
 		log_trace(logger,"Preparando la inicializacion de ejecucion del DTB Dummy\n");
 		runFunction(socketDAM, "CPU_DAM_solicitudCargaGDT", 2,string_idGDT, rutaScript);
 		runFunction(socketSAFA, "finalizacionProcesamientoCPU",7, string_id, string_idGDT, "0", "bloquear", "0","0", "1");
+		return;
 	}
 	else{
 		int sentenciasEjecutadas = 0;
 		while(sentenciasEjecutadas < quantumAEjecutar){
 			sleep(datosCPU->retardo);
+			pthread_mutex_lock(&m_puedeEjecutar);
 			sentencia = obtenerSentenciaParseada(rutaScript, programCounter);
+			pthread_mutex_unlock(&m_puedeEjecutar);
 			char string_sentEjecutadas[2];
 			char string_quantumAEjecutar[2];
 
@@ -606,9 +608,7 @@ FILE * abrirScript(char * scriptFilename)
   strcpy(ruta, "../../Scripts/");
   strcat(ruta,scriptFilename);
   
-  pthread_mutex_lock(&m_puedeEjecutar);
   FILE * scriptf = fopen(ruta, "r");
-  pthread_mutex_unlock(&m_puedeEjecutar);
   if (scriptf == NULL)
   {
     log_error(logger, "Error al abrir el archivo %s", scriptFilename);
