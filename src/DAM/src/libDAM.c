@@ -112,7 +112,6 @@ void archivoCargadoCorrectamente(socket_connection* connection, char** args){
 	char* estadoCarga = args[1];
 
 	if(estadoCarga == "ok"){
-		crearScriptCompleto(args[2]);
 		runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "ok");
 	}
 	else{

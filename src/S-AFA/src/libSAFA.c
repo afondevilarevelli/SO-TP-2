@@ -483,6 +483,15 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 
 }
 
+//args[0]: idGDT,args[1]: nomArch
+void archivoAbierto(socket_connection* connection, char** args){
+	int idGDT = atoi(args[0]);
+	DTB* dtb = buscarDTBEnElSistema(idGDT);
+	if(dtb != NULL){
+		list_add(dtb->archivosAbiertos, args[1]);
+	}
+}
+
 bool condicionArchivoAbierto(void* arch){
 	return strcmp( (char*)arch, archAVerificar) == 0;
 }
