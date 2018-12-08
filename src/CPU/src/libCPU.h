@@ -47,8 +47,6 @@ typedef struct{
 
 int quantum;
 int idCPU;
-//Variable Solamente Para Mantener El Seguimiento de la Cantidad de Ejecucion
-char* string_sentQueEjecuto;
 
 typedef enum{
 	ABRIR, //I/O si no se encuentra abierto por el DTB

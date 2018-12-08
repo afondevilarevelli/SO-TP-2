@@ -472,10 +472,10 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 		archAVerificar = malloc(strlen(msgs[3]) + 1);
 		strcpy(archAVerificar, msgs[3]);
 		if(list_any_satisfy(dtb->archivosAbiertos, &condicionArchivoAbierto) )
-    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionFlush", 3, msgs[1], dtb->rutaScript, "1");
+    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionFlush", 1, "1");
 		else{ 
 			dtb->cantIOs++;
-			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionFlush", 3, msgs[1], dtb->rutaScript, "0");
+			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionFlush", 1, "0");
 		}
 		free(archAVerificar);
 		pthread_mutex_unlock(&m_verificacion);
