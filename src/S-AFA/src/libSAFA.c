@@ -260,7 +260,7 @@ void signalRecurso(socket_connection* socketInfo, char** msg){
 		pthread_mutex_lock(&m_listaDeRecursos);
 		DTB* dtbADesbloquear = list_get(rec->GDTsEsperandoRecurso, 0);
 		pthread_mutex_unlock(&m_listaDeRecursos);
-		if(dtbADesbloquear != NULL){
+		if(dtbADesbloquear != NULL && dtbADesbloquear->status != FINISHED){
 			log_info(logger, "EL GDT de id %d ha liberado el recurso %s, y se ha desbloqueado al GDT de id %d", idDTB, msg[2], dtbADesbloquear->id);
 			pthread_mutex_lock(&m_colaBloqueados);
 			get_and_remove_DTB_by_ID(colaBloqueados->elements, dtbADesbloquear->id);

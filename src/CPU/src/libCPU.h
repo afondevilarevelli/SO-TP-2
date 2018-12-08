@@ -110,6 +110,9 @@ void disconnect();
 
 FILE * abrirScript(char * scriptFilename);
 operacion_t obtenerSentenciaParseada(char* script,int programCounter);
+FILE * abrirArchivoScript(char * nomArchivo);
+FILE * abrirArchivoBloque(int numBloque);
+
 
 //PARSER
 operacion_t parse(char* line);
