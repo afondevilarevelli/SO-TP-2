@@ -400,7 +400,6 @@ void desbloquearDTB(socket_connection* connection, char** msgs){
 		encolarDTB(colaReady, dtb, m_colaReady);
 		sem_post(&cantProcesosEnReady);
 	}
-	
 }
 
 //Caso cuando ocurre un fallo sea donde este situado el DTB, pasa a abortarse para la cola FINISHED

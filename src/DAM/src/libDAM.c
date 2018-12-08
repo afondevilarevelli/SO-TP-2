@@ -76,16 +76,6 @@ void identificarProceso(socket_connection * connection ,char** args){
     log_info(logger,"Se ha conectado %s en el socket NRO %d  con IP %s,  PUERTO %d\n", args[0],connection->socket,connection->ip,connection-> port);   
 }
 
-//Comunicacion entre CPU-DAM para Cargar GDT
-void solicitudCargaGDT(socket_connection* connection, char ** args){
-
-	int idGDT = atoi(args[0]);
-	char* rutaScript = args[1];
-
-	log_trace(logger, "Voy a Buscar: %s Para GDT de id %d",rutaScript, idGDT);
-	runFunction(socketMDJ, "validarArchivo",3, args[0], rutaScript,"0");
-}
-
 //esta funcion le avisa al SAFA el resultado de la carga del DTBDummy,
 //es llamada por el MDJ
 //args[0]: idGDT, args[1]: estadoValidacion (1 => existe archivo, 0 => NO existe archivo), args[2]:path
@@ -106,16 +96,22 @@ void MDJ_DAM_avisarResultadoDTB(socket_connection* socketInf,char ** args){
 }
 
 //lamada por el FM9
-//args[0]: idGDT, args[1]: Por ahora ok o error
+//args[0]: idGDT, args[1]: Por ahora ok o error, args[2]: path, args[3]: 1(Dummy) ó 0(no Dummy)
 void archivoCargadoCorrectamente(socket_connection* connection, char** args){
 
 	char* estadoCarga = args[1];
 
 	if(estadoCarga == "ok"){
-		runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "ok");
+		if(strcmp(args[3], "1") == 0)
+			runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "ok");
+		else
+			runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB", 1, args[0]);
 	}
 	else{
-		runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "error");
+		if(strcmp(args[3], "1") == 0)
+			runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "error");
+		else
+			runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit", 1, args[0]);
 	}
 
 }
@@ -179,20 +175,30 @@ void borrarArchivo(socket_connection* connection, char** args){
 
 }
 
-//args[0]: idGDT, args[1]: path
-void existeArchivo(socket_connection* socket, char** args){
-	char string_socket[2];
-	log_info(logger, "Archivo Recibido");
-	sprintf(string_socket, "%i", socket->socket);
-	runFunction(socketMDJ,"validarArchivo",3,args[0],args[1], string_socket);
+//Comunicacion entre CPU-DAM para Cargar GDT
+//args[0]: idGDT, args[1]: path, args[2]: 1(Dummy) ó 0(no Dummy)
+void solicitudCargaGDT(socket_connection* connection, char ** args){
+	log_trace(logger, "Voy a Buscar: %s Para GDT de id %s",args[1], args[0]);
+	runFunction(socketMDJ, "validarArchivo",4, args[0], args[1],"0",args[2]);
 }
 
-//args[0]: 1 -> si existe,   args[1]: socketCPU
+//args[0]: idGDT, args[1]: path, args[2]: 1(Dummy) ó 0(no Dummy)
+void existeArchivo(socket_connection* socket, char** args){
+	char string_socket[2];
+	log_info(logger, "Archivo %s recibido", args[1]);
+	sprintf(string_socket, "%i", socket->socket);
+	runFunction(socketMDJ,"validarArchivo",4,args[0],args[1], string_socket, args[2]);
+}
+
+//args[0]: 1 -> si existe,   args[1]: socketCPU, args[2]: path, args[3]:idGDT, args[4]: 1(Dummy) ó 0(no Dummy)
 //        -1 -> si no existe
 void MDJ_DAM_existeArchivo(socket_connection* socket, char** args){
 	int socketCPU = atoi(args[1]); // HAY MUCHAS CPUs
 	log_info(logger, "Continua Su Ejecucion");
-	runFunction(socketCPU,"CPU_DAM_continuacionExistenciaAbrir",1,args[0]);
+	if(socketCPU == 0)
+		runFunction(socketCPU,"CPU_DAM_continuacionExistenciaAbrir",1,args[0]);
+	else
+		runFunction(socketFM9,"CPU_DAM_solicitudCarga",3,args[3], args[2], args[4]); // o cómo se llame, y le paso los argumentos que necesite
 }
 
 //args[0]: idGDT, args[1]: rutaArchivo

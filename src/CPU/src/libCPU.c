@@ -344,7 +344,7 @@ void permisoDeEjecucion(parametros* params){
 	operacion_t sentencia;
 	if (flagInicializado == 0) { //DTB-Dummy
 		log_trace(logger,"Preparando la inicializacion de ejecucion del DTB Dummy\n");
-		runFunction(socketDAM, "CPU_DAM_solicitudCargaGDT", 2,string_idGDT, rutaScript);
+		runFunction(socketDAM, "CPU_DAM_solicitudCargaGDT", 3,string_idGDT, rutaScript, "1");//el 1 es de Dummy
 		runFunction(socketSAFA, "finalizacionProcesamientoCPU",7, string_id, string_idGDT, "0", "bloquear", "0","0", "1");
 		return;
 	}
@@ -361,7 +361,7 @@ void permisoDeEjecucion(parametros* params){
 			switch(sentencia.palabraReservada){
 				case ABRIR:
 					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 4, string_id, string_idGDT, "abrir", sentencia.p1);
-					runFunction(socketDAM, "CPU_DAM_existeArchivo", 2,string_idGDT, rutaScript);
+					runFunction(socketDAM, "CPU_DAM_existeArchivo", 3,string_idGDT, rutaScript,"0");
 					pthread_attr_init(&attr);
     				pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 					pthread_create(&hiloAbrir, &attr, (void*)&funcionHiloAbrir, NULL);
@@ -386,7 +386,7 @@ void permisoDeEjecucion(parametros* params){
 								runFunction(socketSAFA, "finalizacionProcesamientoCPU", 7, string_id, string_idGDT, string_sentEjecutadas, "bloquear", "1", "1", "0");
 							else
 								runFunction(socketSAFA, "finalizacionProcesamientoCPU", 7, string_id, string_idGDT, string_sentEjecutadas, "finalizar", "1", "1", "0");
-							runFunction(socketDAM, "CPU_DAM_solicitudCargaGDT", 2, string_idGDT ,rutaScript);
+							runFunction(socketDAM, "CPU_DAM_solicitudCargaGDT", 3, string_idGDT ,rutaScript, "0");
 							destruirOperacion(sentencia);
 							pthread_detach(hiloAbrir);
 							return;
