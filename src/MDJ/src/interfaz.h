@@ -29,10 +29,14 @@ socket_connection * connection;
 char ** args;
 }argumentos;
 
-//estructura para manejar los directorios del fs
+typedef struct {
+char * pepe; 
+} asd;
+
 typedef struct {
 t_list *  bloqLibres;
 t_list * bloqOcupados;
+char * bloqArchivo;
 }t_bloques;
 
 
@@ -73,6 +77,7 @@ int  * bloques;
 }t_metadata_filemetadata;
 
 
+
 char * directorioMontaje;
 void aplicarRetardo();
 // devuelve un true(1) si el archivo existe, u falso(0)  si no existe
@@ -88,4 +93,5 @@ int * crearBloques(int, char * ,size_t);
 char * obtenerPtoMontaje();
 t_bitarray * crearBitmap(int);
 t_metadata_filesystem * obtenerMetadata ();
+t_bloques * asignarBloques(t_list * , t_list *,size_t);
 #endif
