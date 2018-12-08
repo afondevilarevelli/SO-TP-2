@@ -68,6 +68,7 @@ int main(void){
         log_info(logger,"me conecto al MDJ");
         runFunction(socketMDJ,"identificarProcesoEnMDJ",1,"DAM");
         runFunction(socketMDJ,"crearArchivo",2,"juanito.txt","200");
+        //runFunction(socketMDJ,"crearArchivo",2,"so/lucas.bin","300");
         
        }
       
