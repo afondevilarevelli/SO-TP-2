@@ -246,22 +246,6 @@ void ejecucionAsignar(socket_connection* connection, char** args){
 	sem_post(&sem_esperaEjecucion);
 }
 
-//args[0]: idGDT, args[1]: rutaScript, args[2]: estadoArchivo
-void ejecucionClose(socket_connection* connection, char** args){
-
-	int estadoSituacionArchivo = atoi(args[2]);
-
-	if(estadoSituacionArchivo == 1){
-
-		archivoParaRealizarClose = true;
-	}
-	else {
-		archivoParaRealizarClose = false;
-	}
-	sem_post(&sem_esperaEjecucion);
-
-}
-
 //args[0]: idGDT , args[1]: rutaScript, args[2]: estadoArchivo
 void ejecucionFlush(socket_connection* connection, char** args){
 
@@ -290,26 +274,35 @@ void ejecucionWait(socket_connection* connection, char** args){
 	sem_post(&sem_esperaEjecucion);
 }
 
+//args[0]: estadoArchivo
+void ejecucionClose(socket_connection* connection, char** args){
+
+	int estadoSituacionArchivo = atoi(args[0]);
+
+	if(estadoSituacionArchivo == 1){
+
+		archivoAbiertoClose = true;
+	}
+	else {
+		archivoAbiertoClose = false;
+	}
+	sem_post(&sem_esperaClose);
+
+}
+
+//El resultado del FM9
 //args[0]: idGDT, args[1]: estadoArchivo
 void finalizacionClose(socket_connection* connection, char** args){
 
 	int idGDT = atoi(args[0]);
 	int estadoSituacionArchivo = atoi(args[1]);
 
-	if(estadoSituacionArchivo){
-		char string_id[2];
-		sprintf(string_id, "%i", idCPU);
+	if(estadoSituacionArchivo)
+		resultadoCloseOk = true;
+	else	
+		resultadoCloseOk = false;
 
-		log_trace(logger, "Se va a Liberar el GDT : %d", idGDT);
-		runFunction(socketSAFA, "finalizacionProcesamientoCPU", 7, string_id, args[0], string_sentQueEjecuto ,"finalizar", "0", "0", "0");
-	}
-
-	else{
-
-		log_error(logger, "No se Pudo Cerrar Correctamente El GDT");
-		runFunction(socketSAFA, "CPU_SAFA_pasarDTBAExit", 1, args[0]);
-	}
-
+	sem_post(&sem_esperaClose);
 }
 
 //callable remote functions
@@ -327,6 +320,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 }
 
 void permisoDeEjecucion(parametros* params){
+	string_sentQueEjecuto="";
 	pthread_t hiloAbrir;
 	pthread_t hiloEjecucion;
 	pthread_attr_t attr;
@@ -487,32 +481,37 @@ void permisoDeEjecucion(parametros* params){
 
 					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
 					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 4, string_id, string_idGDT, "close", sentencia.p1);
+					runFunction(socketFM9, "CPU_FM9_cerrarElArchivo", 2, string_idGDT, sentencia.p1);
 
 					sentenciasEjecutadas++;
 					sprintf(string_sentQueEjecuto, "%i", sentenciasEjecutadas+cantComentarios);
 
 					pthread_attr_init(&attr);
     				pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
-					pthread_create(&hiloEjecucion, &attr, (void*)funcionHilo, "CLOSE");
+					pthread_create(&hiloEjecucion, &attr, (void*)funcionHiloClose, NULL);
 					pthread_attr_destroy(&attr);
 					pthread_join(hiloEjecucion, NULL);
 
-					if(!archivoParaRealizarClose){
-
-						log_trace(logger,"Se Enviaran Los Datos Necesarios A FM9 Para Cerrar El Archivo");
-						runFunction(socketFM9, "CPU_FM9_cerrarElArchivo", 2, string_idGDT, rutaScript);
+					if(!archivoAbiertoClose){
+						log_error(logger, "El Archivo Solicitado: %s No Se Encuentra Abierto", sentencia.p1);
+						runFunction(socketSAFA, "CPU_SAFA_pasarDTBAExit", 1, string_idGDT);
 						destruirOperacion(sentencia);
 						pthread_detach(hiloEjecucion);
 						return;
+					}
+					else{
+						if(resultadoCloseOk){ 
+							log_trace(logger,"Se ha cerrado el archivo %s correctamente", sentencia.p1);
+							pthread_detach(hiloEjecucion); 
 						}
-
 						else{
-							log_error(logger, "El Archivo Solicitado: %s No Se Encuentra Abierto", rutaScript);
+							log_error(logger, "Error al cerrar el archivo %s", sentencia.p1);
 							runFunction(socketSAFA, "CPU_SAFA_pasarDTBAExit", 1, string_idGDT);
 							destruirOperacion(sentencia);
 							pthread_detach(hiloEjecucion);
 							return;
 						}
+					}
 
 					break;
 				case CREAR:
@@ -623,6 +622,12 @@ void funcionHiloAbrir(){
 	sem_wait(&sem_esperaAbrir);
 	sem_wait(&sem_esperaAbrir);
 	log_trace(logger, "Continuando Ejecucion Abrir");
+}
+
+void funcionHiloClose(){
+	sem_wait(&sem_esperaClose);
+	sem_wait(&sem_esperaClose);
+	log_trace(logger, "Continuando Ejecucion Close");
 }
 
 void funcionHilo(char* tipoEjecucion){

@@ -82,6 +82,7 @@ pthread_mutex_t m_busqueda;
 pthread_mutex_t m_puedeEjecutar;
 
 sem_t sem_esperaAbrir;
+sem_t sem_esperaClose;
 sem_t sem_esperaEjecucion;
 
 //VAR GLOB SOCKETS
@@ -93,7 +94,8 @@ bool archivoExistente;
 bool archivoAbiertoAbrir;
 bool archivoAbiertoAsignar;
 bool archivoAbiertoFlush;
-bool archivoParaRealizarClose;
+bool archivoAbiertoClose;
+bool resultadoCloseOk;
 bool resultadoWaitOk;
 
 
@@ -129,5 +131,6 @@ void ejecucionFlush(socket_connection*, char**);
 void ejecucionWait(socket_connection*, char**);
 void finalizacionClose(socket_connection*, char**);
 void funcionHiloAbrir();
+void funcionHiloClose();
 void funcionHilo(char*);
 #endif

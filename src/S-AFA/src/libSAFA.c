@@ -457,10 +457,12 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 		pthread_mutex_lock(&m_verificacion);
 		archAVerificar = malloc(strlen(msgs[3]) + 1);
 		strcpy(archAVerificar, msgs[3]);
-		if(list_any_satisfy(dtb->archivosAbiertos, &condicionArchivoAbierto) )
-    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionClose", 3, msgs[1], dtb->rutaScript, "1");
+		if(list_any_satisfy(dtb->archivosAbiertos, &condicionArchivoAbierto) ){
+			list_remove_and_destroy_by_condition(dtb->archivosAbiertos,&condicionArchivoAbierto,(void*)&free);
+    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionClose", 1, "1");
+		}
 		else
-			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionClose", 3, msgs[1], dtb->rutaScript, "0");
+			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionClose", 1, "0");
 		free(archAVerificar);
 		pthread_mutex_unlock(&m_verificacion);
     }
