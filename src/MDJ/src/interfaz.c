@@ -41,8 +41,6 @@ free(magic_number);
 return fs;
 }
 
-
-
 void aplicarRetardo()
 {
 t_config* fileConfig  = config_create("MDJ.config");
@@ -55,7 +53,7 @@ void  validarArchivo(socket_connection * connection,char ** args){
 char strEstado[2];
 t_archivo *  archivo = malloc(sizeof(t_archivo));	
 archivo->path = args[0];
-archivo->fd =  1;//verificarSiExisteArchivo(archivo->path);
+archivo->fd = verificarSiExisteArchivo(archivo->path);
 if(archivo->fd == noExiste){
 archivo->estado =noExiste;
 }
@@ -83,7 +81,6 @@ t_list * bloquesOcupados = list_create();
 archivo->size =  (tsize - 1);
 size_t tamanioBloques = (fs->tamanio_bloques - 1);
 char * pathMasArchivos = string_new();
-
 char * tam = string_new(); 
 char * strEstado[2];
 char * tamBloq = string_new();
@@ -140,14 +137,20 @@ archivo->estado = recienCreado;
 }
 else
 {
-archivo->estado = noCreado;
+archivo->estado = yaCreado;
+log_info(logger,"Archivo %s ya creado",archivo->path);
 }
 sprintf(strEstado, "%i", archivo->estado);
 aplicarRetardo();
 runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",2,strEstado,archivo->path);
+//list_destroy_and_destroy_elements(bloquesLibres,(void*) free);
 free(archivo);
 free(bitMap);
-//list_destroy_and_destroy_elements(bloquesLibres,(void*) free);
+free(archTemp);
+free(tam);
+free(temp);
+//free(pathMasArchivos);
+//free(tamBloq);
 }
 
 //off_t lseek(int fildes, off_t offset, int whence);
@@ -245,6 +248,9 @@ bloques->bloqArchivo = malloc(list_size(temp));
 for (int i=0;i< list_size(temp);i++){
 bloques->bloqArchivo[i] = list_get(temp,i);	
 }
+for(int i = 0;i <list_size(temp);i++){
+bitarray_set_bit(bitarray,bloques->bloqArchivo[i]);	
+}
 return bloques;
 }
 
@@ -265,4 +271,5 @@ else
     close(fd);
     return fd;
 }
+free(pathMasArchivos);
 }

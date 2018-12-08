@@ -137,7 +137,7 @@ runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB",1, string_idGDT);
 }
 else
 {
-log_error(logger,"Ocurrio un error al querer crear el archivo %s",path);
+log_error(logger,"Archivo %s ya creado",path);
 runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, string_idGDT);
 }
 }
