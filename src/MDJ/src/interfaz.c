@@ -100,12 +100,11 @@ else
 }
 t_bloques * bitmapBloques = asignarBloques(bloquesLibres,bloquesOcupados,archivo->size);
 int s;
-for(s=0; s < sizeof(bitmapBloques->bloqArchivo);s++){
-string_append_with_format(&temp,"%s,",string_itoa(bitmapBloques->bloqArchivo[s]));
+for(s=0; s < bitmapBloques->bloques;s++){
+	string_append_with_format(&temp,"%s,",string_itoa(bitmapBloques->bloqArchivo[s]));
 }
 char * archTemp = string_new();
-archTemp = string_substring(temp,0,(s+(sizeof(temp)+2)));
-printf("%s",archTemp);
+archTemp = string_substring(temp,0,strlen(temp) - 1);
 archivo->fd = verificarSiExisteArchivo(archivo->path);
 if(archivo->fd == -1)
 {
@@ -202,13 +201,12 @@ archivo->estado = noBorrado;
 }
 else
 {
-//char ** bloques = 
-obtenerBloques(archivo->path);
-/*for(int i=0; i < sizeof(bloques);i++)
+char ** bloques = obtenerBloques(archivo->path);
+for(int i=0; i < cantElementos(bloques);i++)
 {
-bitarray_clean_bit(bitarray,bloques[i]);
+bitarray_clean_bit(bitarray,atoi(bloques[i]));
 }
-/*int r = unlink(temp);
+int r = unlink(temp);
 if(r < 0)
 {
 log_error(logger,"Hubo un error al querer borrar %s",archivo->path);
@@ -217,11 +215,11 @@ else
 {
 log_trace(logger,"Archivo %s borrado correctamente",archivo->path);    
 }
-archivo->estado = recienBorrado;*/
+archivo->estado = recienBorrado;
 }
 sprintf(strEstado,"%i",archivo->estado);
 aplicarRetardo();
-runFunction(connection->socket,"MDJ_DAM_verificameSiArchivoFueBorrado",1,strEstado);
+runFunction(connection->socket,"MDJ_DAM_verificameSiArchivoFueBorrado",2,strEstado,archivo->path);
 }
 
 
@@ -245,6 +243,15 @@ t_bitarray * bitarray = bitarray_create_with_mode(bmap,size/8,MSB_FIRST);
 return bitarray;
 }
 
+int cantElementos(char ** array)
+{
+int cont = 0;
+while (array[cont] != NULL){
+cont = cont + 1;	
+}	
+return cont;
+}
+
 char ** obtenerBloques(char * path){
 char * temp = string_new();
 string_append(&temp,obtenerPtoMontaje());
@@ -252,9 +259,6 @@ string_append(&temp,"/Archivos/");
 string_append(&temp,path);
 t_config * config = config_create(temp);
 char **  bloques = config_get_array_value(config,"BLOQUES");
-for(int i = 0; i <sizeof(bloques);i++){
-printf("%s \n",bloques[i]);
-}
 return bloques;
 }
 
@@ -283,17 +287,20 @@ log_error(logger,"No hay bloques disponibles , vuelva a intentarlo");
 }
 bloques->bloqLibres = list_duplicate(libres);
 bloques->bloqOcupados = list_duplicate(ocupados);
-bloques->bloqArchivo = malloc(list_size(temp));
-for (int i=0;i< list_size(temp);i++){
-bloques->bloqArchivo[i] = list_get(temp,i);	
+bloques->bloqArchivo = calloc(nBloques,sizeof(int));
+for (int i=0;i <list_size(temp);i++){
+ bloques->bloqArchivo[i]= list_get(temp,i);
 }
-for(int i = 0;i <list_size(temp);i++){
+for(int i = 0;i < nBloques;i++){
 bitarray_set_bit(bitarray,bloques->bloqArchivo[i]);	
 }
+bloques->bloques = nBloques;
 return bloques;
 }
 
 
+// retorna un -1 si el archivo no existe
+// reortna un numero >0 si el archivo existe
 int verificarSiExisteArchivo(char * path)
 {	
 char * pathMasArchivos = string_new();

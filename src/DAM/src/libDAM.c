@@ -137,19 +137,26 @@ runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, string_idGDT);
 }
 }
 
-void MDJ_DAM_verificameSiArchivoFueBorrado(/*socket_connection * connection,char ** args*/char* pam1, char* pam2){
+void MDJ_DAM_verificameSiArchivoFueBorrado(socket_connection * connection,char ** args/*char* pam1, char* pam2*/){
 
-estadoBorrado = atoi(pam1);
-
-if(estadoBorrado ==  1)
+estadoBorrado = atoi(args[0]);
+char * path = args[1];
+char* string_idGDT;
+sprintf(string_idGDT, "%i", idGDT);
+if(estadoBorrado >= 0)
 {
-log_trace(logger," El MDJ informa que se borro el archivo %s",pam2);
-runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB",1, pam2);
+log_trace(logger," El MDJ informa que se borro el archivo %s",path);
+runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB",1, string_idGDT);
+}
+else if (estadoBorrado == -1)
+{
+log_error(logger,"El archivo %s es inexistente",path);
+runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1,string_idGDT);
 }
 else
 {
-log_error(logger,"Ocurrio un error al querer borrar el archivo %s",pam2);
-runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, pam2);
+log_error(logger,"Ocurrio un error al querer borrar el archivo %s",path);
+runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, string_idGDT);	
 }
 }
 
