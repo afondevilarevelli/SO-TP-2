@@ -94,4 +94,5 @@ char * obtenerPtoMontaje();
 t_bitarray * crearBitmap(int);
 t_metadata_filesystem * obtenerMetadata ();
 t_bloques * asignarBloques(t_list * , t_list *,size_t);
+char ** obtenerBloques(char *);
 #endif

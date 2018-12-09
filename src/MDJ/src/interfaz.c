@@ -55,7 +55,7 @@ t_archivo *  archivo = malloc(sizeof(t_archivo));
 archivo->path = args[0];
 archivo->fd = verificarSiExisteArchivo(archivo->path);
 if(archivo->fd == noExiste){
-archivo->estado =noExiste;
+archivo->estado = noExiste;
 }
 else {
 archivo->estado=  existe;
@@ -104,7 +104,8 @@ for(s=0; s < sizeof(bitmapBloques->bloqArchivo);s++){
 string_append_with_format(&temp,"%s,",string_itoa(bitmapBloques->bloqArchivo[s]));
 }
 char * archTemp = string_new();
-archTemp = string_substring(temp,0,(s+(sizeof(temp)-1)));
+archTemp = string_substring(temp,0,(s+(sizeof(temp)+2)));
+printf("%s",archTemp);
 archivo->fd = verificarSiExisteArchivo(archivo->path);
 if(archivo->fd == -1)
 {
@@ -143,7 +144,7 @@ log_info(logger,"Archivo %s ya creado",archivo->path);
 sprintf(strEstado, "%i", archivo->estado);
 aplicarRetardo();
 runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",2,strEstado,archivo->path);
-//list_destroy_and_destroy_elements(bloquesLibres,(void*) free);
+//list_destroy_and_destroy_elements(bloquesLibres,(void*) free);*/
 free(archivo);
 free(bitMap);
 free(archTemp);
@@ -181,23 +182,49 @@ return leidos;
 void guardarDatos(socket_connection * connection ,char * path,off_t  * offset,size_t *  size,char * buffer){
 }
 
+
+//tira seg faul hay que arreglarla
 void borrarArchivo(socket_connection* connection,char ** args){
-char strEstado[2];
+char * strEstado[2];
 t_archivo * archivo= malloc(sizeof(t_archivo));
 archivo->path = args[0];
-archivo->fd  = 1; //verificarSiExisteArchivo(archivo->path);
-if (archivo->fd  == existe)
+t_metadata_filesystem * fs = obtenerMetadata();
+t_bitarray * bitarray = crearBitmap(fs->cantidad_bloques);
+archivo->fd = verificarSiExisteArchivo(archivo->path);
+char * temp = string_new();
+string_append(&temp,obtenerPtoMontaje());
+string_append(&temp,"/Archivos/");
+string_append(&temp,archivo->path);
+if (archivo->fd == noExiste)
 {
-archivo->estado = recienBorrado;
+log_info(logger,"El achivo %s no existe",archivo->path);
+archivo->estado = noBorrado;
 }
 else
 {
-archivo->estado = noBorrado;
+//char ** bloques = 
+obtenerBloques(archivo->path);
+/*for(int i=0; i < sizeof(bloques);i++)
+{
+bitarray_clean_bit(bitarray,bloques[i]);
 }
-sprintf(strEstado, "%i", archivo->estado);
+/*int r = unlink(temp);
+if(r < 0)
+{
+log_error(logger,"Hubo un error al querer borrar %s",archivo->path);
+}
+else
+{
+log_trace(logger,"Archivo %s borrado correctamente",archivo->path);    
+}
+archivo->estado = recienBorrado;*/
+}
+sprintf(strEstado,"%i",archivo->estado);
 aplicarRetardo();
 runFunction(connection->socket,"MDJ_DAM_verificameSiArchivoFueBorrado",1,strEstado);
 }
+
+
 
 t_bitarray * crearBitmap(int  size){
 char * montajeMasBitmap = string_new();
@@ -218,6 +245,18 @@ t_bitarray * bitarray = bitarray_create_with_mode(bmap,size/8,MSB_FIRST);
 return bitarray;
 }
 
+char ** obtenerBloques(char * path){
+char * temp = string_new();
+string_append(&temp,obtenerPtoMontaje());
+string_append(&temp,"/Archivos/");
+string_append(&temp,path);
+t_config * config = config_create(temp);
+char **  bloques = config_get_array_value(config,"BLOQUES");
+for(int i = 0; i <sizeof(bloques);i++){
+printf("%s \n",bloques[i]);
+}
+return bloques;
+}
 
 t_bloques *  asignarBloques(t_list * libres,t_list * ocupados ,size_t size)
 {
@@ -273,3 +312,155 @@ else
 }
 free(pathMasArchivos);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
