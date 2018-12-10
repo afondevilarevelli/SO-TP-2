@@ -67,9 +67,9 @@ int main(void){
        else {      
         log_info(logger,"me conecto al MDJ");
         runFunction(socketMDJ,"identificarProcesoEnMDJ",1,"DAM");
-        runFunction(socketMDJ,"crearArchivo",2,"juanito.txt","400");
         //runFunction(socketMDJ,"crearArchivo",2,"asuanito.txt","200");
         runFunction(socketMDJ,"borrarArchivo",1,"juanito.txt");
+        runFunction(socketMDJ,"crearArchivo",2,"juanito.txt","400");
         //runFunction(socketMDJ,"borrarArchivo",1,"asuanito.txt");
         
        }

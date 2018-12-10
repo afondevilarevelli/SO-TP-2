@@ -19,10 +19,9 @@
 // yaCreado = 0,recienCreado = 1, noCreado = 2
 // no borrado = -1; recienBorrado = 0
 //el caso que sea 2 es para casos de error
- 
-typedef enum{noExiste = -1,existe = 0 };
-typedef enum{yaCreado,recienCreado,errorCreado = -1};
-typedef enum{recienBorrado = 0,noBorrado = -1,errorBorrado = -2};
+ enum{noExiste = -1,existe = 0 };
+ enum{yaCreado,recienCreado,errorCreado = -1};
+ enum{recienBorrado = 0,noBorrado = -1,errorBorrado = -2};
 
 //estructura por si hay que usar hilos
 typedef struct {
@@ -44,7 +43,7 @@ typedef struct{
 int fd;
 char * path;
 int * bloques;//vector con todos los bloques
-size_t  *  size; 
+size_t  size; 
 int estado;
 }t_archivo;
 
@@ -85,4 +84,7 @@ t_bitarray * crearBitmap(int);
 t_metadata_filesystem * obtenerMetadata ();
 t_bloques * asignarBloques(t_list * , t_list *,size_t);
 char ** obtenerBloques(char *);
+int cantElementos2(char **);
+int cantElementos1(char *);
+void liberarLista(t_list * );
 #endif

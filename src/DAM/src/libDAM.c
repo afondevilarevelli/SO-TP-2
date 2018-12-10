@@ -138,10 +138,9 @@ runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, string_idGDT);
 }
 
 void MDJ_DAM_verificameSiArchivoFueBorrado(socket_connection * connection,char ** args/*char* pam1, char* pam2*/){
-
 estadoBorrado = atoi(args[0]);
 char * path = args[1];
-char* string_idGDT;
+char * string_idGDT;
 sprintf(string_idGDT, "%i", idGDT);
 if(estadoBorrado >= 0)
 {

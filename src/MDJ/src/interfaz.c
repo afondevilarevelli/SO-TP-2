@@ -1,7 +1,7 @@
 #include  "interfaz.h"
 #include "libMDJ.h"
 // Con esto se maneja cada mensaje que se le mando al dam, si es 0 es porque es false, si es 1 es porque es true
-t_metadata_filemetadata * metadata;
+//t_metadata_filemetadata * metadata;
 
 
 char * obtenerPtoMontaje()
@@ -45,7 +45,7 @@ void aplicarRetardo()
 {
 t_config* fileConfig  = config_create("MDJ.config");
 int ret = config_get_int_value(fileConfig,"RETARDO");
-usleep(ret);
+sleep(ret / 1000);
 config_destroy(fileConfig);
 }
 //args[0]:idGDT ,args[1]: path, args[2]: socketCPU, args[3]: 1(Dummy) ó 0(no Dummy)
@@ -78,11 +78,10 @@ archivo->path = args[0];
 size_t tsize = atoi(args[1]);
 t_list * bloquesLibres = list_create();
 t_list * bloquesOcupados = list_create();
-archivo->size =  (tsize - 1);
+archivo->size = (size_t) (tsize - 1);
 size_t tamanioBloques = (fs->tamanio_bloques - 1);
 char * pathMasArchivos = string_new();
 char * tam = string_new(); 
-char * strEstado[2];
 char * tamBloq = string_new();
 char * archivoBloques = string_new();
 char * temp = string_new();
@@ -91,11 +90,11 @@ for(int i = 0; i < fs->cantidad_bloques; i++)
 {
 if(bitarray_test_bit(bitMap->bitarray,i) == 0)
 {
-list_add(bloquesLibres,i);    
+list_add(bloquesLibres,(void * ) i);    
 }
 else
 {
- list_add(bloquesOcupados,i);  
+ list_add(bloquesOcupados,(void * ) i);  
 }
 }
 t_bloques * bitmapBloques = asignarBloques(bloquesLibres,bloquesOcupados,archivo->size);
@@ -140,17 +139,19 @@ else
 archivo->estado = yaCreado;
 log_info(logger,"Archivo %s ya creado",archivo->path);
 }
-sprintf(strEstado, "%i", archivo->estado);
+char * strEstado = string_itoa(archivo->estado);
 aplicarRetardo();
-runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",2,strEstado,archivo->path);
-//list_destroy_and_destroy_elements(bloquesLibres,(void*) free);*/
+//runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",2,strEstado,archivo->path);
+list_destroy(bloquesLibres);
+list_destroy(bloquesOcupados);
 free(archivo);
 free(bitMap);
+free(fs);
+free(bitmapBloques);
 free(archTemp);
 free(tam);
 free(temp);
-//free(pathMasArchivos);
-//free(tamBloq);
+free(pathMasArchivos);
 }
 
 //off_t lseek(int fildes, off_t offset, int whence);
@@ -182,9 +183,7 @@ void guardarDatos(socket_connection * connection ,char * path,off_t  * offset,si
 }
 
 
-//tira seg faul hay que arreglarla
 void borrarArchivo(socket_connection* connection,char ** args){
-char * strEstado[2];
 t_archivo * archivo= malloc(sizeof(t_archivo));
 archivo->path = args[0];
 t_metadata_filesystem * fs = obtenerMetadata();
@@ -202,7 +201,7 @@ archivo->estado = noBorrado;
 else
 {
 char ** bloques = obtenerBloques(archivo->path);
-for(int i=0; i < cantElementos(bloques);i++)
+for(int i=0; i < cantElementos2(bloques);i++)
 {
 bitarray_clean_bit(bitarray,atoi(bloques[i]));
 }
@@ -210,6 +209,7 @@ int r = unlink(temp);
 if(r < 0)
 {
 log_error(logger,"Hubo un error al querer borrar %s",archivo->path);
+archivo->estado = errorBorrado;
 }
 else
 {
@@ -217,11 +217,14 @@ log_trace(logger,"Archivo %s borrado correctamente",archivo->path);
 }
 archivo->estado = recienBorrado;
 }
-sprintf(strEstado,"%i",archivo->estado);
+char * strEstado = string_itoa(archivo->estado);
 aplicarRetardo();
-runFunction(connection->socket,"MDJ_DAM_verificameSiArchivoFueBorrado",2,strEstado,archivo->path);
+//runFunction(connection->socket,"MDJ_DAM_verificameSiArchivoFueBorrado",2,strEstado,archivo->path);
+free(fs);
+free(bitarray);
+free(temp);
+free(archivo);
 }
-
 
 
 t_bitarray * crearBitmap(int  size){
@@ -240,10 +243,20 @@ if (bmap == MAP_FAILED) {
 
 	}
 t_bitarray * bitarray = bitarray_create_with_mode(bmap,size/8,MSB_FIRST);
+free(montajeMasBitmap);
 return bitarray;
 }
 
-int cantElementos(char ** array)
+int cantElementos2(char ** array)
+{
+int cont = 0;
+while (array[cont] != NULL){
+cont = cont + 1;	
+}	
+return cont;
+}
+
+int cantElementos1(char * array)
 {
 int cont = 0;
 while (array[cont] != NULL){
@@ -259,6 +272,7 @@ string_append(&temp,"/Archivos/");
 string_append(&temp,path);
 t_config * config = config_create(temp);
 char **  bloques = config_get_array_value(config,"BLOQUES");
+free(&temp);
 return bloques;
 }
 
@@ -289,13 +303,17 @@ bloques->bloqLibres = list_duplicate(libres);
 bloques->bloqOcupados = list_duplicate(ocupados);
 bloques->bloqArchivo = calloc(nBloques,sizeof(int));
 for (int i=0;i <list_size(temp);i++){
- bloques->bloqArchivo[i]= list_get(temp,i);
+ bloques->bloqArchivo[i]= (void *)list_get(temp,i);
 }
 for(int i = 0;i < nBloques;i++){
 bitarray_set_bit(bitarray,bloques->bloqArchivo[i]);	
 }
 bloques->bloques = nBloques;
 return bloques;
+}
+
+void liberarLista(t_list *lista) {
+	list_destroy_and_destroy_elements(lista,(void *) free);
 }
 
 
