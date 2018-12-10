@@ -43,6 +43,11 @@ int devolverPosicionNuevoSegmento(int tamanioAPersistir){
 	int pos = 0;
 	t_tabla_segmentos* auxNodo;
 	t_tabla_segmentos* auxNodoSiguiente;
+	//si no hay elementos en la tabla devuelvo 0
+	if(list_size(lista_tabla_segmentos) == 0){
+		return pos;
+	}
+
 	for(int i = 0; i<list_size(lista_tabla_segmentos); i++){
 		auxNodo = list_get(lista_tabla_segmentos, i);
 		//si hay espacio antes del primer nodo
@@ -57,9 +62,11 @@ int devolverPosicionNuevoSegmento(int tamanioAPersistir){
 		//Si hay espacio para persistir los datos entre nodos, devuelvo la posicion entre un nodo y el otro
 		if((auxNodoSiguiente->base - (auxNodo->base + auxNodo-> limite)) > tamanioAPersistir)	{
 			return (auxNodo->base + auxNodo->limite);
-		}		
+		}
+
 	}
-	return pos;
+	//devuelvo error
+	return -1;
 }
 
 //Guardo GDT y devuelvo la posicion de memoria. Si no puedo persistirlo devuelvo -1
