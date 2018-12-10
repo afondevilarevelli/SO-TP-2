@@ -54,4 +54,4 @@ int devolverPosicionNuevoSegmento(int);
 //CONFIG
 t_config_FM9* read_and_log_config(char*);
 
-bool ordenarTablaSegmentos(t_tabla_segmentos*, t_tabla_segmentos*);
+bool ordenarTablaSegmentosDeMenorBaseAMayorBase(t_tabla_segmentos*, t_tabla_segmentos*);

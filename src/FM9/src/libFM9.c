@@ -76,7 +76,7 @@ void DAM_FM9_guardarGDT(socket_connection * connection ,char** args) {
 	nuevoSegmento->base =pos;
 	nuevoSegmento->limite = tamanioArchivo;
 	list_add(lista_tabla_segmentos, nuevoSegmento);
-	list_sort(lista_tabla_segmentos, ordenarTablaSegmentos);
+	list_sort(lista_tabla_segmentos, ordenarTablaSegmentosDeMenorBaseAMayorBase);
 	log_info(logger, "Se actualizo correctamente la tabla de segmentos");
 	}
 

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include "libFM9.h"
+#include "comandosMemoria.h"
 
 void cerrarPrograma() {
 	log_info(logger, "Voy a cerrar FM9");
@@ -26,15 +27,14 @@ int main(void) {
 	//Me fijo el modo
 	if(strcmp(datosConfigFM9->modo,"SEG")==0){
 		log_info(logger, "Modo segmentacion");
+		inicializarMemoriaConSegmentacion();
 	}
 	else{
 		log_error(logger, "Modo no reconocido");
 		cerrarPrograma();
 	}
 
-	inicializarMemoriaConSegmentacion();
-
-	test();
+	//test();
 	callableRemoteFunctions = dictionary_create();
 
 	dictionary_put(callableRemoteFunctions, "identificarProcesoEnFM9", &identificarProceso);
@@ -49,9 +49,19 @@ int main(void) {
 
 	createListen(datosConfigFM9->puerto,NULL,
 			callableRemoteFunctions, &disconnect, NULL);
+	loadCommands();
 
 	log_info(logger, "Estoy escuchando el puerto: %d", datosConfigFM9->puerto);
 
+	char *buffer;
+	size_t bufsize = 1024;
+	buffer = (char *)malloc(bufsize * sizeof(char));
+	while(1) {
+		log_info(logger, "Ingrese un Comando");
+		getline(&buffer, &bufsize, stdin);
+		executeCommand(buffer);
+	}
+	free(buffer);
 	//conexion al servidor-----------------------------
 	
 	
