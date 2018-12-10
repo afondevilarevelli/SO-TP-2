@@ -3,7 +3,6 @@
 #include "libFM9.h"
 #include <string.h>
 
-
 //LOG
 void configure_logger() {
 
@@ -19,19 +18,56 @@ void close_logger() {
 	log_destroy(logger);
 }
 
-
 //SOCKETS
-void  identificarProceso(socket_connection * connection ,char** args)
-{
-     log_info(logger,"Se ha conectado %s en el socket NRO %d  con IP %s,  PUERTO %d\n", args[0],connection->socket,connection->ip,connection-> port);
-} 
-
-
+void identificarProceso(socket_connection * connection, char** args) {
+	log_info(logger,
+			"Se ha conectado %s en el socket NRO %d  con IP %s,  PUERTO %d\n",
+			args[0], connection->socket, connection->ip, connection->port);
+}
 
 void disconnect(socket_connection* socketInfo) {
 	log_info(logger, "El socket n°%d se ha desconectado.", socketInfo->socket);
 }
 
+//SEGMENTACION PURA
+void inicializarMemoriaConSegmentacion(){
+	log_info(logger, "Voy a reservar espacio para guardar los procesos y la tabla de segmentos");
+	memoria = calloc(1,datosConfigFM9->tamanio);
+	lista_tabla_segmentos = list_create();
+	log_info(logger, "Espacio reservado y tabla generada con exito");
+}
+
+//Busco entre un nodo y el siguiente si hay espacio para guardar. 
+//TODO La lista tiene que estar ordenada
+int devolverPosicionNuevoSegmento(int tamanioAPersistir){
+	int pos = 0;
+	t_tabla_segmentos* auxNodo;
+	t_tabla_segmentos* auxNodoSiguiente;
+	//si no hay elementos en la tabla devuelvo 0
+	if(list_size(lista_tabla_segmentos) == 0){
+		return pos;
+	}
+
+	for(int i = 0; i<list_size(lista_tabla_segmentos); i++){
+		auxNodo = list_get(lista_tabla_segmentos, i);
+		//si hay espacio antes del primer nodo
+		if(auxNodo->base > tamanioAPersistir){
+			return pos;
+		}
+		//Si no hay nodo siguiente y no supero el maximo de memoria devuelvo la posicion siguiente al ultimo nodo
+		if(list_size(lista_tabla_segmentos)== i+1 && (auxNodo->base + auxNodo->limite < datosConfigFM9->tamanio)){
+			return (auxNodo->base + auxNodo->limite);
+		}
+		auxNodoSiguiente = list_get(lista_tabla_segmentos, i+1);
+		//Si hay espacio para persistir los datos entre nodos, devuelvo la posicion entre un nodo y el otro
+		if((auxNodoSiguiente->base - (auxNodo->base + auxNodo-> limite)) > tamanioAPersistir)	{
+			return (auxNodo->base + auxNodo->limite);
+		}
+
+	}
+	//devuelvo error
+	return -1;
+}
 
 //CONFIG
 t_config_FM9* read_and_log_config(char* path) {
@@ -63,20 +99,43 @@ t_config_FM9* read_and_log_config(char* path) {
 	log_info(logger, "Fin de lectura");
 
 	config_destroy(archivo_Config);
-	free(modo);
+	//free(modo);
 
 	return _datosFM9;
 }
 
 //args[0]: idGDT
 //Comunicacion para Desarrollar Cuando El DAM pida a FM9 cargar el archivo ya sea un DTB o el Dummy
-void solicitudCargaArchivo(socket_connection* connection, char** args){
+void solicitudCargaArchivo(socket_connection *connection, char **args)
+{
 
-	if(1){ runFunction(connection->socket, "FM9_DAM_cargueElArchivoCorrectamente",2,args[0], "ok");}
+	log_info(logger, "Voy a persistir: '%s' cuyo tamanio es %d", args[0], strlen(args[0]));
+	int tamanioArchivo = strlen(args[0]);
+	log_info(logger, "Voy a buscar una posicion para almacenar los datos");
+	int pos = devolverPosicionNuevoSegmento(tamanioArchivo);
+	log_info(logger, "La posicion es %d", pos);
+	if (pos != -1)
+	{
+		memcpy(memoria + pos, args[0], tamanioArchivo);
+		log_info(logger, "Persisti el contenido");
 
-	else{ runFunction(connection->socket, "FM9_DAM_cargueElArchivoCorrectamente", 2, args[0], "error");}
+		log_info(logger, "Voy a actualizar tabla de segmentos");
+		t_tabla_segmentos *nuevoSegmento = malloc(sizeof(t_tabla_segmentos));
 
+		nuevoSegmento->base = pos;
+		nuevoSegmento->limite = tamanioArchivo;
+		list_add(lista_tabla_segmentos, nuevoSegmento);
+		list_sort(lista_tabla_segmentos, ordenarTablaSegmentosDeMenorBaseAMayorBase);
+		log_info(logger, "Se actualizo correctamente la tabla de segmentos");
 
+		runFunction(connection->socket, "FM9_DAM_cargueElArchivoCorrectamente", 2, args[0], "ok");
+	}
+	else
+	{
+		log_error(logger, "No se encontro una posicion dentro de la tabla de segmentos");
+		log_error(logger, "No se pudo persistir los datos");
+		runFunction(connection->socket, "FM9_DAM_cargueElArchivoCorrectamente", 2, args[0], "error");
+	}
 }
 
 //args[0]: idGDT, args[1]: Path, args[2]:Linea, args[3]:Datos
@@ -99,3 +158,8 @@ void cerrarArchivoDelDTB(socket_connection* connection, char** args){
 	runFunction(connection->socket, "FM9_CPU_resultadoDeClose", 2 , args[0], "1");
 
 }
+
+bool ordenarTablaSegmentosDeMenorBaseAMayorBase(t_tabla_segmentos* unNodo, t_tabla_segmentos* nodoSiguiente){
+	return unNodo->base < nodoSiguiente->base;
+}
+
