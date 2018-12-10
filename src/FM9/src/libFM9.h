@@ -45,7 +45,6 @@ void close_logger();
 //SOCKETS
 void identificarProceso(socket_connection * connection ,char** args);
 void disconnect(socket_connection*);
-void DAM_FM9_guardarGDT(socket_connection * connection ,char** args);
 
 //SEGMENTACION PURA
 void inicializarMemoriaConSegmentacion();

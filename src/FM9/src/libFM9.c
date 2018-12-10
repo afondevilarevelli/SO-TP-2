@@ -69,26 +69,6 @@ int devolverPosicionNuevoSegmento(int tamanioAPersistir){
 	return -1;
 }
 
-//Guardo GDT y devuelvo la posicion de memoria. Si no puedo persistirlo devuelvo -1
-void DAM_FM9_guardarGDT(socket_connection * connection ,char** args) {
-	log_info(logger, "Voy a persistir: '%s' cuyo tamanio es %d", args[0], strlen(args[0]));
-	int tamanioArchivo = strlen(args[0]);
-	int pos = devolverPosicionNuevoSegmento(tamanioArchivo);
-
-	memcpy(memoria +pos, args[0], tamanioArchivo);
-	log_info(logger, "Persisti el contenido");
-
-	log_info(logger, "Voy a actualizar tabla de segmentos");
-	t_tabla_segmentos* nuevoSegmento = malloc(sizeof(t_tabla_segmentos));;
-	nuevoSegmento->base =pos;
-	nuevoSegmento->limite = tamanioArchivo;
-	list_add(lista_tabla_segmentos, nuevoSegmento);
-	list_sort(lista_tabla_segmentos, ordenarTablaSegmentosDeMenorBaseAMayorBase);
-	log_info(logger, "Se actualizo correctamente la tabla de segmentos");
-	}
-
-
-
 //CONFIG
 t_config_FM9* read_and_log_config(char* path) {
 	log_info(logger, "Voy a leer el archivo FM9.config");
@@ -126,13 +106,36 @@ t_config_FM9* read_and_log_config(char* path) {
 
 //args[0]: idGDT
 //Comunicacion para Desarrollar Cuando El DAM pida a FM9 cargar el archivo ya sea un DTB o el Dummy
-void solicitudCargaArchivo(socket_connection* connection, char** args){
+void solicitudCargaArchivo(socket_connection *connection, char **args)
+{
 
-	if(1){ runFunction(connection->socket, "FM9_DAM_cargueElArchivoCorrectamente",2,args[0], "ok");}
+	log_info(logger, "Voy a persistir: '%s' cuyo tamanio es %d", args[0], strlen(args[0]));
+	int tamanioArchivo = strlen(args[0]);
+	log_info(logger, "Voy a buscar una posicion para almacenar los datos");
+	int pos = devolverPosicionNuevoSegmento(tamanioArchivo);
+	log_info(logger, "La posicion es %d", pos);
+	if (pos != -1)
+	{
+		memcpy(memoria + pos, args[0], tamanioArchivo);
+		log_info(logger, "Persisti el contenido");
 
-	else{ runFunction(connection->socket, "FM9_DAM_cargueElArchivoCorrectamente", 2, args[0], "error");}
+		log_info(logger, "Voy a actualizar tabla de segmentos");
+		t_tabla_segmentos *nuevoSegmento = malloc(sizeof(t_tabla_segmentos));
 
+		nuevoSegmento->base = pos;
+		nuevoSegmento->limite = tamanioArchivo;
+		list_add(lista_tabla_segmentos, nuevoSegmento);
+		list_sort(lista_tabla_segmentos, ordenarTablaSegmentosDeMenorBaseAMayorBase);
+		log_info(logger, "Se actualizo correctamente la tabla de segmentos");
 
+		runFunction(connection->socket, "FM9_DAM_cargueElArchivoCorrectamente", 2, args[0], "ok");
+	}
+	else
+	{
+		log_error(logger, "No se encontro una posicion dentro de la tabla de segmentos");
+		log_error(logger, "No se pudo persistir los datos");
+		runFunction(connection->socket, "FM9_DAM_cargueElArchivoCorrectamente", 2, args[0], "error");
+	}
 }
 
 //args[0]: idGDT, args[1]: Path, args[2]:Linea, args[3]:Datos
