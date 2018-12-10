@@ -10,42 +10,37 @@
 void disconnect(socket_connection* socketInfo);
 
 int main(void){
-     
+
 	 signal(SIGINT, cerrarPrograma);
 	
        	configure_logger();
 	datosConfigDAM =read_and_log_config("DAM.config");
 	//diccionarios
 
-    callableRemoteFunctionsMDJ = dictionary_create();
+        callableRemoteFunctionsMDJ = dictionary_create();
 	callableRemoteFunctionsFM9 = dictionary_create();
-	callableRemoteFunctionsSAFA = dictionary_create();
+	 callableRemoteFunctionsSAFA = dictionary_create();
 	callableRemoteFunctionsCPU = dictionary_create();
 	
 	//--------------------------------------------------------------------
-	//Diccionarios del MDJ
-    dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_existeArchivo", &MDJ_DAM_avisarResultadoDTB);
-    dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_verificarArchivoCreado",&MDJ_DAM_verificarArchivoCreado);
+	//Dicionarios del mdj
+    dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_existeArchivo", &MDJ_DAM_existeArchivo);
     dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_verificarArchivoCreado",&MDJ_DAM_verificarArchivoCreado);
     dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_verificameSiArchivoFueBorrado",&MDJ_DAM_verificameSiArchivoFueBorrado);
-
+    //dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_avisoSAFAResultadoDTBDummy",&MDJ_DAM_avisarSAFAResultadoDTBDummy);
 	//--------------------------------------------------------------------
-    //Diccionario dl CPU
+  //dicionarios de CPU
       dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_solicitudCargaGDT", &solicitudCargaGDT);
-      dictionary_put(callableRemoteFunctionsCPU, "identificarProcesoEnDAM", &identificarProceso);
-      dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_crearArchivo", &crearArchivo);
-      dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_borrarArchivo", &borrarArchivo);
-      dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_solicitudDeFlush", &solicitudDeFlush);
-
-    //Diccionario del FM9
-      dictionary_put(callableRemoteFunctionsFM9, "FM9_DAM_cargueElArchivoCorrectamente", &archivoCargadoCorrectamente);
-
+      dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_existeArchivo", &existeArchivo);
+      
+      
+    //dictionary_put(callableRemoteFunctionsCPU, "identificarProcesoEnDAM", &identificarProcesoEnDAM);
     
-	socketSAFA = connectServer(datosConfigDAM->IPSAFA, datosConfigDAM->puertoSAFA,callableRemoteFunctionsSAFA, &disconnect, NULL);
+	socketSAFA = connectServer("172.17.0.1", 8001,callableRemoteFunctionsSAFA, &disconnect, NULL);
   //CUANDO ME CONECTO AL SAFA LE DIGO QUE SOY EL PROCESO DAM (para manejar estadoCorrupto)
   runFunction(socketSAFA,"identificarNuevaConexion",1,"DAM"); 
-	socketFM9 = connectServer(datosConfigDAM->IPFM9,datosConfigDAM->puertoFM9, callableRemoteFunctionsFM9, &disconnect, NULL);
-	socketMDJ = connectServer(datosConfigDAM->IPMDJ, datosConfigDAM->puertoMDJ, callableRemoteFunctionsMDJ, &disconnect, NULL);
+	socketFM9 = connectServer("172.17.0.1",8003, callableRemoteFunctionsFM9, &disconnect, NULL);
+	socketMDJ = connectServer("172.17.0.1", 8002, callableRemoteFunctionsMDJ, &disconnect, NULL);
          
 	
 	if(socketSAFA== -1  ){
@@ -71,9 +66,8 @@ int main(void){
        else {      
         log_info(logger,"me conecto al MDJ");
         runFunction(socketMDJ,"identificarProcesoEnMDJ",1,"DAM");
-        /*existeArchivo(socketMDJ,"/home/utnso/tp-2018-2c-Mi-amor-es-el-Malloc/src/MDJ/MDJ.config");
-        existeArchivo(socketMDJ,"/home/utnso/tp-2018-2c-Mi-amor-es-el-Malloc/src/MDJ/pepe.config");
-        existeArchivo(socketMDJ,"/home/utnso/tp-2018-2c-Mi-amor-es-el-Malloc/src/MDJ/MDJ.config"); */
+        runFunction(socketMDJ,"crearArchivo",2,"juanito.txt","200");
+        
        }
       
 
@@ -85,7 +79,6 @@ int main(void){
  	pthread_mutex_init(&mx_main, NULL);
 	pthread_mutex_lock(&mx_main);
 	pthread_mutex_lock(&mx_main);
-
 
 	return EXIT_SUCCESS;
 }

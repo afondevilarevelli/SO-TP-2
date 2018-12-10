@@ -54,12 +54,16 @@ void close_logger();
 //PROTOTIPOS
 void cerrarPrograma();
 void elementoDestructorDiccionario(void *);
+void crearScriptCompleto(char* nomArchivo);
+FILE * abrirArchivoScript(char * ruta);
+FILE * abrirArchivoBloque(int numBloque);
 
 //diccionarios
 void identificarProceso(socket_connection * connection ,char** args);
-void MDJ_DAM_verificarArchivoCreado(/*socket_connection*,char ** */ char*, char*);
+void MDJ_DAM_verificarArchivoCreado(socket_connection*,char ** );
+void MDJ_DAM_existeArchivo(socket_connection*,char ** );
 void MDJ_DAM_verificameSiArchivoFueBorrado(/*socket_connection*,char ** */char*, char*);
-void existeArchivo(socket_connection* socketMDJ, char * pathFile);
+void existeArchivo(socket_connection* socketMDJ, char ** args);
 void crearArchivo(socket_connection* connection, char** args);
 void borrarArchivo(socket_connection* connection, char** args);
 void archivoCargadoCorrectamente(socket_connection* , char**);

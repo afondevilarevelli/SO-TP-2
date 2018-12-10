@@ -32,10 +32,10 @@ typedef struct{
 	int PC; //program counter
 	int flagInicializado;
 	t_list* archivosAbiertos;
-	t_list* recursos; // recursos obtenidos ( para las sentencias wait y signal )
 	status_t status;
 	int quantumFaltante; //sentencias que le faltan ejecutar para terminar su quantum ( para VRR )
 	int cantSentEsperadasEnNew; //para las metricas
+	int cantIOs; //cant de entradas y salidas ( para IOBF )
 }DTB;
 
 typedef struct{
@@ -55,6 +55,8 @@ typedef struct{
 
 
 //VARIABLES GLOBALES
+int cantSentenciasEjecutadas;
+int cantSentConDiego;
 int generadorDeIdsCPU;
 int idCpuABuscar;
 char* nombreRecursoABuscar;
@@ -76,6 +78,11 @@ pthread_mutex_t m_busqueda;
 
 pthread_mutex_t m_recurso;
 
+pthread_mutex_t m_verificacion;
+
+pthread_mutex_t m_cantSent;
+pthread_mutex_t m_cantDiego;
+
 t_log* logger;
 t_config_SAFA* datosConfigSAFA;
 pthread_mutex_t mx_main;
@@ -92,6 +99,8 @@ t_list* hilos;
 t_list* listaCPUs; //lista de CPUs
 
 t_list* listaDeRecursos;
+
+char* archAVerificar;
 
 //booleanos para manejar el estado corrupto
 bool estadoCorrupto; 
@@ -125,6 +134,8 @@ void destruirRecurso(recurso* r);
 void eliminarRecurso(recurso* r);
 void crearRecurso(char* nombre, int valor);
 
+bool condicionArchivoAbierto(void* arch);
+
 //LOGS
 void configure_logger();
 void close_logger();
@@ -155,6 +166,6 @@ void aumentarCantSentenciasEsperadasEnNew(DTB* dtb);
 //Funciones Para La Funcion De Status
 void mostrarInformacionDTB(DTB*);
 void* statusDTB(int);
-void* buscarDTBEnColasMostrandoInfo(int, t_queue*);
+void buscarDTBEnColasMostrandoInfo(t_queue*);
 static inline char *stringFromState(status_t);
 #endif

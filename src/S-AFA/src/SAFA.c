@@ -8,6 +8,8 @@
 void disconnect(socket_connection* socketInfo);
 
 int main(void){      
+        cantSentenciasEjecutadas = 0;
+        cantSentConDiego = 0;
         unCpuConectado = false;
         damConectado = false;
         generadorDeIdsCPU = 1;
@@ -25,7 +27,7 @@ int main(void){
      dictionary_put(fns, "waitRecurso", &waitRecurso);
      dictionary_put(fns, "signalRecurso", &signalRecurso);
      dictionary_put(fns, "CPU_SAFA_verificarEstadoArchivo", &verificarEstadoArchivo);
-     dictionary_put(fns, "CPU_SAFA_pasarDTBAExit", &pasarDTBAExit);
+     
 
         
         colaReady = queue_create();
@@ -60,6 +62,9 @@ int main(void){
 
         pthread_mutex_init(&m_busqueda, NULL);
         pthread_mutex_init(&m_recurso, NULL);
+        pthread_mutex_init(&m_verificacion, NULL);
+        pthread_mutex_init(&m_cantSent, NULL);
+        pthread_mutex_init(&m_cantDiego, NULL);
 
         pthread_create(&hiloConsola, NULL, (void*)&consolaSAFA, NULL);       
         pthread_create(&hiloPLP, NULL, (void*)&planificadorLargoPlazo, NULL);
@@ -100,6 +105,9 @@ void cerrarPrograma() {
     pthread_mutex_destroy(&m_colaFinalizados);
     pthread_mutex_destroy(&m_listaDeRecursos);
     pthread_mutex_destroy(&m_recurso);
+    pthread_mutex_destroy(&m_verificacion);
+    pthread_mutex_destroy(&m_cantSent);
+    pthread_mutex_destroy(&m_cantDiego);
 
     close_logger();
     dictionary_destroy(fns); 

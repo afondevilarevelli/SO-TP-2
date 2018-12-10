@@ -1,7 +1,3 @@
-abrir hola
-wait conmebol
-#alto comentario papa
-#otro comentario re piola
+wait AFA
+#alto comentario pa
 signal conmebol
-concentrar
-close caracolaMagica

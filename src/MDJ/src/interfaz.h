@@ -15,11 +15,11 @@
 #include <sys/file.h>
 
 //uso enum para ser mas claro en el codigo
-// noExiste = 0, existe =1
+// noExiste = -1, existe =1
 // yaCreado = 0,recienCreado = 1, noCreado = 2
 //el caso que sea 2 es para casos de error
  
-typedef enum{noExiste,existe };
+typedef enum{noExiste = -1,existe = 1 };
 typedef enum{yaCreado,recienCreado,noCreado};
 typedef enum{noBorrado,recienBorrado};
 
@@ -31,15 +31,18 @@ char ** args;
 
 //estructura para manejar los directorios del fs
 typedef struct {
-t_list *  directorios;
-}t_directorios;
+t_list *  bloqLibres;
+t_list * bloqOcupados;
+}t_bloques;
+
+
 
 //estructura para guardar la informacion del archivo
 typedef struct{
 int fd;
 char * mem_ptro;
 char * path;
-char * bloques;//vector con todos los bloques
+int * bloques;//vector con todos los bloques
 size_t  *  size; 
 int estado;
 }t_archivo;
@@ -55,13 +58,12 @@ int * ptroProxBloque;
 //estructura del metadata 
 typedef struct {
 size_t tamanio_bloques;
-double cantidad_bloques;
+int cantidad_bloques;
 char * magic_number;
 }t_metadata_filesystem;
 
 typedef struct{
-t_bitarray estado_bloques;//  1 ocupado , 0 libre
-int * ptroBloque;  
+t_bitarray * bitarray;//  1 ocupado , 0 libre  
 }t_metadata_bitmap;
 
 typedef struct{
@@ -81,7 +83,9 @@ void crearArchivo(socket_connection *,char **);
 size_t   obtenerDatos(socket_connection *,char **);
 void guardarDatos(socket_connection *,char * ,off_t  *,size_t * ,char *);
 void borrarArchivo(socket_connection *,char **);
-int verificarSiExisteArchivo(char * path);
-int *  crearBloques(int,char *,size_t);
-
+int verificarSiExisteArchivo(char * );
+int * crearBloques(int, char * ,size_t);
+char * obtenerPtoMontaje();
+t_bitarray * crearBitmap(int);
+t_metadata_filesystem * obtenerMetadata ();
 #endif
