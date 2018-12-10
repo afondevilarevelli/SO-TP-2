@@ -76,16 +76,6 @@ void identificarProceso(socket_connection * connection ,char** args){
     log_info(logger,"Se ha conectado %s en el socket NRO %d  con IP %s,  PUERTO %d\n", args[0],connection->socket,connection->ip,connection-> port);   
 }
 
-//Comunicacion entre CPU-DAM para Cargar GDT
-void solicitudCargaGDT(socket_connection* connection, char ** args){
-
-	int idGDT = atoi(args[0]);
-	char* rutaScript = args[1];
-
-	log_trace(logger, "Voy a Buscar: %s Para PID: %d",rutaScript, idGDT);
-	runFunction(socketMDJ, "validarArchivo",2, args[0], rutaScript);
-}
-
 //esta funcion le avisa al SAFA el resultado de la carga del DTBDummy,
 //es llamada por el MDJ
 //args[0]: idGDT, args[1]: estadoValidacion (1 => existe archivo, 0 => NO existe archivo), args[2]:path
@@ -105,69 +95,80 @@ void MDJ_DAM_avisarResultadoDTB(socket_connection* socketInf,char ** args){
 
 }
 
-//args[0]: idGDT, args[1]: Por ahora ok o error
+//lamada por el FM9
+//args[0]: idGDT, args[1]: Por ahora ok o error, args[2]: path, args[3]: 1(Dummy) ó 0(no Dummy)
 void archivoCargadoCorrectamente(socket_connection* connection, char** args){
 
 	char* estadoCarga = args[1];
 
 	if(estadoCarga == "ok"){
-		crearScriptCompleto(args[2]);
-		runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "ok");
+		if(strcmp(args[3], "1") == 0)
+			runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "ok");
+		else
+			runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB", 1, args[0]);
 	}
 	else{
-		runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "error");
+		if(strcmp(args[3], "1") == 0)
+			runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "error");
+		else
+			runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit", 1, args[0]);
 	}
 
 }
 
 
 //Parametros cambiados para ver que hacer si se encuentra creado o no
-void MDJ_DAM_verificarArchivoCreado(socket_connection* conenction,char ** args/*char* pam1, char* pam2*/){
+void MDJ_DAM_verificarArchivoCreado(socket_connection* conenction,char ** args){
 
 estadoCreacion = atoi(args[0]);
-char * path = args[1];
+char* path = args[1];
+char* string_idGDT;
+sprintf(string_idGDT, "%i", idGDT);
 if(estadoCreacion ==  1)
 {
 log_trace(logger," El MDJ informa que se creo el archivo %s",path);
-runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB",1, path);
+runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB",1, string_idGDT);
 
 }
 else
 {
-log_error(logger,"Ocurrio un error al querer crear el archivo %s",path);
-runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, path);
+log_error(logger,"Archivo %s ya creado",path);
+runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, string_idGDT);
 }
 }
 
-void MDJ_DAM_verificameSiArchivoFueBorrado(/*socket_connection * connection,char ** args*/char* pam1, char* pam2){
+void MDJ_DAM_verificameSiArchivoFueBorrado(socket_connection * connection,char ** args/*char* pam1, char* pam2*/){
 
-estadoBorrado = atoi(pam1);
-
-if(estadoBorrado ==  1)
+estadoBorrado = atoi(args[0]);
+char * path = args[1];
+char* string_idGDT;
+sprintf(string_idGDT, "%i", idGDT);
+if(estadoBorrado >= 0)
 {
-log_trace(logger," El MDJ informa que se borro el archivo %s",pam2);
-runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB",1, pam2);
+log_trace(logger," El MDJ informa que se borro el archivo %s",path);
+runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB",1, string_idGDT);
+}
+else if (estadoBorrado == -1)
+{
+log_error(logger,"El archivo %s es inexistente",path);
+runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1,string_idGDT);
 }
 else
 {
-log_error(logger,"Ocurrio un error al querer borrar el archivo %s",pam2);
-runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, pam2);
+log_error(logger,"Ocurrio un error al querer borrar el archivo %s",path);
+runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, string_idGDT);	
 }
 }
 
-/*void crearArchivo(socket_connection* connection, char** args){
+void crearArchivo(socket_connection* connection, char** args){
 
-	//int	idDTB = atoi(args[0]);
-
-	char* rutaArchivo = args[0];
-	size_t cantidadBytes = atoi(args[1]);
+	idGDT = args[0];
+	char* rutaArchivo = args[1];
 
 	//Como todavia falta desarrollo del MDJ envio por parametro los posibles resultados con el DTB a buscar
-	runFunction(socketMDJ,"crearArchivo",2, rutaArchivo, cantidadBytes);
-	//MDJ_DAM_verificarArchivoCreado("1", args[0]);
+	runFunction(socketMDJ,"crearArchivo",2, rutaArchivo, args[2]);
 
 }
-*/
 
 void borrarArchivo(socket_connection* connection, char** args){
 
@@ -181,18 +182,30 @@ void borrarArchivo(socket_connection* connection, char** args){
 
 }
 
-//args[0]: path
-void existeArchivo(socket_connection* socket, char** args){
-	char string_socket[2];
-	sprintf(string_socket, "%i", socket->socket);
-    runFunction(socketMDJ,"validarArchivo",2,args[0], string_socket);
+//Comunicacion entre CPU-DAM para Cargar GDT
+//args[0]: idGDT, args[1]: path, args[2]: 1(Dummy) ó 0(no Dummy)
+void solicitudCargaGDT(socket_connection* connection, char ** args){
+	log_trace(logger, "Voy a Buscar: %s Para GDT de id %s",args[1], args[0]);
+	runFunction(socketMDJ, "validarArchivo",4, args[0], args[1],"0",args[2]);
 }
 
-//args[0]: -1 -> si no existe, args[1]: socketCPU
-//			1 -> si existe
+//args[0]: idGDT, args[1]: path, args[2]: 1(Dummy) ó 0(no Dummy)
+void existeArchivo(socket_connection* socket, char** args){
+	char string_socket[2];
+	log_info(logger, "Archivo %s recibido", args[1]);
+	sprintf(string_socket, "%i", socket->socket);
+	runFunction(socketMDJ,"validarArchivo",4,args[0],args[1], string_socket, args[2]);
+}
+
+//args[0]: 1 -> si existe,   args[1]: socketCPU, args[2]: path, args[3]:idGDT, args[4]: 1(Dummy) ó 0(no Dummy)
+//        -1 -> si no existe
 void MDJ_DAM_existeArchivo(socket_connection* socket, char** args){
-	int socketCPU = atoi(args[1]);
-	runFunction(socketCPU,"CPU_DAM_continuacionExistenciaAbrir",1,args[0]);
+	int socketCPU = atoi(args[1]); // HAY MUCHAS CPUs
+	log_info(logger, "Continua Su Ejecucion");
+	if(socketCPU == 0)
+		runFunction(socketCPU,"CPU_DAM_continuacionExistenciaAbrir",1,args[0]);
+	else
+		runFunction(socketFM9,"CPU_DAM_solicitudCarga",3,args[3], args[2], args[4]); // o cómo se llame, y le paso los argumentos que necesite
 }
 
 //args[0]: idGDT, args[1]: rutaArchivo

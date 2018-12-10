@@ -24,10 +24,11 @@ int main(void){
      dictionary_put(fns, "avisoDamDTB", &avisoDeDamDeResultadoDTB);
      dictionary_put(fns, "DAM_SAFA_desbloquearDTB", &desbloquearDTB);
      dictionary_put(fns, "DAM_SAFA_pasarDTBAExit", &pasarDTBAExit);
+     dictionary_put(fns, "CPU_SAFA_pasarDTBAExit", &pasarDTBAExit);
      dictionary_put(fns, "waitRecurso", &waitRecurso);
      dictionary_put(fns, "signalRecurso", &signalRecurso);
      dictionary_put(fns, "CPU_SAFA_verificarEstadoArchivo", &verificarEstadoArchivo);
-     
+      dictionary_put(fns, "aperturaArchivo", &archivoAbierto); 
 
         
         colaReady = queue_create();

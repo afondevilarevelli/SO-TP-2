@@ -9,8 +9,8 @@ int main() {
   pthread_mutex_init(&m_busqueda, NULL);
   pthread_mutex_init(&m_puedeEjecutar, NULL);
   sem_init(&sem_esperaAbrir, 0, 0);
-  sem_init(&sem_esperaAsignar, 0, 0);
-  sem_init(&sem_esperaWait, 0, 0);
+  sem_init(&sem_esperaEjecucion, 0, 0); 
+  sem_init(&sem_esperaClose, 0, 0);
   configure_loggerCPU();
   datosCPU = read_and_log_configCPU("CPU.config");
 

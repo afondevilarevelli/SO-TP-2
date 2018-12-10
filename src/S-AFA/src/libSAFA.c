@@ -260,7 +260,7 @@ void signalRecurso(socket_connection* socketInfo, char** msg){
 		pthread_mutex_lock(&m_listaDeRecursos);
 		DTB* dtbADesbloquear = list_get(rec->GDTsEsperandoRecurso, 0);
 		pthread_mutex_unlock(&m_listaDeRecursos);
-		if(dtbADesbloquear != NULL){
+		if(dtbADesbloquear != NULL && dtbADesbloquear->status != FINISHED){
 			log_info(logger, "EL GDT de id %d ha liberado el recurso %s, y se ha desbloqueado al GDT de id %d", idDTB, msg[2], dtbADesbloquear->id);
 			pthread_mutex_lock(&m_colaBloqueados);
 			get_and_remove_DTB_by_ID(colaBloqueados->elements, dtbADesbloquear->id);
@@ -289,8 +289,8 @@ void newConnection(socket_connection* socketInfo, char** msg){
 	}
 }
 
-//args[0]: idCPU, args[1]: idGDT, args[2]: cantidad de quanto que ejecutó, args[3]:"finalizar","continuar" ó "bloquear", args[4]: 1 si hay que aumentar cantIOs, args[5]: 1 si hay que aumentar cantSentConDiego 
-//								  							   			   "finalizar" => finalizo GDT,		
+//args[0]: idCPU, args[1]: idGDT, args[2]: cantidad de quanto que ejecutó, args[3]:"finalizar","continuar" ó "bloquear", args[4]: 1 si hay que aumentar cantIOs, args[5]: 1 si hay que aumentar cantSentConDiego,
+//								  							   			   "finalizar" => finalizo GDT,		      args[6]: si es DTB-Dummy (1) ó no (0)
 //								  							   			   "bloquear"  => bloqueo GDT,
 //								   							   			   "continuar" => paso a Ready GDT
 void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
@@ -338,14 +338,19 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 				pthread_mutex_unlock(&m_cantSent);
 
 			} else{ // "bloquear"
+				int i;
 				dtb->status = BLOCKED;
-				dtb->quantumFaltante = datosConfigSAFA->quantum - quantumEjecutado;
-				dtb->PC += quantumEjecutado;
+				if(strcmp(msg[6], "0") == 0){
+					dtb->quantumFaltante = datosConfigSAFA->quantum - quantumEjecutado;
+					dtb->PC += quantumEjecutado;
+					pthread_mutex_lock(&m_cantSent);
+					for(i=0;i<quantumEjecutado; i++){
+						cantSentenciasEjecutadas++;
+					}
+					pthread_mutex_unlock(&m_cantSent);
+				}
 				encolarDTB(colaBloqueados, dtb, m_colaBloqueados);
     			log_info(logger, "El DTB %d ha sido bloqueado",dtb->id);
-				pthread_mutex_lock(&m_cantSent);
-				cantSentenciasEjecutadas++;
-				pthread_mutex_unlock(&m_cantSent);
 			}
 		} else{
 			finalizarDTB(dtb);
@@ -395,7 +400,6 @@ void desbloquearDTB(socket_connection* connection, char** msgs){
 		encolarDTB(colaReady, dtb, m_colaReady);
 		sem_post(&cantProcesosEnReady);
 	}
-	
 }
 
 //Caso cuando ocurre un fallo sea donde este situado el DTB, pasa a abortarse para la cola FINISHED
@@ -452,10 +456,12 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 		pthread_mutex_lock(&m_verificacion);
 		archAVerificar = malloc(strlen(msgs[3]) + 1);
 		strcpy(archAVerificar, msgs[3]);
-		if(list_any_satisfy(dtb->archivosAbiertos, &condicionArchivoAbierto) )
-    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionClose", 3, msgs[1], dtb->rutaScript, "1");
+		if(list_any_satisfy(dtb->archivosAbiertos, &condicionArchivoAbierto) ){
+			list_remove_and_destroy_by_condition(dtb->archivosAbiertos,&condicionArchivoAbierto,(void*)&free);
+    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionClose", 1, "1");
+		}
 		else
-			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionClose", 3, msgs[1], dtb->rutaScript, "0");
+			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionClose", 1, "0");
 		free(archAVerificar);
 		pthread_mutex_unlock(&m_verificacion);
     }
@@ -465,15 +471,24 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 		archAVerificar = malloc(strlen(msgs[3]) + 1);
 		strcpy(archAVerificar, msgs[3]);
 		if(list_any_satisfy(dtb->archivosAbiertos, &condicionArchivoAbierto) )
-    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionFlush", 3, msgs[1], dtb->rutaScript, "1");
+    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionFlush", 1, "1");
 		else{ 
 			dtb->cantIOs++;
-			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionFlush", 3, msgs[1], dtb->rutaScript, "0");
+			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionFlush", 1, "0");
 		}
 		free(archAVerificar);
 		pthread_mutex_unlock(&m_verificacion);
     }
 
+}
+
+//args[0]: idGDT,args[1]: nomArch
+void archivoAbierto(socket_connection* connection, char** args){
+	int idGDT = atoi(args[0]);
+	DTB* dtb = buscarDTBEnElSistema(idGDT);
+	if(dtb != NULL){
+		list_add(dtb->archivosAbiertos, args[1]);
+	}
 }
 
 bool condicionArchivoAbierto(void* arch){
@@ -533,4 +548,4 @@ void mostrarInformacionDTB(DTB* unDTB){
     	printf("Estado: %s\n", estado);
     	printf("----------------------\n");
 
-    }
+}

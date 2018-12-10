@@ -25,6 +25,13 @@ typedef struct {
 	int retardo;
 } t_config_CPU;
 
+typedef struct{
+	int idGDT;
+	char rutaScript[40];
+	int programCounter; 
+	int flagInicializado;
+	int quantumAEjecutar;
+}parametros;
 //EJEMPLOS DE SENTENCIAS
 /*
 -abrir /equipos/Racing.txt
@@ -67,13 +74,14 @@ t_log* logger;
 t_config* archivo_Config;
 t_config_CPU* datosCPU;
 t_dictionary * callableRemoteFunctionsCPU;
+
 pthread_mutex_t m_main;
 pthread_mutex_t m_busqueda;
 pthread_mutex_t m_puedeEjecutar;
 
 sem_t sem_esperaAbrir;
-sem_t sem_esperaAsignar;
-sem_t sem_esperaWait;
+sem_t sem_esperaClose;
+sem_t sem_esperaEjecucion;
 
 //VAR GLOB SOCKETS
 int socketDAM;
@@ -83,7 +91,11 @@ int socketFM9;
 bool archivoExistente;
 bool archivoAbiertoAbrir;
 bool archivoAbiertoAsignar;
+bool archivoAbiertoFlush;
+bool archivoAbiertoClose;
+bool resultadoCloseOk;
 bool resultadoWaitOk;
+
 
 //FUNCIONES
 
@@ -98,11 +110,15 @@ void disconnect();
 
 FILE * abrirScript(char * scriptFilename);
 operacion_t obtenerSentenciaParseada(char* script,int programCounter);
+FILE * abrirArchivoScript(char * nomArchivo);
+FILE * abrirArchivoBloque(int numBloque);
+
 
 //PARSER
 operacion_t parse(char* line);
 void destruirOperacion(operacion_t op);
 
+void permisoDeEjecucion(parametros* parms);
 //callable remote functions
 void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args); //SAFA
 void establecerQuantumYID(socket_connection * connection ,char** args); //SAFA
@@ -115,5 +131,7 @@ void ejecucionClose(socket_connection*, char**);
 void ejecucionFlush(socket_connection*, char**);
 void ejecucionWait(socket_connection*, char**);
 void finalizacionClose(socket_connection*, char**);
-
+void funcionHiloAbrir();
+void funcionHiloClose();
+void funcionHilo(char*);
 #endif

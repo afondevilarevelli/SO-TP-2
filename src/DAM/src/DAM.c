@@ -32,9 +32,10 @@ int main(void){
   //dicionarios de CPU
       dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_solicitudCargaGDT", &solicitudCargaGDT);
       dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_existeArchivo", &existeArchivo);
-      
-      
-    //dictionary_put(callableRemoteFunctionsCPU, "identificarProcesoEnDAM", &identificarProcesoEnDAM);
+      dictionary_put(callableRemoteFunctionsCPU, "identificarProcesoEnDAM", &identificarProceso);
+      dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_crearArchivo", &crearArchivo);
+  //diccionarios de FM9
+      dictionary_put(callableRemoteFunctionsFM9, "FM9_DAM_archivoCargado", &archivoCargadoCorrectamente);
     
 	socketSAFA = connectServer("172.17.0.1", 8001,callableRemoteFunctionsSAFA, &disconnect, NULL);
   //CUANDO ME CONECTO AL SAFA LE DIGO QUE SOY EL PROCESO DAM (para manejar estadoCorrupto)
@@ -66,7 +67,10 @@ int main(void){
        else {      
         log_info(logger,"me conecto al MDJ");
         runFunction(socketMDJ,"identificarProcesoEnMDJ",1,"DAM");
-        runFunction(socketMDJ,"crearArchivo",2,"juanito.txt","200");
+        runFunction(socketMDJ,"crearArchivo",2,"juanito.txt","400");
+        //runFunction(socketMDJ,"crearArchivo",2,"asuanito.txt","200");
+        runFunction(socketMDJ,"borrarArchivo",1,"juanito.txt");
+        //runFunction(socketMDJ,"borrarArchivo",1,"asuanito.txt");
         
        }
       

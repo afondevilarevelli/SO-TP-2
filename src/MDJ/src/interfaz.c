@@ -41,8 +41,6 @@ free(magic_number);
 return fs;
 }
 
-
-
 void aplicarRetardo()
 {
 t_config* fileConfig  = config_create("MDJ.config");
@@ -50,14 +48,14 @@ int ret = config_get_int_value(fileConfig,"RETARDO");
 usleep(ret);
 config_destroy(fileConfig);
 }
-//args[0]: path, args[1]: socketCPU
+//args[0]:idGDT ,args[1]: path, args[2]: socketCPU, args[3]: 1(Dummy) ó 0(no Dummy)
 void  validarArchivo(socket_connection * connection,char ** args){
 char strEstado[2];
 t_archivo *  archivo = malloc(sizeof(t_archivo));	
 archivo->path = args[0];
-archivo->fd =  1;//verificarSiExisteArchivo(archivo->path);
+archivo->fd = verificarSiExisteArchivo(archivo->path);
 if(archivo->fd == noExiste){
-archivo->estado =noExiste;
+archivo->estado = noExiste;
 }
 else {
 archivo->estado=  existe;
@@ -65,7 +63,7 @@ archivo->estado=  existe;
 sprintf(strEstado,"%i", archivo->estado);
 aplicarRetardo();
 free(archivo);
-runFunction(connection->socket,"MDJ_DAM_existeArchivo",2, strEstado, args[1]);
+runFunction(connection->socket,"MDJ_DAM_existeArchivo",5, strEstado, args[2], args[1], args[0], args[3]);
 }
 
 //void* mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
@@ -83,8 +81,11 @@ t_list * bloquesOcupados = list_create();
 archivo->size =  (tsize - 1);
 size_t tamanioBloques = (fs->tamanio_bloques - 1);
 char * pathMasArchivos = string_new();
-char * tam = malloc(archivo->size); 
-char * bloques = malloc(sizeof(fs->cantidad_bloques));
+char * tam = string_new(); 
+char * strEstado[2];
+char * tamBloq = string_new();
+char * archivoBloques = string_new();
+char * temp = string_new();
 bitMap->bitarray = crearBitmap(fs->cantidad_bloques);
 for(int i = 0; i < fs->cantidad_bloques; i++)
 {
@@ -97,13 +98,24 @@ else
  list_add(bloquesOcupados,i);  
 }
 }
-t_bloques * bloques = asignarBloques(bloquesLibres,bloquesOcupados,archivo->size);
+t_bloques * bitmapBloques = asignarBloques(bloquesLibres,bloquesOcupados,archivo->size);
+int s;
+for(s=0; s < bitmapBloques->bloques;s++){
+	string_append_with_format(&temp,"%s,",string_itoa(bitmapBloques->bloqArchivo[s]));
+}
+char * archTemp = string_new();
+archTemp = string_substring(temp,0,strlen(temp) - 1);
 archivo->fd = verificarSiExisteArchivo(archivo->path);
 if(archivo->fd == -1)
 {
 sprintf(tam,"%i",tsize);
 string_append(&tamBloq,"TAMANIO=");
 string_append(&tamBloq,tam);
+string_append(&tamBloq,"\n");
+string_append(&archivoBloques,"BLOQUES=");
+string_append(&archivoBloques,"[");
+string_append(&archivoBloques,archTemp);
+string_append(&archivoBloques,"]");
 string_append(&pathMasArchivos,obtenerPtoMontaje());
 string_append(&pathMasArchivos,"/Archivos/");
 string_append(&pathMasArchivos,archivo->path);
@@ -115,6 +127,7 @@ write(archivo->fd, "",1);
 char * file = mmap(0, archivo->size, PROT_READ | PROT_WRITE, MAP_SHARED, archivo->fd, 0);
 memcpy(file,nVeces,strlen(nVeces));
 memcpy(file,tamBloq,strlen(tamBloq));
+memcpy(file,strcat(tamBloq,archivoBloques),strlen(archivoBloques)+strlen(tamBloq));
 msync(file,archivo->size, MS_SYNC);
 munmap(file,archivo->size);
 close(archivo->fd);
@@ -124,29 +137,20 @@ archivo->estado = recienCreado;
 }
 else
 {
-archivo->estado = noCreado;
+archivo->estado = yaCreado;
+log_info(logger,"Archivo %s ya creado",archivo->path);
 }
 sprintf(strEstado, "%i", archivo->estado);
 aplicarRetardo();
 runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",2,strEstado,archivo->path);
-}
-char * destino = string_new();
-for(int j = 0;j< fs->cantidad_bloques; j++){ 
-sprintf(destino,"%s/Bloques/%d.bin",archivo->path,j);
-fdBloques[j] = open(destino,O_RDWR | O_CREAT);
-flock(fdBloques[j],LOCK_EX);
-lseek(fdBloques[j],tamanioBloques, SEEK_SET);
-write(fdBloques[j],"",1);
-archivo->bloques[j] = mmap(0,fs->tamanio_bloques,PROT_EXEC|PROT_READ|PROT_WRITE,MAP_SHARED,fdBloques[j],0);
-memcpy(file,nVeces,strlen(nVeces));
-msync(file,archivo->size, MS_SYNC);
-munmap(file,archivo->size);
-flock(archivo->fd,LOCK_UN);
-close(archivo->fd);
-}
+//list_destroy_and_destroy_elements(bloquesLibres,(void*) free);*/
 free(archivo);
 free(bitMap);
-//list_destroy_and_destroy_elements(bloquesLibres,(void*) free);
+free(archTemp);
+free(tam);
+free(temp);
+//free(pathMasArchivos);
+//free(tamBloq);
 }
 
 //off_t lseek(int fildes, off_t offset, int whence);
@@ -177,23 +181,48 @@ return leidos;
 void guardarDatos(socket_connection * connection ,char * path,off_t  * offset,size_t *  size,char * buffer){
 }
 
+
+//tira seg faul hay que arreglarla
 void borrarArchivo(socket_connection* connection,char ** args){
-char strEstado[2];
+char * strEstado[2];
 t_archivo * archivo= malloc(sizeof(t_archivo));
 archivo->path = args[0];
-archivo->fd  = 1; //verificarSiExisteArchivo(archivo->path);
-if (archivo->fd  == existe)
+t_metadata_filesystem * fs = obtenerMetadata();
+t_bitarray * bitarray = crearBitmap(fs->cantidad_bloques);
+archivo->fd = verificarSiExisteArchivo(archivo->path);
+char * temp = string_new();
+string_append(&temp,obtenerPtoMontaje());
+string_append(&temp,"/Archivos/");
+string_append(&temp,archivo->path);
+if (archivo->fd == noExiste)
 {
-archivo->estado = recienBorrado;
+log_info(logger,"El achivo %s no existe",archivo->path);
+archivo->estado = noBorrado;
 }
 else
 {
-archivo->estado = noBorrado;
+char ** bloques = obtenerBloques(archivo->path);
+for(int i=0; i < cantElementos(bloques);i++)
+{
+bitarray_clean_bit(bitarray,atoi(bloques[i]));
 }
-sprintf(strEstado, "%i", archivo->estado);
+int r = unlink(temp);
+if(r < 0)
+{
+log_error(logger,"Hubo un error al querer borrar %s",archivo->path);
+}
+else
+{
+log_trace(logger,"Archivo %s borrado correctamente",archivo->path);    
+}
+archivo->estado = recienBorrado;
+}
+sprintf(strEstado,"%i",archivo->estado);
 aplicarRetardo();
-runFunction(connection->socket,"MDJ_DAM_verificameSiArchivoFueBorrado",1,strEstado);
+runFunction(connection->socket,"MDJ_DAM_verificameSiArchivoFueBorrado",2,strEstado,archivo->path);
 }
+
+
 
 t_bitarray * crearBitmap(int  size){
 char * montajeMasBitmap = string_new();
@@ -214,6 +243,24 @@ t_bitarray * bitarray = bitarray_create_with_mode(bmap,size/8,MSB_FIRST);
 return bitarray;
 }
 
+int cantElementos(char ** array)
+{
+int cont = 0;
+while (array[cont] != NULL){
+cont = cont + 1;	
+}	
+return cont;
+}
+
+char ** obtenerBloques(char * path){
+char * temp = string_new();
+string_append(&temp,obtenerPtoMontaje());
+string_append(&temp,"/Archivos/");
+string_append(&temp,path);
+t_config * config = config_create(temp);
+char **  bloques = config_get_array_value(config,"BLOQUES");
+return bloques;
+}
 
 t_bloques *  asignarBloques(t_list * libres,t_list * ocupados ,size_t size)
 {
@@ -224,11 +271,11 @@ t_bitarray * bitarray = crearBitmap(fs->cantidad_bloques);
 int nBloques = 0;
 if(size % fs->tamanio_bloques == 0)
 {
-nBLoques = size / fs->tamanio_bloques;
+nBloques = size / fs->tamanio_bloques;
 }
 else
 {
-nBLoques = (size / fs->tamanio_bloques) + 1;    
+nBloques = (size / fs->tamanio_bloques) + 1;    
 }
 if (list_size(libres) >= nBloques){
 temp  = list_take_and_remove(libres,nBloques);
@@ -236,14 +283,24 @@ list_add_all(ocupados,temp);
 }
 else
 {
-log_error("No hay bloques disponibles , vuelva a intentarlo");
+log_error(logger,"No hay bloques disponibles , vuelva a intentarlo");
 }
 bloques->bloqLibres = list_duplicate(libres);
 bloques->bloqOcupados = list_duplicate(ocupados);
+bloques->bloqArchivo = calloc(nBloques,sizeof(int));
+for (int i=0;i <list_size(temp);i++){
+ bloques->bloqArchivo[i]= list_get(temp,i);
+}
+for(int i = 0;i < nBloques;i++){
+bitarray_set_bit(bitarray,bloques->bloqArchivo[i]);	
+}
+bloques->bloques = nBloques;
 return bloques;
 }
 
 
+// retorna un -1 si el archivo no existe
+// reortna un numero >0 si el archivo existe
 int verificarSiExisteArchivo(char * path)
 {	
 char * pathMasArchivos = string_new();
@@ -260,4 +317,157 @@ else
     close(fd);
     return fd;
 }
+free(pathMasArchivos);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -15,13 +15,14 @@
 #include <sys/file.h>
 
 //uso enum para ser mas claro en el codigo
-// noExiste = -1, existe =1
+// noExiste = -1, existe =0
 // yaCreado = 0,recienCreado = 1, noCreado = 2
+// no borrado = -1; recienBorrado = 0
 //el caso que sea 2 es para casos de error
  
-typedef enum{noExiste = -1,existe = 1 };
-typedef enum{yaCreado,recienCreado,noCreado};
-typedef enum{noBorrado,recienBorrado};
+typedef enum{noExiste = -1,existe = 0 };
+typedef enum{yaCreado,recienCreado,errorCreado = -1};
+typedef enum{recienBorrado = 0,noBorrado = -1,errorBorrado = -2};
 
 //estructura por si hay que usar hilos
 typedef struct {
@@ -29,10 +30,11 @@ socket_connection * connection;
 char ** args;
 }argumentos;
 
-//estructura para manejar los directorios del fs
 typedef struct {
 t_list *  bloqLibres;
 t_list * bloqOcupados;
+char * bloqArchivo;
+int bloques;
 }t_bloques;
 
 
@@ -40,20 +42,12 @@ t_list * bloqOcupados;
 //estructura para guardar la informacion del archivo
 typedef struct{
 int fd;
-char * mem_ptro;
 char * path;
 int * bloques;//vector con todos los bloques
 size_t  *  size; 
 int estado;
 }t_archivo;
 
-//estructura que define al bloque
-//con un vector que acumulas los bytes, el cual es dinamico
-//un ptro a la direccion  proximo  bloque
-typedef struct {
-char * contBloque;
-int * ptroProxBloque;
-}bloque;
 
 //estructura del metadata 
 typedef struct {
@@ -73,6 +67,7 @@ int  * bloques;
 }t_metadata_filemetadata;
 
 
+
 char * directorioMontaje;
 void aplicarRetardo();
 // devuelve un true(1) si el archivo existe, u falso(0)  si no existe
@@ -88,4 +83,6 @@ int * crearBloques(int, char * ,size_t);
 char * obtenerPtoMontaje();
 t_bitarray * crearBitmap(int);
 t_metadata_filesystem * obtenerMetadata ();
+t_bloques * asignarBloques(t_list * , t_list *,size_t);
+char ** obtenerBloques(char *);
 #endif
