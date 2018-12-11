@@ -7,6 +7,9 @@
 #include <sys/types.h> 
 #include <sys/mman.h>
 #include <sys/stat.h> 
+#include <dirent.h>
+#include <errno.h>
+#include <unistd.h>
 #include <fcntl.h>
 #include "../../sample-socket/socket.h"
 #include <commons/config.h>
@@ -87,4 +90,5 @@ char ** obtenerBloques(char *);
 int cantElementos2(char **);
 int cantElementos1(char *);
 void liberarLista(t_list * );
+int is_regular_file(const char *);
 #endif

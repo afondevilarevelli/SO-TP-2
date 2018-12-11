@@ -104,6 +104,18 @@ for(s=0; s < bitmapBloques->bloques;s++){
 }
 char * archTemp = string_new();
 archTemp = string_substring(temp,0,strlen(temp) - 1);
+char * aux = string_new();
+char * dir = string_new();
+string_append(&aux,archivo->path);
+string_append(&dir,obtenerPtoMontaje());
+string_append(&dir,"/Archivos/");
+string_append(&dir,strtok(aux,"/"));
+DIR * directory = opendir(dir);
+if (directory == NULL)
+{
+mkdir(dir,S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+}
+closedir(directory);
 archivo->fd = verificarSiExisteArchivo(archivo->path);
 if(archivo->fd == -1)
 {
@@ -129,9 +141,9 @@ memcpy(file,tamBloq,strlen(tamBloq));
 memcpy(file,strcat(tamBloq,archivoBloques),strlen(archivoBloques)+strlen(tamBloq));
 msync(file,archivo->size, MS_SYNC);
 munmap(file,archivo->size);
+flock(archivo->fd,LOCK_UN);
 close(archivo->fd);
 log_trace(logger,"Archivo %s creado correctamente en %s/Archivos",archivo->path,obtenerPtoMontaje());
-flock(archivo->fd,LOCK_UN);
 archivo->estado = recienCreado;
 }
 else
@@ -141,7 +153,7 @@ log_info(logger,"Archivo %s ya creado",archivo->path);
 }
 char * strEstado = string_itoa(archivo->estado);
 aplicarRetardo();
-//runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",2,strEstado,archivo->path);
+runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",2,strEstado,archivo->path);
 list_destroy(bloquesLibres);
 list_destroy(bloquesOcupados);
 free(archivo);
@@ -152,6 +164,8 @@ free(archTemp);
 free(tam);
 free(temp);
 free(pathMasArchivos);
+free(dir);
+free(aux);
 }
 
 //off_t lseek(int fildes, off_t offset, int whence);
@@ -227,6 +241,13 @@ free(archivo);
 }
 
 
+int is_regular_file(const char *path)
+{
+    struct stat path_stat;
+    stat(path, &path_stat);
+    return S_ISREG(path_stat.st_mode);
+}
+
 t_bitarray * crearBitmap(int  size){
 char * montajeMasBitmap = string_new();
 string_append(&montajeMasBitmap,obtenerPtoMontaje());
@@ -272,7 +293,7 @@ string_append(&temp,"/Archivos/");
 string_append(&temp,path);
 t_config * config = config_create(temp);
 char **  bloques = config_get_array_value(config,"BLOQUES");
-free(&temp);
+free(temp);
 return bloques;
 }
 
@@ -298,12 +319,13 @@ list_add_all(ocupados,temp);
 else
 {
 log_error(logger,"No hay bloques disponibles , vuelva a intentarlo");
+exit;
 }
 bloques->bloqLibres = list_duplicate(libres);
 bloques->bloqOcupados = list_duplicate(ocupados);
 bloques->bloqArchivo = calloc(nBloques,sizeof(int));
 for (int i=0;i <list_size(temp);i++){
- bloques->bloqArchivo[i]= (void *)list_get(temp,i);
+ bloques->bloqArchivo[i]=  list_get(temp,i);
 }
 for(int i = 0;i < nBloques;i++){
 bitarray_set_bit(bitarray,bloques->bloqArchivo[i]);	
