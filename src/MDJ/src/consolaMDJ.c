@@ -111,19 +111,28 @@ void cd(char* pathD){
 }
 
 void md5(char* pathA){ 
+        //tamaño del hash generado
         unsigned char result[MD5_DIGEST_LENGTH];
         int file_descript;
         unsigned long file_size;
+        //buffer donde guardo el contendio del archivo
         char* file_buffer;
         file_descript = open(pathA, O_RDONLY);
+        log_info(logger,"Intentando generar hash md5 de %s",pathA);
+        // si no hay nada para generar...
         if(file_descript < 0) { 
+                log_error(logger,"No se pudo generar md5 de %s",pathA);
                 printf("%s>No se pudo generar md5 de %s\n",bufferDirAct,pathA);
-                consolaMDJ();
+                //consolaMDJ();
         }
         file_size = get_size_by_fd(file_descript);
+        //mapeo en memoria el archivo
         file_buffer = mmap(0, file_size, PROT_READ, MAP_SHARED, file_descript, 0);
+        //genero el md5
         MD5((unsigned char*) file_buffer, file_size, result);
+        //lo saco de la memoria
         munmap(file_buffer, file_size); 
+        log_trace(logger,"Hash  de %s generado correctamente",pathA);
         printf("%s>MD5 %s:",bufferDirAct,pathA);
         print_md5_sum(result);
         printf("\n");
@@ -134,38 +143,31 @@ void cat(char* pathA){
 char *buffer = NULL;
 int string_size, read_size;
 FILE * handler = fopen(pathA, "r");
+log_info(logger,"Voy a intentar mostrar el contenido de %s",pathA);
  if (handler) {
        fseek(handler, 0, SEEK_END);
-       // Offset from the first to the last byte, or in other words, filesize
+       //Ofsset desde el primer byte hasta el ultimo... el tam del archivo
        string_size = ftell(handler);
-       // go back to the start of the file
+       //Hago que vuelva al principio
        rewind(handler);
-
-       // Allocate a string that can hold it all
        buffer = (char*) malloc(sizeof(char) * (string_size + 1) );
-
-       // Read it all in one operation
        read_size = fread(buffer, sizeof(char), string_size, handler);
-
-       // fread doesn't set it so put a \0 in the last position
-       // and buffer is now officially a string
        buffer[string_size] = '\0';
-
        if (string_size != read_size)
        {
-           // Something went wrong, throw away the memory and set
-           // the buffer to NULL
-           free(buffer);
            buffer = NULL;
        }
        fclose(handler);
+     log_trace("Archivo %s leido correctamente",pathA);  
      printf("\e[1m\e[37m%s\e[0m\e[0m", buffer);
     }
   else
    {
+    log_error(logger,"No pudo leerse el archivo %s ",pathA);
     printf("%sNo pudo leerse el archivo %s\n ", bufferDirAct, pathA);
     
     }
+    free(buffer);
 }
 
 void print_md5_sum(unsigned char* md) {

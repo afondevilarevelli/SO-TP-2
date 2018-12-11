@@ -16,7 +16,9 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <readline/history.h>
+#include <commons/log.h>
 
+t_log * logger;
 
 //definicion de funciones
 void consolaMDJ();
