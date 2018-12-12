@@ -23,7 +23,7 @@
 // no borrado = -1; recienBorrado = 0
 //el caso que sea 2 es para casos de error
  enum{noExiste = -1,existe = 0 };
- enum{yaCreado,recienCreado,errorCreado = -1};
+ enum{yaCreado = 0,recienCreado = 1,errorCreado = -1}; //para DAM
  enum{recienBorrado = 0,noBorrado = -1,errorBorrado = -2};
 
 //estructura por si hay que usar hilos

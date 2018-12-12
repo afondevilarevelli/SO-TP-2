@@ -291,11 +291,9 @@ void ejecucionClose(socket_connection* connection, char** args){
 }
 
 //El resultado del FM9
-//args[0]: idGDT, args[1]: estadoArchivo
+//args[1]: estadoArchivo
 void finalizacionClose(socket_connection* connection, char** args){
-
-	int idGDT = atoi(args[0]);
-	int estadoSituacionArchivo = atoi(args[1]);
+	int estadoSituacionArchivo = atoi(args[0]);
 
 	if(estadoSituacionArchivo)
 		resultadoCloseOk = true;
@@ -386,7 +384,7 @@ void permisoDeEjecucion(parametros* params){
 								runFunction(socketSAFA, "finalizacionProcesamientoCPU", 7, string_id, string_idGDT, string_sentEjecutadas, "bloquear", "1", "1", "0");
 							else
 								runFunction(socketSAFA, "finalizacionProcesamientoCPU", 7, string_id, string_idGDT, string_sentEjecutadas, "finalizar", "1", "1", "0");
-							runFunction(socketDAM, "CPU_DAM_solicitudCargaGDT", 3, string_idGDT ,rutaScript, "0");
+							runFunction(socketFM9,"FM9_DAM_solicitudCarga",3,string_idGDT, rutaScript, "0");
 							destruirOperacion(sentencia);
 							pthread_detach(hiloAbrir);
 							return;
@@ -415,7 +413,7 @@ void permisoDeEjecucion(parametros* params){
 					//Al ser la comunicacion entre CPU y FM9 nadie interviene
 					}
 					else{
-						log_error(logger, "El archivo %s no se encuentra abierto por el GDT %s, en consecuencia se va a abortar", sentencia.p1, string_idGDT);
+						log_error(logger, "El archivo %s no se encuentra abierto por el GDT %s, en consecuencia se va a abortar a dicho GDT", sentencia.p1, string_idGDT);
 						runFunction(socketSAFA, "CPU_SAFA_pasarDTBAExit", 1,string_idGDT);
 						destruirOperacion(sentencia);
 						pthread_detach(hiloEjecucion);
@@ -441,6 +439,7 @@ void permisoDeEjecucion(parametros* params){
 						else
 							runFunction(socketSAFA, "finalizacionProcesamientoCPU", 7, string_id, string_idGDT, string_sentEjecutadas, "finalizar", "0", "0", "0");
 						destruirOperacion(sentencia);
+						pthread_detach(hiloEjecucion);
 						return ;
 					}	
 					log_trace(logger,"Recurso asignado");

@@ -68,14 +68,14 @@ runFunction(connection->socket,"MDJ_DAM_existeArchivo",5, strEstado, args[2], ar
 
 //void* mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
 
-//args[0]: rutaDelArchivo, args[1]: cantidadDeBytes
+//args[0]: idGDT, args[1]: rutaDelArchivo, args[2]: cantidadDeBytes
 void crearArchivo(socket_connection * connection ,char** args)
 {
 t_archivo *  archivo= malloc(sizeof(t_archivo));
 t_metadata_bitmap * bitMap = malloc(sizeof(t_metadata_bitmap));	
 t_metadata_filesystem * fs = obtenerMetadata();
-archivo->path = args[0];
-size_t tsize = atoi(args[1]);
+archivo->path = args[1];
+size_t tsize = atoi(args[2]);
 t_list * bloquesLibres = list_create();
 t_list * bloquesOcupados = list_create();
 archivo->size = (size_t) (tsize - 1);
@@ -153,7 +153,7 @@ log_info(logger,"Archivo %s ya creado",archivo->path);
 }
 char * strEstado = string_itoa(archivo->estado);
 aplicarRetardo();
-runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",2,strEstado,archivo->path);
+runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",3,args[0],strEstado,archivo->path);
 list_destroy(bloquesLibres);
 list_destroy(bloquesOcupados);
 free(archivo);
@@ -196,10 +196,10 @@ return leidos;
 void guardarDatos(socket_connection * connection ,char * path,off_t  * offset,size_t *  size,char * buffer){
 }
 
-
+//args[0]: idGDT, args[1]: arch
 void borrarArchivo(socket_connection* connection,char ** args){
 t_archivo * archivo= malloc(sizeof(t_archivo));
-archivo->path = args[0];
+archivo->path = args[1];
 t_metadata_filesystem * fs = obtenerMetadata();
 t_bitarray * bitarray = crearBitmap(fs->cantidad_bloques);
 archivo->fd = verificarSiExisteArchivo(archivo->path);
@@ -233,7 +233,7 @@ archivo->estado = recienBorrado;
 }
 char * strEstado = string_itoa(archivo->estado);
 aplicarRetardo();
-//runFunction(connection->socket,"MDJ_DAM_verificameSiArchivoFueBorrado",2,strEstado,archivo->path);
+runFunction(connection->socket,"MDJ_DAM_verificameSiArchivoFueBorrado",3,args[0], strEstado, archivo->path);
 free(fs);
 free(bitarray);
 free(temp);

@@ -34,8 +34,11 @@ int main(void){
       dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_existeArchivo", &existeArchivo);
       dictionary_put(callableRemoteFunctionsCPU, "identificarProcesoEnDAM", &identificarProceso);
       dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_crearArchivo", &crearArchivo);
+      dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_borrarArchivo", &borrarArchivo);
   //diccionarios de FM9
       dictionary_put(callableRemoteFunctionsFM9, "FM9_DAM_archivoCargado", &archivoCargadoCorrectamente);
+      dictionary_put(callableRemoteFunctionsFM9, "FM9_DAM_respuestaFlush", &respuestaFlushFM9);
+      dictionary_put(callableRemoteFunctionsFM9, "MDJ_DAM_respuestaFlush", &respuestaFlushMDJ);
     
 	socketSAFA = connectServer("172.17.0.1", 8001,callableRemoteFunctionsSAFA, &disconnect, NULL);
   //CUANDO ME CONECTO AL SAFA LE DIGO QUE SOY EL PROCESO DAM (para manejar estadoCorrupto)

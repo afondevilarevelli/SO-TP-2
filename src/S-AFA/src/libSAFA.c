@@ -261,7 +261,7 @@ void signalRecurso(socket_connection* socketInfo, char** msg){
 		DTB* dtbADesbloquear = list_get(rec->GDTsEsperandoRecurso, 0);
 		pthread_mutex_unlock(&m_listaDeRecursos);
 		if(dtbADesbloquear != NULL && dtbADesbloquear->status != FINISHED){
-			log_info(logger, "EL GDT de id %d ha liberado el recurso %s, y se ha desbloqueado al GDT de id %d", idDTB, msg[2], dtbADesbloquear->id);
+			log_info(logger, "EL GDT de id %d ha liberado el recurso %s y se ha desbloqueado al GDT de id %d, que estaba a la espera de dicho recurso", idDTB, msg[2], dtbADesbloquear->id);
 			pthread_mutex_lock(&m_colaBloqueados);
 			get_and_remove_DTB_by_ID(colaBloqueados->elements, dtbADesbloquear->id);
 			pthread_mutex_unlock(&m_colaBloqueados);
@@ -405,9 +405,10 @@ void desbloquearDTB(socket_connection* connection, char** msgs){
 //Caso cuando ocurre un fallo sea donde este situado el DTB, pasa a abortarse para la cola FINISHED
 //msgs[0]: idDTB
 void pasarDTBAExit(socket_connection* connection, char** msgs){
-
 	int idDTB = atoi(msgs[0]);
-	DTB* dtb = buscarDTBEnElSistema(idDTB);
+	pthread_mutex_lock(&m_listaEjecutando);
+	DTB* dtb = get_and_remove_DTB_by_ID(listaEjecutando, idDTB);
+	pthread_mutex_unlock(&m_listaEjecutando);
 
 	if(dtb != NULL){
 		log_trace(logger,"Se va a abortar al GDT de id: %d", idDTB);
@@ -426,6 +427,7 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 
 	//Realiza La Verificacion del Archivo Por SI o No
 	//Envia El Resultado "1" si se encuentra abierto, "0" caso contrario
+	if(dtb != NULL){ 
     if(strcmp(msgs[2], "abrir") == 0){
 		pthread_mutex_lock(&m_verificacion);
 		archAVerificar = malloc(strlen(msgs[3]) + 1);
@@ -479,7 +481,15 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 		free(archAVerificar);
 		pthread_mutex_unlock(&m_verificacion);
     }
+	}
+	else{
+		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAbrir", 1, "0");
+	}
 
+}
+
+bool condicionArchivoAbierto(void* arch){
+	return strcmp( (char*)arch, archAVerificar) == 0;
 }
 
 //args[0]: idGDT,args[1]: nomArch
@@ -489,10 +499,6 @@ void archivoAbierto(socket_connection* connection, char** args){
 	if(dtb != NULL){
 		list_add(dtb->archivosAbiertos, args[1]);
 	}
-}
-
-bool condicionArchivoAbierto(void* arch){
-	return strcmp( (char*)arch, archAVerificar) == 0;
 }
 
 //FIN callable remote functions

@@ -101,13 +101,15 @@ void archivoCargadoCorrectamente(socket_connection* connection, char** args){
 
 	char* estadoCarga = args[1];
 
-	if(estadoCarga == "ok"){
+	if(strcmp(estadoCarga, "ok") == 0 ){
 		if(strcmp(args[3], "1") == 0)
 			runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "ok");
-		else
+		else{ 
 			runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB", 1, args[0]);
+			runFunction(socketSAFA, "aperturaArchivo", 2, args[0], args[2]);
+		}
 	}
-	else{
+	else{//error
 		if(strcmp(args[3], "1") == 0)
 			runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "error");
 		else
@@ -117,82 +119,76 @@ void archivoCargadoCorrectamente(socket_connection* connection, char** args){
 }
 
 
-//Parametros cambiados para ver que hacer si se encuentra creado o no
+//args[0]: idGDT, args[1]: 0(yaCreado), 1(recienCreado), -1(errorCreado), args[2]: arch
 void MDJ_DAM_verificarArchivoCreado(socket_connection* conenction,char ** args){
+	estadoCreacion = atoi(args[1]);
 
-estadoCreacion = atoi(args[0]);
-char* path = args[1];
-char* string_idGDT;
-sprintf(string_idGDT, "%i", idGDT);
-if(estadoCreacion ==  1)
-{
-log_trace(logger," El MDJ informa que se creo el archivo %s",path);
-runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB",1, string_idGDT);
+	if(estadoCreacion ==  1)
+	{	
+		log_trace(logger,"El MDJ informa que se ha creado el archivo %s por el GDT %s",args[2], args[0]);
+		runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB",1, args[0]);
+	}
+	else
+	{
+		if(estadoCreacion == 0)
+			log_error(logger,"Archivo %s ya creado",args[2]);
+		else
+			log_error(logger,"Error al crear el archivo %s",args[2]);
 
-}
-else
-{
-log_error(logger,"Archivo %s ya creado",path);
-runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, string_idGDT);
-}
+		runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, args[0]);
+	}	
 }
 
+//args[0]: idGDT, args[1]: 0(yaCreado), 1(recienCreado), -1(errorCreado), args[2]: arch
 void MDJ_DAM_verificameSiArchivoFueBorrado(socket_connection * connection,char ** args/*char* pam1, char* pam2*/){
-estadoBorrado = atoi(args[0]);
-char * path = args[1];
-char * string_idGDT;
-sprintf(string_idGDT, "%i", idGDT);
-if(estadoBorrado >= 0)
-{
-log_trace(logger," El MDJ informa que se borro el archivo %s",path);
-runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB",1, string_idGDT);
-}
-else if (estadoBorrado == -1)
-{
-log_error(logger,"El archivo %s es inexistente",path);
-runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1,string_idGDT);
-}
-else
-{
-log_error(logger,"Ocurrio un error al querer borrar el archivo %s",path);
-runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, string_idGDT);	
-}
+	estadoBorrado = atoi(args[1]);
+
+	if(estadoBorrado == 0)
+	{
+		log_trace(logger,"El MDJ informa que se ha borrado el archivo %s por el GDT %s",args[2], args[0]);
+		runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB",1, args[0]);
+	}
+	else if (estadoBorrado == -1)
+	{
+		log_error(logger,"El archivo %s es inexistente",args[2]);
+		runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1,args[0]);
+	}
+	else
+	{
+		log_error(logger,"Ocurrio un error al querer borrar el archivo %s",args[2]);
+		runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, args[0]);	
+	}
 }
 
+//args[0]: idGDT, args[1]: nomArch, args[2]: cantLineas
 void crearArchivo(socket_connection* connection, char** args){
-
-	idGDT = args[0];
-	char* rutaArchivo = args[1];
-
-	//Como todavia falta desarrollo del MDJ envio por parametro los posibles resultados con el DTB a buscar
-	runFunction(socketMDJ,"crearArchivo",2, rutaArchivo, args[2]);
-
+	log_info(logger,"Envio al MDJ la solicitud de creacion del archivo %s por parte del GDT de id %s",args[1], args[0]);
+	runFunction(socketMDJ,"crearArchivo",3, args[0], args[1], args[2]);
 }
 
+//args[0]: idGDT, args[1]: arch
 void borrarArchivo(socket_connection* connection, char** args){
-
-	int	idDTB = atoi(args[0]);
-
-	char* rutaArchivo = args[1];
-
-	//Idem Crear Archivo
-	//runFunction(socketMDJ,"borrarArchivo",1, rutaArchivo);
-	MDJ_DAM_verificameSiArchivoFueBorrado("0", args[0]);
-
+	log_info(logger,"Envio al MDJ la solicitud de borrado del archivo %s por parte del GDT de id %s",args[1], args[0]);
+	runFunction(socketMDJ,"borrarArchivo",2, args[0], args[1]);
 }
 
 //Comunicacion entre CPU-DAM para Cargar GDT
 //args[0]: idGDT, args[1]: path, args[2]: 1(Dummy) ó 0(no Dummy)
 void solicitudCargaGDT(socket_connection* connection, char ** args){
-	log_trace(logger, "Voy a Buscar: %s Para GDT de id %s",args[1], args[0]);
-	runFunction(socketMDJ, "validarArchivo",4, args[0], args[1],"0",args[2]);
+	char string_socket[2];
+	sprintf(string_socket, "%i", connection->socket);
+	log_trace(logger, "Voy a buscar el archivo %s para el GDT de id %s",args[1], args[0]);
+	if(strcmp(args[2], "1") == 0)
+		runFunction(socketMDJ, "validarArchivo",4, args[0], args[1],"0",args[2]);
+	else
+		runFunction(socketMDJ, "validarArchivo",4, args[0], args[1],string_socket,args[2]);
 }
 
 //args[0]: idGDT, args[1]: path, args[2]: 1(Dummy) ó 0(no Dummy)
 void existeArchivo(socket_connection* socket, char** args){
 	char string_socket[2];
-	log_info(logger, "Archivo %s recibido", args[1]);
 	sprintf(string_socket, "%i", socket->socket);
+	log_info(logger, "Archivo %s recibido", args[1]);
 	runFunction(socketMDJ,"validarArchivo",4,args[0],args[1], string_socket, args[2]);
 }
 
@@ -201,10 +197,10 @@ void existeArchivo(socket_connection* socket, char** args){
 void MDJ_DAM_existeArchivo(socket_connection* socket, char** args){
 	int socketCPU = atoi(args[1]); // HAY MUCHAS CPUs
 	log_info(logger, "Continua Su Ejecucion");
-	if(socketCPU == 0)
+	if(socketCPU != 0)
 		runFunction(socketCPU,"CPU_DAM_continuacionExistenciaAbrir",1,args[0]);
 	else
-		runFunction(socketFM9,"CPU_DAM_solicitudCarga",3,args[3], args[2], args[4]); // o cómo se llame, y le paso los argumentos que necesite
+		runFunction(socketFM9,"FM9_DAM_solicitudCarga",3,args[3], args[2], args[4]); // o cómo se llame, y le paso los argumentos que necesite
 }
 
 //args[0]: idGDT, args[1]: rutaArchivo
@@ -217,118 +213,21 @@ void solicitudDeFlush(socket_connection* connection, char** args)
 	sprintf(string_transferSize, "%i", datosConfigDAM->transferSize);
 
 	runFunction(socketFM9,"DAM_FM9_obtenerArchivo",2, args[0], string_transferSize);
-	//runFunction(socketMDJ,"guardarArchivo",0,);
 }
 
-void crearScriptCompleto(char* nomArchivo){
-	char * line = NULL;
-    size_t len = 0;
-    ssize_t read;
-	int bloques[50];
-	int i = 0;
-	int j = 0;
-	int k;
-	char bloque[3];
-	int cant = 0;
-	char scriptCompleto[1000];
-	int contadorScript = 0;
-	int c;
-	char* ruta;
+//args[0]: idGDT, args[1]: rutaArchivo, ...
+void respuestaFlushFM9(socket_connection* connection, char** args){
+	int idGDT = atoi(args[0]);
+	char* rutaArchivo = args[1];
 
-	FILE* arch = abrirArchivoScript(nomArchivo);
-	getline(&line, &len, arch);
-	if( read = getline(&line, &len, arch) != -1){
-		while(line[i] != '['){			
-			i++;
-		}
-		i++;
-
-		while(line[i] != ']'){ 
-			while(line[i] != ','){
-				if(line[i] == ']'){
-					break;
-				}
-				else{
-					bloque[j] = line[i];
-					i++;
-					j++;
-				}	
-			}
-			if(line[i] != ']'){ 
-				bloques[cant] = atoi(bloque);
-				cant++;
-				j = 0;
-				i++;
-			}
-		}
-
-		bloques[cant] = atoi(bloque);
-	} // bloques ya obtenidos, tiene ( cant+1 ) bloques
-
-	if (line){ 
-        free(line);
-	}
-	fclose(arch);
-
-	for(k = 0; k <= cant; k++){
-		FILE* bf = abrirArchivoBloque(bloques[k]);
-		if(bf!=NULL){
-			while( ( c=fgetc(bf) ) != EOF){
-				scriptCompleto[contadorScript] = c;
-				contadorScript++;
-			}
-		fclose(bf);
-		}
-	}
-	//printf("%s",scriptCompleto);
-	ruta = malloc(100*sizeof(char));
-  	strcpy(ruta, "../../Scripts/");
-  	strcat(ruta,nomArchivo);
-	FILE* archCreadoScript = fopen(ruta, "wt");
-	if(archCreadoScript != NULL){
-		if(( c=fgetc(archCreadoScript) ) != '\n' ){ 
-			for(i=0; i<contadorScript; i++){
-				fputc(scriptCompleto[i], archCreadoScript);
-			}
-		}
-	}
-	
+	//no sé qué funcion llama del MDJ
+	runFunction(socketMDJ,"guardarDatos",2, args[0], args[1]);//más argumentos faltan
 }
 
-FILE * abrirArchivoScript(char * nomArchivo)
-{
-  char* ruta = malloc(100*sizeof(char));
-  strcpy(ruta, "../../fifa-entrega-Scripts/Archivos/scripts/");
-  strcat(ruta,nomArchivo);
-  
-  FILE * scriptf = fopen(ruta, "r");
-  if (scriptf == NULL)
-  {
-    //log_error(logger, "Error al abrir el archivo %s", nomArchivo);
-    exit(EXIT_FAILURE);
-  }
-  
-  free(ruta);
-  return scriptf;
-}
-
-FILE * abrirArchivoBloque(int numBloque)
-{
-  char bloque[5];
-  sprintf(bloque, "%i", numBloque);
-  char* ruta = malloc(100*sizeof(char));
-  char* ext = ".bin";
-  strcpy(ruta, "../../fifa-entrega-Scripts/Bloques/");
-  strcat(ruta,bloque);
-  strcat(ruta, ext);
-  
-  FILE * scriptf = fopen(ruta, "r");
-  if (scriptf == NULL)
-  {
-    //log_error(logger, "Error al abrir el archivo del bloque %d", numBloque);
-    exit(EXIT_FAILURE);
-  }
-  
-  free(ruta);
-  return scriptf;
+//args[0]: idGDT, args[1]: 1(ok) ó 0(error)
+void respuestaFlushMDJ(socket_connection* connection, char** args){
+	if(strcmp(args[1],"1") == 0)
+		runFunction(socketSAFA,"DAM_SAFA_desbloquearDTB",1, args[0]);
+	else
+		runFunction(socketSAFA,"DAM_SAFA_pasarDTBAExit",1, args[0]);
 }

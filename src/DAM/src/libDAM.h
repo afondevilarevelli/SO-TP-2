@@ -40,9 +40,6 @@ int socketSAFA;
 int socketFM9;
 int socketMDJ;
 
-//Esta Variable es Solo para Recordar el Id del DTB, Cuando MDJ Responde al DAM Si Creo El Archivo o No
-int idGDT;
-
 //----------------------------//
 
 
@@ -57,9 +54,6 @@ void close_logger();
 //PROTOTIPOS
 void cerrarPrograma();
 void elementoDestructorDiccionario(void *);
-void crearScriptCompleto(char* nomArchivo);
-FILE * abrirArchivoScript(char * ruta);
-FILE * abrirArchivoBloque(int numBloque);
 
 //diccionarios
 void identificarProceso(socket_connection * connection ,char** args);
@@ -72,6 +66,8 @@ void borrarArchivo(socket_connection* connection, char** args);
 void archivoCargadoCorrectamente(socket_connection* , char**);
 void MDJ_DAM_avisarResultadoDTB(socket_connection* socketInf,char ** args);
 void solicitudDeFlush(socket_connection* , char** );
+void respuestaFlushFM9(socket_connection* connection, char** args);
+void respuestaFlushMDJ(socket_connection* connection, char** args);
 void solicitudCargaGDT(socket_connection* connection, char ** args);
 
 #endif
