@@ -155,10 +155,12 @@ void status(int idGDT){
 
 //FALTA IMPLEMENTAR
 void metricas(int idGDT){	
+	double tiempoRespProm = tiempoRespuestaPromedio();
+	double porcSentDiego = cantSentConDiego*100/cantSentenciasEjecutadas;
 	log_info(logger,"Cant.de sentencias ejecutadas prom. del sistema que usaron a El Diego: %d", cantSentConDiego);
-	log_info(logger,"Porcentaje de las sentencias ejecutadas promedio que fueron a El Diego: %f ",cantSentConDiego*100/cantSentenciasEjecutadas);
+	log_info(logger,"Porcentaje de las sentencias ejecutadas promedio que fueron a El Diego: %f por ciento", porcSentDiego);
 	log_info(logger,"Cant. de sentencias ejecutadas prom. del sistema para que un DTB termine en la cola EXIT: ");
-	log_info(logger,"Tiempo de Respuesta promedio del Sistema: ");
+	log_info(logger,"Tiempo de Respuesta promedio del Sistema: %.9f segs"/**10^9 segs"*/,tiempoRespProm);
 	 
 	if(idGDT != 0){ 
 		DTB* dtb = buscarDTBEnElSistema(idGDT);
@@ -167,4 +169,21 @@ void metricas(int idGDT){
 		else
 			log_info(logger, "No existe un GDT con id %d en el sistema", idGDT);
 	}
+}
+
+double tiempoRespuestaPromedio(){
+	float time = 0;
+	int i;
+	int tamanio = list_size(tiemposDeRespuestas);
+	pthread_mutex_lock(&m_tiempoRespuesta);
+	for(i=0; i<tamanio; i++){
+		float* t = (float*) list_get(tiemposDeRespuestas, i);
+		time += *t;
+	}
+	pthread_mutex_unlock(&m_tiempoRespuesta);
+
+	if(time < 0)
+		time *= -1;
+		
+	return time/tamanio;
 }

@@ -28,8 +28,9 @@ int main(void){
      dictionary_put(fns, "waitRecurso", &waitRecurso);
      dictionary_put(fns, "signalRecurso", &signalRecurso);
      dictionary_put(fns, "CPU_SAFA_verificarEstadoArchivo", &verificarEstadoArchivo);
-      dictionary_put(fns, "aperturaArchivo", &archivoAbierto); 
-
+     dictionary_put(fns, "aperturaArchivo", &archivoAbierto); 
+     dictionary_put(fns, "terminoClock", &terminoClock);
+     dictionary_put(fns, "inicioClock", &inicioClock); 
         
         colaReady = queue_create();
         colaBloqueados = queue_create();
@@ -39,6 +40,7 @@ int main(void){
         hilos = list_create();
         listaCPUs = list_create();
         listaDeRecursos = list_create();
+        tiemposDeRespuestas = list_create();
 
         pthread_t hiloConsola, hiloPLP;
         list_add(hilos, &hiloConsola);
@@ -66,6 +68,7 @@ int main(void){
         pthread_mutex_init(&m_verificacion, NULL);
         pthread_mutex_init(&m_cantSent, NULL);
         pthread_mutex_init(&m_cantDiego, NULL);
+        pthread_mutex_init(&m_tiempoRespuesta, NULL);
 
         pthread_create(&hiloConsola, NULL, (void*)&consolaSAFA, NULL);       
         pthread_create(&hiloPLP, NULL, (void*)&planificadorLargoPlazo, NULL);
@@ -109,6 +112,7 @@ void cerrarPrograma() {
     pthread_mutex_destroy(&m_verificacion);
     pthread_mutex_destroy(&m_cantSent);
     pthread_mutex_destroy(&m_cantDiego);
+    pthread_mutex_destroy(&m_tiempoRespuesta);
 
     close_logger();
     dictionary_destroy(fns); 
@@ -123,6 +127,7 @@ void cerrarPrograma() {
     list_destroy_and_destroy_elements(listaCPUs, (void*)free);
     list_destroy(listaEjecutando);
     list_destroy_and_destroy_elements(listaDeRecursos, (void*)&destruirRecurso);
+    list_destroy(tiemposDeRespuestas);
 
 
     pthread_mutex_unlock(&mx_main);

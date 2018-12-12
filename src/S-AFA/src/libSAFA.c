@@ -501,6 +501,32 @@ void archivoAbierto(socket_connection* connection, char** args){
 	}
 }
 
+//msgs[0]: idCPU
+void terminoClock(socket_connection* connection, char** msgs){
+	int idCPU = atoi(msgs[0]);
+	CPU* cpu = buscarCPU(idCPU);
+	float tr;
+	float dif;
+	if(cpu != NULL){
+		cpu->fin = clock();
+		dif = (float) (cpu->fin - cpu->inicio);
+		tr = dif / (float)CLOCKS_PER_SEC;
+
+		pthread_mutex_lock(&m_tiempoRespuesta);
+		list_add(tiemposDeRespuestas, (void*)&tr);
+		pthread_mutex_unlock(&m_tiempoRespuesta);
+	}
+}
+
+//msgs[0]: idCPU
+void inicioClock(socket_connection* connection, char** msgs){
+	int idCPU = atoi(msgs[0]);
+	CPU* cpu = buscarCPU(idCPU);
+	if(cpu != NULL){
+		cpu->inicio = clock();
+	}
+}
+
 //FIN callable remote functions
 void finalizarDTB(DTB* dtb){
 	dtb->status = FINISHED;
