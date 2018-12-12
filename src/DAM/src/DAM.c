@@ -72,8 +72,8 @@ int main(void){
         runFunction(socketMDJ,"identificarProcesoEnMDJ",1,"DAM");
         //runFunction(socketMDJ,"crearArchivo",2,"asuanito.txt","200");
         //runFunction(socketMDJ,"borrarArchivo",1,"juanito.txt");
-        runFunction(socketMDJ,"crearArchivo",2,"equipos/juanito.txt","400");
-        //runFunction(socketMDJ,"borrarArchivo",1,"asuanito.txt");
+        //runFunction(socketMDJ,"crearArchivo",3,"0","equipos/juanito.txt","400");
+        runFunction(socketMDJ,"guardarDatos",4,"equipos/juanito.txt","100","10","hola manola");
         
        }
       
