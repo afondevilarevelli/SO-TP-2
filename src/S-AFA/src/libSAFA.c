@@ -546,12 +546,27 @@ void mostrarInformacionDTB(DTB* unDTB){
 		char* estado;
 
     	printf("Los Datos Almacenados En El DTB Son:\n");
-    	printf("Id DTB: %d\n", unDTB->id);
+    	printf("ID: %d\n", unDTB->id);
     	printf("Ruta del Escriptorio: %s\n", unDTB->rutaScript);
     	printf("Program Counter: %d\n", unDTB->PC);
     	printf("Flag Inicializado: %d\n", unDTB->flagInicializado);
     	estado = stringFromState(unDTB->status);
     	printf("Estado: %s\n", estado);
+		printf("Quantum faltante: %d\n", unDTB->quantumFaltante);
+		printf("Cantidad de sentencias esperadas en estado NEW: %d\n", unDTB->cantSentEsperadasEnNew);
+		printf("Cantidad de I/O: %d\n", unDTB->cantIOs);
+		printf("Archivos abiertos: ");
+		if(list_size(unDTB->archivosAbiertos) == 0)
+			printf("No tiene archivos abiertos\n");
+		else{
+			int i;
+			for(i=0; i<list_size(unDTB->archivosAbiertos); i++){
+				char* arch = list_get(unDTB->archivosAbiertos, i);
+				printf("%s\n", arch);
+				printf("                   ");
+			}
+			printf("\n");
+		}
     	printf("----------------------\n");
 
 }
