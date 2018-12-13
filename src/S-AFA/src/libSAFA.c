@@ -505,15 +505,15 @@ void archivoAbierto(socket_connection* connection, char** args){
 void terminoClock(socket_connection* connection, char** msgs){
 	int idCPU = atoi(msgs[0]);
 	CPU* cpu = buscarCPU(idCPU);
-	float tr;
+	float* tr = malloc(sizeof(float));
 	float dif;
 	if(cpu != NULL){
 		cpu->fin = clock();
 		dif = (float) (cpu->fin - cpu->inicio);
-		tr = dif / (float)CLOCKS_PER_SEC;
+		*tr = dif / (float)CLOCKS_PER_SEC;
 
 		pthread_mutex_lock(&m_tiempoRespuesta);
-		list_add(tiemposDeRespuestas, (void*)&tr);
+		list_add(tiemposDeRespuestas, (void*)tr);
 		pthread_mutex_unlock(&m_tiempoRespuesta);
 	}
 }

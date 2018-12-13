@@ -37,6 +37,38 @@ void inicializarMemoriaConSegmentacion(){
 	log_info(logger, "Espacio reservado y tabla generada con exito");
 }
 
+//SEGMENTACION PAGINADA
+/*
+void inicializarMemoriaConSegmentacionPaginada(){
+	log_info(logger, "Voy a reservar espacio para guardar los procesos y la tabla de segmentos");
+	memoria = calloc(1,datosConfigFM9->tamanio);
+	lista_tabla_segmentos = list_create();
+	log_info(logger, "Espacio reservado y tabla generada con exito");
+} */
+
+//PAGINACION INVERTIDA
+void inicializarMemoriaConPaginacionInvertida(){
+	int cantMarcos = datosConfigFM9->tamanio / datosConfigFM9->tamanioPagina;
+	log_info(logger, "Hay %d marcos", cantMarcos);
+	log_info(logger, "Voy a reservar espacio para guardar los procesos y la tabla de paginas invertidas");
+	memoria = calloc(1,datosConfigFM9->tamanio);
+	tabla_paginasInvertidas = list_create();
+	setearNumerosMarcos(cantMarcos);
+	log_info(logger, "Espacio reservado y tabla generada con exito");
+}
+
+void setearNumerosMarcos(int cantMarcos){
+	int i;
+	for(i=0; i<cantMarcos; i++){
+		t_PaginasInvertidas* marco = malloc(sizeof(t_PaginasInvertidas));
+		marco->marco = i;
+		marco->libre = true;
+		marco->numPagina = -1;
+		marco->PID = -1;
+		list_add(tabla_paginasInvertidas, marco);
+	}
+}
+
 //Busco entre un nodo y el siguiente si hay espacio para guardar. 
 //TODO La lista tiene que estar ordenada
 int devolverPosicionNuevoSegmento(int tamanioAPersistir){
@@ -82,9 +114,8 @@ t_config_FM9* read_and_log_config(char* path) {
 	t_config_FM9* _datosFM9 = malloc(sizeof(t_config_FM9));
 
 	_datosFM9->puerto = config_get_int_value(archivo_Config, "PUERTO");
-	char* modo = string_new();
-	string_append(&modo, config_get_string_value(archivo_Config, "MODO"));
-	_datosFM9->modo = modo;
+	_datosFM9->modo = malloc(strlen(config_get_string_value(archivo_Config, "MODO")) + 1);
+	strcpy(_datosFM9->modo, config_get_string_value(archivo_Config, "MODO"));
 	_datosFM9->tamanio = config_get_int_value(archivo_Config, "TAMANIO");
 	_datosFM9->maximoLinea = config_get_int_value(archivo_Config, "MAX_LINEA");
 	_datosFM9->tamanioPagina = config_get_int_value(archivo_Config,
@@ -125,7 +156,7 @@ void solicitudCargaArchivo(socket_connection *connection, char **args)
 		nuevoSegmento->base = pos;
 		nuevoSegmento->limite = tamanioArchivo;
 		list_add(lista_tabla_segmentos, nuevoSegmento);
-		list_sort(lista_tabla_segmentos, ordenarTablaSegmentosDeMenorBaseAMayorBase);
+		list_sort(lista_tabla_segmentos, &ordenarTablaSegmentosDeMenorBaseAMayorBase);
 		log_info(logger, "Se actualizo correctamente la tabla de segmentos");
 
 		runFunction(connection->socket, "FM9_DAM_cargueElArchivoCorrectamente", 2, args[0], "ok");

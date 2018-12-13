@@ -1,11 +1,12 @@
 #ifndef SRC_COMANDOSMEMORIA_H_
 #define SRC_COMANDOSMEMORIA_H_
 
+#include <string.h>
 #include <commons/string.h>
 #include <commons/config.h>
 #include <commons/collections/list.h>
-
 #include "socket.h"
+#include <ctype.h>
 
 typedef struct
 {

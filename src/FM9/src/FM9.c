@@ -29,7 +29,10 @@ int main(void) {
 		log_info(logger, "Modo segmentacion");
 		inicializarMemoriaConSegmentacion();
 	}
-	else{
+	else if(strcmp(datosConfigFM9->modo,"TPI")==0){
+		inicializarMemoriaConPaginacionInvertida();
+	}
+	else{ 
 		log_error(logger, "Modo no reconocido");
 		cerrarPrograma();
 	}
@@ -58,7 +61,10 @@ int main(void) {
 	while(1) {
 		log_info(logger, "Ingrese un Comando");
 		getline(&buffer, &bufsize, stdin);
-		executeCommand(buffer);
+		if(strcmp(buffer, "salir") != 0)
+			executeCommand(buffer);
+		else
+			break;
 	}
 	free(buffer);
 	//conexion al servidor-----------------------------
