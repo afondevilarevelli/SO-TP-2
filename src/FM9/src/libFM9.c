@@ -18,11 +18,47 @@ void close_logger() {
 	log_destroy(logger);
 }
 
+//CONFIG
+t_config_FM9* read_and_log_config(char* path) {
+	log_info(logger, "Voy a leer el archivo FM9.config");
+
+	t_config* archivo_Config = config_create(path);
+	if (archivo_Config == NULL) {
+		log_error(logger, "No existe archivo de configuracion");
+		exit(1);
+	}
+
+	t_config_FM9* _datosFM9 = malloc(sizeof(t_config_FM9));
+
+	_datosFM9->puerto = config_get_int_value(archivo_Config, "PUERTO");
+	_datosFM9->modo = malloc(strlen(config_get_string_value(archivo_Config, "MODO")) + 1);
+	strcpy(_datosFM9->modo, config_get_string_value(archivo_Config, "MODO"));
+	_datosFM9->tamanio = config_get_int_value(archivo_Config, "TAMANIO");
+	_datosFM9->maximoLinea = config_get_int_value(archivo_Config, "MAX_LINEA");
+	_datosFM9->tamanioPagina = config_get_int_value(archivo_Config,
+			"TAM_PAGINA");
+
+	log_info(logger, "	PUERTO: %d", _datosFM9->puerto);
+	log_info(logger, "	MODO: %s", _datosFM9->modo);
+	log_info(logger, "	TAMANIO: %d", _datosFM9->tamanio);
+	log_info(logger, "	MAX_LINEA: %d", _datosFM9->maximoLinea);
+	log_info(logger, "	TAM_PAGINA: %d", _datosFM9->tamanioPagina);
+
+	log_info(logger, "Fin de lectura");
+
+	config_destroy(archivo_Config);
+	//free(modo);
+
+	return _datosFM9;
+}
+
 //SOCKETS
 void identificarProceso(socket_connection * connection, char** args) {
 	log_info(logger,
 			"Se ha conectado %s en el socket NRO %d  con IP %s,  PUERTO %d\n",
 			args[0], connection->socket, connection->ip, connection->port);
+	if(strcmp(args[0], "DAM") == 0)
+		socketDAM = connection->socket;
 }
 
 void disconnect(socket_connection* socketInfo) {
@@ -63,8 +99,9 @@ void setearNumerosMarcos(int cantMarcos){
 		t_PaginasInvertidas* marco = malloc(sizeof(t_PaginasInvertidas));
 		marco->marco = i;
 		marco->libre = true;
-		marco->numPagina = -1;
+		marco->pagina = -1;
 		marco->PID = -1;
+		marco->tamanioOcupado = 0;
 		list_add(tabla_paginasInvertidas, marco);
 	}
 }
@@ -101,71 +138,77 @@ int devolverPosicionNuevoSegmento(int tamanioAPersistir){
 	return -1;
 }
 
-//CONFIG
-t_config_FM9* read_and_log_config(char* path) {
-	log_info(logger, "Voy a leer el archivo FM9.config");
-
-	t_config* archivo_Config = config_create(path);
-	if (archivo_Config == NULL) {
-		log_error(logger, "No existe archivo de configuracion");
-		exit(1);
+int devolverMarcoNuevaPaginaInvertida(int tamanioArchivo, int idGDT){
+	int i, numMarco = -1, pagMasAlta = 0;
+	
+	for(i=0; i<list_size(tabla_paginasInvertidas); i++){
+		t_PaginasInvertidas* unMarco = (t_PaginasInvertidas*) list_get(tabla_paginasInvertidas, i);
+		if(marco->PID == idGDT){ 
+			if(pagMasAlta < marco->pagina)
+				pagMasAlta = marco->pagina;
+		}
 	}
 
-	t_config_FM9* _datosFM9 = malloc(sizeof(t_config_FM9));
+	for(i=0; i<list_size(tabla_paginasInvertidas); i++){
+		t_PaginasInvertidas* unMarco = (t_PaginasInvertidas*) list_get(tabla_paginasInvertidas, i);
+		if(unMarco->libre){ 
+			numMarco = unMarco->marco;
+			unMarco->PID = idGDT;
+			unMarco->pagina = pagMasAlta;
+			unMarco->libre = false;
+			unMarco->tamanioOcupado += tamanioArchivo;
+			break;
+		}
+	}
 
-	_datosFM9->puerto = config_get_int_value(archivo_Config, "PUERTO");
-	_datosFM9->modo = malloc(strlen(config_get_string_value(archivo_Config, "MODO")) + 1);
-	strcpy(_datosFM9->modo, config_get_string_value(archivo_Config, "MODO"));
-	_datosFM9->tamanio = config_get_int_value(archivo_Config, "TAMANIO");
-	_datosFM9->maximoLinea = config_get_int_value(archivo_Config, "MAX_LINEA");
-	_datosFM9->tamanioPagina = config_get_int_value(archivo_Config,
-			"TAM_PAGINA");
-
-	log_info(logger, "	PUERTO: %d", _datosFM9->puerto);
-	log_info(logger, "	MODO: %s", _datosFM9->modo);
-	log_info(logger, "	TAMANIO: %d", _datosFM9->tamanio);
-	log_info(logger, "	MAX_LINEA: %d", _datosFM9->maximoLinea);
-	log_info(logger, "	TAM_PAGINA: %d", _datosFM9->tamanioPagina);
-
-	log_info(logger, "Fin de lectura");
-
-	config_destroy(archivo_Config);
-	//free(modo);
-
-	return _datosFM9;
+	return numMarco; //si es -1 significa error
 }
 
-//args[0]: idGDT
+//args[0]: idGDT, args[1]: archivo, args[2]: 1(Dummy) ó 0(noDummy)
 //Comunicacion para Desarrollar Cuando El DAM pida a FM9 cargar el archivo ya sea un DTB o el Dummy
 void solicitudCargaArchivo(socket_connection *connection, char **args)
 {
+	int tamanioArchivo = strlen(args[1]) + 1;
+	log_info(logger, "Voy a persistir '%s' para el GDT de id %d cuyo tamanio es %d", args[1], args[0],tamanioArchivo);
+	if(strcmp(datosConfigFM9->modo,"SEG")==0){ 
+		log_info(logger, "Voy a buscar una posicion para almacenar los datos");
+		int pos = devolverPosicionNuevoSegmento(tamanioArchivo);
+		log_info(logger, "La posicion es %d", pos);
+		if (pos != -1)
+		{
+			memcpy(memoria + pos, args[0], tamanioArchivo);
+			log_info(logger, "Persisti el contenido");
 
-	log_info(logger, "Voy a persistir: '%s' cuyo tamanio es %d", args[0], strlen(args[0]));
-	int tamanioArchivo = strlen(args[0]);
-	log_info(logger, "Voy a buscar una posicion para almacenar los datos");
-	int pos = devolverPosicionNuevoSegmento(tamanioArchivo);
-	log_info(logger, "La posicion es %d", pos);
-	if (pos != -1)
-	{
-		memcpy(memoria + pos, args[0], tamanioArchivo);
-		log_info(logger, "Persisti el contenido");
+			log_info(logger, "Voy a actualizar tabla de segmentos");
+			t_tabla_segmentos *nuevoSegmento = malloc(sizeof(t_tabla_segmentos));
 
-		log_info(logger, "Voy a actualizar tabla de segmentos");
-		t_tabla_segmentos *nuevoSegmento = malloc(sizeof(t_tabla_segmentos));
+			nuevoSegmento->base = pos;
+			nuevoSegmento->limite = tamanioArchivo;
+			list_add(lista_tabla_segmentos, nuevoSegmento);
+			list_sort(lista_tabla_segmentos, &ordenarTablaSegmentosDeMenorBaseAMayorBase);
+			log_info(logger, "Se actualizo correctamente la tabla de segmentos");
 
-		nuevoSegmento->base = pos;
-		nuevoSegmento->limite = tamanioArchivo;
-		list_add(lista_tabla_segmentos, nuevoSegmento);
-		list_sort(lista_tabla_segmentos, &ordenarTablaSegmentosDeMenorBaseAMayorBase);
-		log_info(logger, "Se actualizo correctamente la tabla de segmentos");
-
-		runFunction(connection->socket, "FM9_DAM_cargueElArchivoCorrectamente", 2, args[0], "ok");
+			runFunction(socketDAM, "FM9_DAM_archivoCargado", 4, args[0], "ok", args[1], args[2]);
+		}
+		else
+		{
+			log_error(logger, "No se encontro una posicion dentro de la tabla de segmentos");
+			log_error(logger, "No se pudo persistir los datos");
+			runFunction(socketDAM, "FM9_DAM_archivoCargado", 4, args[0], "error", args[1], args[2]);
+		}
 	}
-	else
-	{
-		log_error(logger, "No se encontro una posicion dentro de la tabla de segmentos");
-		log_error(logger, "No se pudo persistir los datos");
-		runFunction(connection->socket, "FM9_DAM_cargueElArchivoCorrectamente", 2, args[0], "error");
+	else if(strcmp(datosConfigFM9->modo,"TPI")==0){
+		int marco = devolverMarcoNuevaPaginaInvertida(tamanioArchivo);
+		if (marco != -1){
+			memcpy(memoria + marco*datosConfigFM9->tamanioPagina, args[1], tamanioArchivo);
+			log_info(logger, "Persisti el contenido");
+			runFunction(socketDAM, "FM9_DAM_archivoCargado", 4, args[0], "ok", args[1], args[2]);
+		}else{
+			runFunction(socketDAM, "FM9_DAM_archivoCargado", 4, args[0], "error", args[1], args[2]);
+		}
+	}
+	else{ //SEGMENTACION PAGINADA
+		printf("No esta implementado papu\n");
 	}
 }
 

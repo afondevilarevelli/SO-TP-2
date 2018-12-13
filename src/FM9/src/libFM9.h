@@ -23,10 +23,11 @@ typedef struct {
 } t_tabla_segmentos;
 
 typedef struct {
-	int numPagina;
+	int pagina;
 	int PID; //id del GDT 
 	int marco;
 	bool libre;
+	int tamanioOcupado;
 } t_PaginasInvertidas;
 
 //VARIABLES
@@ -34,6 +35,7 @@ t_log* logger;
 t_config_FM9* datosConfigFM9;
 t_dictionary * callableRemoteFunctions;
 pthread_mutex_t mx_main;
+int socketDAM;
 
 void* memoria;
 

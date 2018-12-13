@@ -133,5 +133,5 @@ void ejecucionWait(socket_connection*, char**);
 void finalizacionClose(socket_connection*, char**);
 void funcionHiloAbrir();
 void funcionHiloClose();
-void funcionHilo(char*);
+void funcionHilo(char*); 
 #endif
