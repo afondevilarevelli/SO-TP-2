@@ -104,26 +104,32 @@ t_config_FM9* read_and_log_config(char* path) {
 	return _datosFM9;
 }
 
-//args[0]: idGDT
+//args[0]: idGDT; args[1]: datos
 //Comunicacion para Desarrollar Cuando El DAM pida a FM9 cargar el archivo ya sea un DTB o el Dummy
 void solicitudCargaArchivo(socket_connection *connection, char **args)
 {
+	int pid = args[0];
+	log_info(logger, "Voy a persistir: '%s' cuyo tamanio es %d", args[1], strlen(args[1]));
+	int tamanioArchivo = strlen(args[1]);
 
-	log_info(logger, "Voy a persistir: '%s' cuyo tamanio es %d", args[0], strlen(args[0]));
-	int tamanioArchivo = strlen(args[0]);
+	int cantidadLineas = (tamanioArchivo/datosConfigFM9->maximoLinea)+1;
+	log_info(logger, "Cantidad de lineas a utilizar: %d", cantidadLineas);
+	int tamanioReal = cantidadLineas*datosConfigFM9->maximoLinea;
+	
 	log_info(logger, "Voy a buscar una posicion para almacenar los datos");
-	int pos = devolverPosicionNuevoSegmento(tamanioArchivo);
+	int pos = devolverPosicionNuevoSegmento(tamanioReal);
 	log_info(logger, "La posicion es %d", pos);
 	if (pos != -1)
 	{
-		memcpy(memoria + pos, args[0], tamanioArchivo);
+		memcpy(memoria + pos, args[1], tamanioArchivo);
 		log_info(logger, "Persisti el contenido");
 
 		log_info(logger, "Voy a actualizar tabla de segmentos");
 		t_tabla_segmentos *nuevoSegmento = malloc(sizeof(t_tabla_segmentos));
 
+		nuevoSegmento->pid = pid;
 		nuevoSegmento->base = pos;
-		nuevoSegmento->limite = tamanioArchivo;
+		nuevoSegmento->limite = tamanioReal;
 		list_add(lista_tabla_segmentos, nuevoSegmento);
 		list_sort(lista_tabla_segmentos, ordenarTablaSegmentosDeMenorBaseAMayorBase);
 		log_info(logger, "Se actualizo correctamente la tabla de segmentos");
@@ -142,12 +148,61 @@ void solicitudCargaArchivo(socket_connection *connection, char **args)
 void actualizarDatosDTB(socket_connection* connection, char** args){
 
 	int idGDT = atoi(args[0]);
-	char* path = args[1];
-	size_t linea = atoi(args[2]);
+	int path = atoi(args[1]);
+	int linea = atoi(args[2]);
 	char* datos = args[3];
 
-	log_info(logger, "Del GDT: %d, recibi los siguientes Datos: %s, %d, %s", idGDT, path, linea, datos);
+	log_info(logger, "Del GDT: %d, recibi los siguientes Datos: %d, %d, %s", idGDT, path, linea, datos);
 
+	bool _buscarSegmento(void* elemento){
+		return buscarSegmento(elemento, idGDT, path);	
+	}
+
+	//Me fijo si existe en la tabla de segmentos
+	t_tabla_segmentos* datosSegmento = list_find(lista_tabla_segmentos, _buscarSegmento);
+
+	if(datosSegmento == NULL){
+		log_error(logger, "TODO: devolver RunFuction de errors: no existe el segmento pedido");
+		return;
+	}
+
+	//me fijo si el espacio que tiene le alcanza y actualizo
+	//sino busco un nuevo hueco donde persistir los datos
+	if((datosSegmento->limite - linea)>strlen(datos)){
+		memcpy(memoria+path+linea, datos, strlen(datos));
+		log_error(logger, "TODO: devolver RunFuction de ok");
+	}else{
+		int cantidadLineas = ((datosSegmento->limite-(datosSegmento->limite-linea) + strlen(datos))/datosConfigFM9->maximoLinea)+1;
+		log_info(logger, "Cantidad de lineas a utilizar: %d", cantidadLineas);
+		int tamanioReal = cantidadLineas*datosConfigFM9->maximoLinea;
+		log_info(logger, "Voy a buscar una posicion para almacenar los datos");
+		int pos = devolverPosicionNuevoSegmento(tamanioReal);
+		log_info(logger, "La posicion es %d", pos);
+
+		if (pos != -1)
+		{
+			memcpy(memoria + pos, memoria+datosSegmento->base, datosSegmento->limite);
+			memcpy(memoria+pos+linea, datos, strlen(datos));
+			log_info(logger, "Persisti el contenido");
+
+			log_info(logger, "Voy a actualizar tabla de segmentos");
+
+			datosSegmento->base = pos;
+			datosSegmento->limite = tamanioReal;
+			list_sort(lista_tabla_segmentos, ordenarTablaSegmentosDeMenorBaseAMayorBase);
+			log_info(logger, "Se actualizo correctamente la tabla de segmentos");
+			log_error(logger, "TODO: devolver RunFuction de ok con la nueva posicion en memoria");
+		}
+		else
+		{
+			log_error(logger, "No se encontro una posicion dentro de la tabla de segmentos");
+			log_error(logger, "No se pudo persistir los datos");
+			log_error(logger, "TODO: devolver RunFuction de errors");
+		}
+
+
+	}
+	
 }
 
 //args[0]: idGDT, args[1]: rutaScript
@@ -161,5 +216,9 @@ void cerrarArchivoDelDTB(socket_connection* connection, char** args){
 
 bool ordenarTablaSegmentosDeMenorBaseAMayorBase(t_tabla_segmentos* unNodo, t_tabla_segmentos* nodoSiguiente){
 	return unNodo->base < nodoSiguiente->base;
+}
+
+bool buscarSegmento(t_tabla_segmentos* unNodo, int* pid, int* base){
+	return (unNodo->pid ==  pid && unNodo->base == base);
 }
 

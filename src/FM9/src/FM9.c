@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
-#include "libFM9.h"
 #include "comandosMemoria.h"
 
 void cerrarPrograma() {
@@ -28,13 +27,24 @@ int main(void) {
 	if(strcmp(datosConfigFM9->modo,"SEG")==0){
 		log_info(logger, "Modo segmentacion");
 		inicializarMemoriaConSegmentacion();
+	}else{
+		if(strcmp(datosConfigFM9->modo, "TPI")==0){
+			log_info(logger, "Modo Tabla de Paginas Invertidas");
+			log_error(logger, "TODO Tabla de paginas invertidas");
+			cerrarPrograma();
+		}else{
+			if(strcmp(datosConfigFM9->modo, "SPA")==0){
+				log_info(logger, "Modo Segmentacion Paginada");
+				log_error(logger, "TODO Segmentacion paginada");
+				cerrarPrograma();
+			}else{
+				log_error(logger, "Modo no reconocido");
+				cerrarPrograma();
+			}
+		}
 	}
-	else{
-		log_error(logger, "Modo no reconocido");
-		cerrarPrograma();
-	}
+	
 
-	//test();
 	callableRemoteFunctions = dictionary_create();
 
 	dictionary_put(callableRemoteFunctions, "identificarProcesoEnFM9", &identificarProceso);

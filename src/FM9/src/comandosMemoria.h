@@ -6,6 +6,7 @@
 #include <commons/collections/list.h>
 
 #include "socket.h"
+#include "libFM9.h"
 
 typedef struct
 {
@@ -24,3 +25,6 @@ void loadCommands();
 void executeCommand(char*);
 
 #endif /* SRC_COMANDOSMEMORIA_H_ */
+
+bool isPid(t_tabla_segmentos*, int);
+void mostrarDatosPid(t_tabla_segmentos*);

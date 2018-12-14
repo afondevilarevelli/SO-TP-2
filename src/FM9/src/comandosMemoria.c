@@ -1,5 +1,4 @@
 #include "comandosMemoria.h"
-#include "libFM9.h"
 
 // Crea un nuevo comando
 Command * newCommand(char * name, void (*fn)(), int args, char * description) {
@@ -45,9 +44,20 @@ void printMenu() {
 	//puts("\n");
 }
 
-void dump()
+void dump(char** args)
 {
-	log_error(logger, "TODO");
+	int* pid = atoi(args[1]);
+	
+	bool _isPid(void* elemento){
+		return isPid(elemento, pid);
+	}
+
+	t_list* lista_segmentos_pid;
+	lista_segmentos_pid = list_filter(lista_tabla_segmentos, _isPid);
+	log_info(logger, "%d", list_size(lista_segmentos_pid));
+	list_iterate(lista_segmentos_pid, mostrarDatosPid);
+
+	list_destroy(lista_segmentos_pid);
 }
 
 // Carga de lista de comandos
@@ -55,7 +65,7 @@ void loadCommands()
 {
   commands = list_create();
   list_add(commands, newCommand("help", &printMenu, 0, "()~$: Menu de ayuda."));
-  list_add(commands, newCommand("dump", &dump, 0, "()~$: Hacer dump."));
+  list_add(commands, newCommand("dump", &dump, 1, "()~$: Hacer dump."));
 }
 
 
@@ -90,4 +100,15 @@ void executeCommand(char * c){
   }
 
   freeCharArray(args);
+}
+
+bool isPid(t_tabla_segmentos* unNodo, int pidIngresado){
+	return unNodo->pid == pidIngresado;
+}
+
+void mostrarDatosPid(t_tabla_segmentos* unNodo){
+	log_info(logger, "PID: %d			base: %d			offset: %d", unNodo->pid, unNodo->base, unNodo->limite);
+	char* datos = malloc(unNodo->limite);
+	memcpy(datos, memoria + unNodo->base, unNodo->limite);
+	log_info(logger, "Datos almacenados: %s", datos);
 }

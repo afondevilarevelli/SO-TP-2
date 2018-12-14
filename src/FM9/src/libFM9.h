@@ -17,6 +17,7 @@ typedef struct {
 } t_config_FM9;
 
 typedef struct {
+	int pid;
 	int base;
 	int limite;
 } t_tabla_segmentos;
@@ -54,3 +55,5 @@ int devolverPosicionNuevoSegmento(int);
 t_config_FM9* read_and_log_config(char*);
 
 bool ordenarTablaSegmentosDeMenorBaseAMayorBase(t_tabla_segmentos*, t_tabla_segmentos*);
+bool buscarSegmento(t_tabla_segmentos*, int*, int*);
+
