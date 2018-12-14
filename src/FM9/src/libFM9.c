@@ -138,30 +138,58 @@ int devolverPosicionNuevoSegmento(int tamanioAPersistir){
 	return -1;
 }
 
-int devolverMarcoNuevaPaginaInvertida(int tamanioArchivo, int idGDT){
-	int i, numMarco = -1, pagMasAlta = 0;
+int cargarArchivoTPI(int tamanioArchivo, char* arch, int idGDT){
+	int i, pagMasAlta = 0;
+	int tamanioRestante = tamanioArchivo;
 	
 	for(i=0; i<list_size(tabla_paginasInvertidas); i++){
 		t_PaginasInvertidas* unMarco = (t_PaginasInvertidas*) list_get(tabla_paginasInvertidas, i);
-		if(marco->PID == idGDT){ 
-			if(pagMasAlta < marco->pagina)
-				pagMasAlta = marco->pagina;
+		if(unMarco->PID == idGDT){ 
+			if(pagMasAlta < unMarco->pagina)
+				pagMasAlta = unMarco->pagina;
 		}
 	}
 
 	for(i=0; i<list_size(tabla_paginasInvertidas); i++){
 		t_PaginasInvertidas* unMarco = (t_PaginasInvertidas*) list_get(tabla_paginasInvertidas, i);
-		if(unMarco->libre){ 
-			numMarco = unMarco->marco;
-			unMarco->PID = idGDT;
-			unMarco->pagina = pagMasAlta;
-			unMarco->libre = false;
-			unMarco->tamanioOcupado += tamanioArchivo;
-			break;
+		if(unMarco->PID == idGDT && unMarco->tamanioOcupado < datosConfigFM9->tamanioPagina){ 
+			if( (datosConfigFM9->tamanioPagina - unMarco->tamanioOcupado) >= tamanioArchivo){
+				unMarco->tamanioOcupado += tamanioArchivo;
+				memcpy(memoria + unMarco->marco*datosConfigFM9->tamanioPagina, arch, tamanioArchivo);
+				tamanioRestante = 0;
+				return 1;
+			}
+			else{
+				int tamanioParaCargar = tamanioArchivo - (datosConfigFM9->tamanioPagina - unMarco->tamanioOcupado);
+				char auxBuffer[tamanioParaCargar];
+				for(i=0; i<tamanioParaCargar; i++){
+					auxBuffer[i] = *(arch + i);
+				}
+				unMarco->tamanioOcupado += tamanioParaCargar;
+				memcpy(memoria + unMarco->marco*datosConfigFM9->tamanioPagina, auxBuffer, tamanioParaCargar);
+				tamanioRestante = tamanioArchivo - tamanioParaCargar;
+			}
 		}
 	}
 
-	return numMarco; //si es -1 significa error
+	if(tamanioRestante != 0){ 
+		for(i=0; i<list_size(tabla_paginasInvertidas); i++){
+			t_PaginasInvertidas* unMarco = (t_PaginasInvertidas*) list_get(tabla_paginasInvertidas, i);
+			if(unMarco->libre){ 
+				char auxBuffer[tamanioRestante];
+				for(i=0; i<tamanioRestante; i++){
+					auxBuffer[i] = *(arch + tamanioArchivo - tamanioRestante + i);
+				}
+				unMarco->PID = idGDT;
+				unMarco->pagina = pagMasAlta;
+				unMarco->libre = false;
+				unMarco->tamanioOcupado += tamanioRestante;
+				memcpy(memoria + unMarco->marco*datosConfigFM9->tamanioPagina, auxBuffer, tamanioRestante);
+				return 1;
+			}
+		}
+	}
+	return -1;
 }
 
 //args[0]: idGDT, args[1]: archivo, args[2]: 1(Dummy) ó 0(noDummy)
@@ -198,12 +226,13 @@ void solicitudCargaArchivo(socket_connection *connection, char **args)
 		}
 	}
 	else if(strcmp(datosConfigFM9->modo,"TPI")==0){
-		int marco = devolverMarcoNuevaPaginaInvertida(tamanioArchivo);
-		if (marco != -1){
-			memcpy(memoria + marco*datosConfigFM9->tamanioPagina, args[1], tamanioArchivo);
-			log_info(logger, "Persisti el contenido");
+		int idGDT = atoi(args[0]);
+		int cargado = cargarArchivoTPI(tamanioArchivo, args[1], idGDT);
+		if(cargado){ 
+			log_info(logger, "Persisti el contenido %s para el GDT %d", args[1], idGDT);
 			runFunction(socketDAM, "FM9_DAM_archivoCargado", 4, args[0], "ok", args[1], args[2]);
 		}else{
+			log_info(logger, "Error al persistir el contenido %s para el GDT %d",args[1], idGDT);
 			runFunction(socketDAM, "FM9_DAM_archivoCargado", 4, args[0], "error", args[1], args[2]);
 		}
 	}
@@ -211,6 +240,23 @@ void solicitudCargaArchivo(socket_connection *connection, char **args)
 		printf("No esta implementado papu\n");
 	}
 }
+/*
+t_PaginasInvertidas* obtenerUltimoMarcoDeGDT(int idGDT){
+	int i;
+	t_PaginasInvertidas* ultimo;
+	for(i=0; i<list_size(tabla_paginasInvertidas); i++){
+		t_PaginasInvertidas* unMarco = (t_PaginasInvertidas*) list_get(tabla_paginasInvertidas, i);
+		if(unMarco->PID == idGDT && ){ 
+			numMarco = unMarco->marco;
+			unMarco->PID = idGDT;
+			unMarco->pagina = pagMasAlta;
+			unMarco->libre = false;
+			unMarco->tamanioOcupado += tamanioArchivo;
+			break;
+		}
+	}
+	return ultimo;
+} */
 
 //args[0]: idGDT, args[1]: Path, args[2]:Linea, args[3]:Datos
 void actualizarDatosDTB(socket_connection* connection, char** args){

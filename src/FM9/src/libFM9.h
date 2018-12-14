@@ -64,6 +64,7 @@ int devolverPosicionNuevoSegmento(int);
 //TABLA DE PAGINAS INVERTIDAS
 void inicializarMemoriaConPaginacionInvertida();
 void setearNumerosMarcos(int );
+int cargarArchivoTPI(int tamanioArchivo, char*arch, int idGDT);
 
 //CONFIG
 t_config_FM9* read_and_log_config(char*);
