@@ -13,6 +13,7 @@
 #include <commons/collections/dictionary.h>
 #include <commons/collections/queue.h>
 #include <commons/collections/list.h>
+#include <time.h>
 #include  "../../sample-socket/socket.h"
 
 //ESTRUCTURAS
@@ -42,6 +43,8 @@ typedef struct{
 	int socket; //socket de la conexion con una CPU determinada
 	int id;
 	sem_t aviso; //cuando CPU termina con un GDT me avisa mediante este semaforo
+	clock_t inicio;
+	clock_t fin;
 }CPU;
 
 typedef struct{
@@ -83,6 +86,8 @@ pthread_mutex_t m_verificacion;
 pthread_mutex_t m_cantSent;
 pthread_mutex_t m_cantDiego;
 
+pthread_mutex_t m_tiempoRespuesta;
+
 t_log* logger;
 t_config_SAFA* datosConfigSAFA;
 pthread_mutex_t mx_main;
@@ -99,6 +104,8 @@ t_list* hilos;
 t_list* listaCPUs; //lista de CPUs
 
 t_list* listaDeRecursos;
+
+t_list* tiemposDeRespuestas; //lista de doubles*, para el tiempo de resp promedio de las metricas
 
 char* archAVerificar;
 
@@ -161,6 +168,8 @@ void waitRecurso(socket_connection* socketInfo, char** msg);
 void signalRecurso(socket_connection* socketInfo, char** msg);
 void verificarEstadoArchivo(socket_connection*, char**);
 void archivoAbierto(socket_connection*, char**);
+void terminoClock(socket_connection*, char**);
+void inicioClock(socket_connection* connection, char** msgs);
 //fin CallableRemoteFunctions
 
 void aumentarCantSentenciasEsperadasEnNew(DTB* dtb);

@@ -78,7 +78,7 @@ void  validarArchivo(socket_connection * ,char**);
 void crearArchivo(socket_connection *,char **);
 //devuelvo la cant de bytes del path(archivo)
 size_t   obtenerDatos(socket_connection *,char **);
-void guardarDatos(socket_connection *,char * ,off_t  *,size_t * ,char *);
+void guardarDatos(socket_connection *,char **);
 void borrarArchivo(socket_connection *,char **);
 int verificarSiExisteArchivo(char * );
 int * crearBloques(int, char * ,size_t);

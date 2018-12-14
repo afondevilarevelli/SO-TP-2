@@ -66,7 +66,7 @@ free(archivo);
 runFunction(connection->socket,"MDJ_DAM_existeArchivo",5, strEstado, args[2], args[1], args[0], args[3]);
 }
 
-//void* mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
+
 
 //args[0]: idGDT, args[1]: rutaDelArchivo, args[2]: cantidadDeBytes
 void crearArchivo(socket_connection * connection ,char** args)
@@ -193,8 +193,33 @@ flock(archivo->fd,LOCK_UN);
 return leidos;
 }
 
-void guardarDatos(socket_connection * connection ,char * path,off_t  * offset,size_t *  size,char * buffer){
+void guardarDatos(socket_connection* connection,char ** args){
+t_archivo * archivo = malloc(sizeof(t_archivo));
+t_metadata_filesystem * fs = obtenerMetadata();
+archivo->path = args[0];
+off_t offset = atoi(args[1]);
+size_t size = atoi(args[2]);
+char * buffer = args[3];
+char ** bloques = obtenerBloques(archivo->path);
+if(string_is_empty(bloques) == 1)
+{
+ log_info(logger,"El archivo %s no existe",archivo->path);   
 }
+else
+{
+char temp[200];
+int * fd = malloc(sizeof(cantElementos2(bloques)));
+for(int i=0; i < cantElementos2(bloques);i++){
+snprintf(temp, sizeof(temp), "%s%s%i.bin", obtenerPtoMontaje(), "/Bloques/",atoi(bloques[i]));
+fd[i] = open(temp,O_RDWR);
+ftruncate(fd[i],fs->tamanio_bloques);
+flcose(fd[i]);
+}
+}
+free(archivo);
+free(fs);
+}
+
 
 //args[0]: idGDT, args[1]: arch
 void borrarArchivo(socket_connection* connection,char ** args){
@@ -287,6 +312,9 @@ return cont;
 }
 
 char ** obtenerBloques(char * path){
+int estado = verificarSiExisteArchivo(path);
+if(estado != -1)
+{
 char * temp = string_new();
 string_append(&temp,obtenerPtoMontaje());
 string_append(&temp,"/Archivos/");
@@ -295,6 +323,10 @@ t_config * config = config_create(temp);
 char **  bloques = config_get_array_value(config,"BLOQUES");
 free(temp);
 return bloques;
+}
+else{
+ return  "";  
+}
 }
 
 t_bloques *  asignarBloques(t_list * libres,t_list * ocupados ,size_t size)

@@ -29,9 +29,7 @@ int main(void) {
 		inicializarMemoriaConSegmentacion();
 	}else{
 		if(strcmp(datosConfigFM9->modo, "TPI")==0){
-			log_info(logger, "Modo Tabla de Paginas Invertidas");
-			log_error(logger, "TODO Tabla de paginas invertidas");
-			cerrarPrograma();
+			inicializarMemoriaConPaginacionInvertida();
 		}else{
 			if(strcmp(datosConfigFM9->modo, "SPA")==0){
 				log_info(logger, "Modo Segmentacion Paginada");
@@ -44,7 +42,6 @@ int main(void) {
 		}
 	}
 	
-
 	callableRemoteFunctions = dictionary_create();
 
 	dictionary_put(callableRemoteFunctions, "identificarProcesoEnFM9", &identificarProceso);
@@ -68,7 +65,10 @@ int main(void) {
 	while(1) {
 		log_info(logger, "Ingrese un Comando");
 		getline(&buffer, &bufsize, stdin);
-		executeCommand(buffer);
+		if(strcmp(buffer, "salir") != 0)
+			executeCommand(buffer);
+		else
+			break;
 	}
 	free(buffer);
 	//conexion al servidor-----------------------------
