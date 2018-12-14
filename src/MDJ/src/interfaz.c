@@ -85,6 +85,8 @@ char * tam = string_new();
 char * tamBloq = string_new();
 char * archivoBloques = string_new();
 char * temp = string_new();
+char * aux = string_new();
+char * dir = string_new();
 bitMap->bitarray = crearBitmap(fs->cantidad_bloques);
 for(int i = 0; i < fs->cantidad_bloques; i++)
 {
@@ -104,18 +106,19 @@ for(s=0; s < bitmapBloques->bloques;s++){
 }
 char * archTemp = string_new();
 archTemp = string_substring(temp,0,strlen(temp) - 1);
-char * aux = string_new();
-char * dir = string_new();
+if(string_contains(archivo->path,"/"))
+{
 string_append(&aux,archivo->path);
 string_append(&dir,obtenerPtoMontaje());
 string_append(&dir,"/Archivos/");
 string_append(&dir,strtok(aux,"/"));
 DIR * directory = opendir(dir);
 if (directory == NULL)
-{
+{  
 mkdir(dir,S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 }
-closedir(directory);
+closedir(directory);  
+}    
 archivo->fd = verificarSiExisteArchivo(archivo->path);
 if(archivo->fd == -1)
 {
@@ -139,12 +142,24 @@ char * file = mmap(0, archivo->size, PROT_READ | PROT_WRITE, MAP_SHARED, archivo
 memcpy(file,nVeces,strlen(nVeces));
 memcpy(file,tamBloq,strlen(tamBloq));
 memcpy(file,strcat(tamBloq,archivoBloques),strlen(archivoBloques)+strlen(tamBloq));
-msync(file,archivo->size, MS_SYNC);
+msync(file,archivo->size,MS_SYNC);
 munmap(file,archivo->size);
 flock(archivo->fd,LOCK_UN);
 close(archivo->fd);
+char ** bloques = obtenerBloques(archivo->path);
+char temp2[200];
+int * fd = malloc(sizeof(cantElementos2(bloques)));
+for( int i = 0;i < cantElementos2(bloques);i++){
+snprintf(temp2,sizeof(temp2),"%s%s%i.bin", obtenerPtoMontaje(), "/Bloques/",atoi(bloques[i]));
+fd[i] = open(temp2,O_RDWR);
+flock(fd[i],LOCK_SH);	
+ftruncate(fd[i],fs->tamanio_bloques);
+flock(fd[i],LOCK_UN);
+close(fd[i]);
+}
 log_trace(logger,"Archivo %s creado correctamente en %s/Archivos",archivo->path,obtenerPtoMontaje());
 archivo->estado = recienCreado;
+free(fd);
 }
 else
 {
@@ -160,37 +175,67 @@ free(archivo);
 free(bitMap);
 free(fs);
 free(bitmapBloques);
-free(archTemp);
-free(tam);
-free(temp);
-free(pathMasArchivos);
 free(dir);
 free(aux);
+free(archTemp);
+free(tam);
+free(pathMasArchivos);
 }
 
-//off_t lseek(int fildes, off_t offset, int whence);
-size_t  obtenerDatos(socket_connection * connection,char ** args){
+void obtenerDatos(socket_connection * connection,char ** args){
 t_archivo *  archivo= malloc(sizeof(t_archivo));
-size_t leidos;
-archivo->path = args[0];
-off_t  offset = atoi(args[1]);
-size_t tsize =  atoi(args[2]);
+t_metadata_filesystem * fs = obtenerMetadata();
+archivo->path = args[1];
+off_t  offset = atoi(args[2]);
+size_t tsize =  atoi(args[3]);
 archivo->size =  tsize;	
-archivo->fd = 1;//verificarSiExisteArchivo(archivo->path);
+archivo->fd = verificarSiExisteArchivo(archivo->path);
+int bloqueInicial = obtenerBloqueInicial(archivo->path,offset);
+int bloqueFinal = (offset + tsize) / fs->tamanio_bloques;
+char ** bloques = obtenerBloques(archivo->path);
+char * buffer = string_new();
 if(archivo->fd == noExiste)
 {
+log_error(logger,"El archivo %s es inexistente",archivo->path);    
 archivo->estado = noExiste;	
 }
 else
 {
-flock(archivo->fd,LOCK_EX);	
-off_t posCorrida = lseek(archivo->fd,offset,SEEK_CUR);
-long  tamanioRestante = tsize - posCorrida;
-char * bufferDeBytes = malloc(tamanioRestante);	
-leidos = read(archivo->fd,bufferDeBytes,posCorrida);
-flock(archivo->fd,LOCK_UN);
+if(bloqueInicial < 0)
+{
+log_error("El offset no puede ser mayor al tamanio de %s",archivo->path);  
 }
-return leidos;
+else{
+char * temp [200];
+while (bloqueInicial <= bloqueFinal && bloques[bloqueInicial] != NULL)
+{
+int posBloque = atoi(bloques[bloqueInicial]);
+char * bufferBloques = obtenerDatosBloque(posBloque);
+int tamanioBufferBloques = string_length(bufferBloques);
+int longitud; 
+if (tsize - tamanioBufferBloques < 0) 
+{
+longitud = tsize;
+}
+else
+{
+longitud = tamanioBufferBloques;
+}
+char * res  = string_substring_until(bufferBloques,longitud);
+string_append(&buffer,res);
+//free(bufferBloques);
+//free(res);
+//free(bloques[bloqueInicial]);
+bloqueInicial++;
+tsize = tsize - longitud;
+}
+}
+log_trace(logger,"Se obtuvieron %d bytes",string_length(buffer));
+}
+aplicarRetardo();
+char * bytes = string_itoa(string_length(buffer));
+char * strEstado = string_itoa(archivo->estado);
+runFunction(connection->socket,"MDJ_DAM_obtenemeLosDatos",4,args[0],bytes,strEstado,archivo->path);
 }
 
 void guardarDatos(socket_connection* connection,char ** args){
@@ -205,19 +250,72 @@ if(string_is_empty(bloques) == 1)
 {
  log_info(logger,"El archivo %s no existe",archivo->path);   
 }
-else
+else if (obtenerBloqueInicial(archivo->path,offset) == -1)
 {
-char temp[200];
+log_error(logger,"El offset no puede ser mayor al tamanio del archivo"); 
+}
+else{
+int aux=obtenerBloqueInicial(archivo->path,offset);
+char * temp = malloc(sizeof(cantElementos2(bloques)));
 int * fd = malloc(sizeof(cantElementos2(bloques)));
-for(int i=0; i < cantElementos2(bloques);i++){
-snprintf(temp, sizeof(temp), "%s%s%i.bin", obtenerPtoMontaje(), "/Bloques/",atoi(bloques[i]));
-fd[i] = open(temp,O_RDWR);
-ftruncate(fd[i],fs->tamanio_bloques);
-flcose(fd[i]);
+int i = 0;
+for (aux; aux < cantElementos2(bloques);aux++)
+{
+ snprintf(temp, sizeof(temp), "%s%s%i.bin", obtenerPtoMontaje(), "/Bloques/",atoi(bloques[aux]));   
+ fd[i] = open(temp,O_RDWR);  
+ write(fd[i],buffer,size);
+ i++;
 }
 }
 free(archivo);
 free(fs);
+}
+
+char * obtenerDatosBloque (int bloque) {
+    char * temp [200];
+    snprintf(temp,sizeof(temp),"%s%s%i.bin",obtenerPtoMontaje(),"/Bloques/",bloque);
+	FILE * bloqueFile = fopen(temp,"r");
+	int size;
+	char* buffer;
+	fseek(bloqueFile, 0L, SEEK_END);
+	size = ftell(bloqueFile);
+	fseek(bloqueFile, 0L, SEEK_SET);
+    buffer = malloc(size);
+	fread(buffer, size, 1, bloqueFile);
+	buffer = string_substring_until(buffer, size);
+	fclose(bloqueFile);
+	return buffer;
+}
+
+
+
+int obtenerBloqueInicial(char * path,off_t offset)
+{
+t_archivo * archivo = malloc(sizeof(t_archivo));
+t_metadata_filesystem * fs = obtenerMetadata();
+char * pathMasArchivos = string_new();
+string_append(&pathMasArchivos,obtenerPtoMontaje());
+string_append(&pathMasArchivos,"/Archivos/");
+string_append(&pathMasArchivos,path);
+t_config * config = config_create(pathMasArchivos);
+int tamanio = config_get_int_value(config,"TAMANIO");
+if(offset > tamanio)
+{
+   return -1;
+}
+else if (offset == 0 || offset < 64)
+{
+    return 0;
+}
+else{
+if(offset % fs->tamanio_bloques == 0)
+{
+  return offset / fs->tamanio_bloques;  
+}
+else{
+    return (offset / fs->tamanio_bloques) + 1;
+}
+}
 }
 
 
@@ -240,10 +338,17 @@ archivo->estado = noBorrado;
 else
 {
 char ** bloques = obtenerBloques(archivo->path);
+char aux[200];
+int * fd = malloc(sizeof(cantElementos2(bloques)));
 for(int i=0; i < cantElementos2(bloques);i++)
 {
 bitarray_clean_bit(bitarray,atoi(bloques[i]));
+snprintf(aux, sizeof(aux), "%s%s%i.bin", obtenerPtoMontaje(), "/Bloques/",atoi(bloques[i]));
+fd[i] = open(aux, O_TRUNC| O_RDWR);
+ftruncate(fd[i],0);
+close(fd[i]);
 }
+free(fd);
 int r = unlink(temp);
 if(r < 0)
 {
@@ -252,9 +357,26 @@ archivo->estado = errorBorrado;
 }
 else
 {
-log_trace(logger,"Archivo %s borrado correctamente",archivo->path);    
+log_trace(logger,"Archivo %s borrado correctamente",archivo->path);
+archivo->estado = recienBorrado;    
 }
-archivo->estado = recienBorrado;
+if(string_contains(archivo->path,"/"))
+{
+char * auxx = string_new();
+string_append(&auxx,archivo->path);
+char * dir = string_new();
+string_append(&dir,obtenerPtoMontaje());
+string_append(&dir,"/Archivos/");
+string_append(&dir,strtok(auxx,"/"));
+DIR * directory = opendir(dir);
+if (directory != NULL)
+{
+closedir(directory);    
+rmdir(dir);
+}
+free(auxx);
+free(dir);
+}
 }
 char * strEstado = string_itoa(archivo->estado);
 aplicarRetardo();
@@ -290,6 +412,7 @@ if (bmap == MAP_FAILED) {
 	}
 t_bitarray * bitarray = bitarray_create_with_mode(bmap,size/8,MSB_FIRST);
 free(montajeMasBitmap);
+msync(bmap,mystat.st_size,MS_SYNC);
 return bitarray;
 }
 
@@ -364,6 +487,7 @@ bitarray_set_bit(bitarray,bloques->bloqArchivo[i]);
 }
 bloques->bloques = nBloques;
 return bloques;
+
 }
 
 void liberarLista(t_list *lista) {

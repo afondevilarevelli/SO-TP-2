@@ -26,6 +26,7 @@ int main(void){
 	//Dicionarios del mdj
     dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_existeArchivo", &MDJ_DAM_existeArchivo);
     dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_verificarArchivoCreado",&MDJ_DAM_verificarArchivoCreado);
+    dictionary_put(callableRemoteFunctionsMDJ,"MDJ_DAM_obtenemeLosDatos",&MDJ_DAM_obtenemeLosDatos);
     dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_verificameSiArchivoFueBorrado",&MDJ_DAM_verificameSiArchivoFueBorrado);
     //dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_avisoSAFAResultadoDTBDummy",&MDJ_DAM_avisarSAFAResultadoDTBDummy);
 	//--------------------------------------------------------------------
@@ -69,11 +70,13 @@ int main(void){
         }
        else {      
         log_info(logger,"me conecto al MDJ");
-        runFunction(socketMDJ,"identificarProcesoEnMDJ",1,"DAM");
-        //runFunction(socketMDJ,"crearArchivo",2,"asuanito.txt","200");
-        //runFunction(socketMDJ,"borrarArchivo",1,"juanito.txt");
-        //runFunction(socketMDJ,"crearArchivo",3,"0","equipos/juanito.txt","400");
-        runFunction(socketMDJ,"guardarDatos",4,"equipos/juanito.txt","100","10","hola manola");
+      runFunction(socketMDJ,"identificarProcesoEnMDJ",1,"DAM");
+      //runFunction(socketMDJ,"crearArchivo",3,"0","asuanito.txt","200");
+      runFunction(socketMDJ,"crearArchivo",3,"0","equipos/juanito.txt","250");
+      runFunction(socketMDJ,"obtenerDatos",4,"0","equipos/juanito.txt","120","200");
+      //runFunction(socketMDJ,"borrarArchivo",2,"0","equipos/juanito.txt");
+      //runFunction(socketMDJ,"borrarArchivo",2,"0","asuanito.txt");
+        //runFunction(socketMDJ,"guardarDatos",4,"equipos/juanito.txt","100","10","hola manola");
         
        }
       

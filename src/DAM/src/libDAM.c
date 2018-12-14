@@ -172,6 +172,21 @@ void borrarArchivo(socket_connection* connection, char** args){
 	runFunction(socketMDJ,"borrarArchivo",2, args[0], args[1]);
 }
 
+void MDJ_DAM_obtenemeLosDatos(socket_connection * connection,char ** args){
+int idGDT = atoi(args[0]); 
+int cantBytes = atoi(args[1]);
+int estado = atoi(args[2]);
+char * path = args[3];
+if (estado == -1)
+{
+log_error(logger,"Archivo %s inexistente",path);
+}
+else
+{
+log_trace(logger,"Se obtuvieron %i bytes  del archivo %s",cantBytes,path);	
+}
+}
+
 //Comunicacion entre CPU-DAM para Cargar GDT
 //args[0]: idGDT, args[1]: path, args[2]: 1(Dummy) ó 0(no Dummy)
 void solicitudCargaGDT(socket_connection* connection, char ** args){

@@ -77,7 +77,7 @@ void  validarArchivo(socket_connection * ,char**);
 //crear el archivo, cada elemento del vector sera una linea del archivo
 void crearArchivo(socket_connection *,char **);
 //devuelvo la cant de bytes del path(archivo)
-size_t   obtenerDatos(socket_connection *,char **);
+void  obtenerDatos(socket_connection *,char **);
 void guardarDatos(socket_connection *,char **);
 void borrarArchivo(socket_connection *,char **);
 int verificarSiExisteArchivo(char * );
@@ -90,5 +90,6 @@ char ** obtenerBloques(char *);
 int cantElementos2(char **);
 int cantElementos1(char *);
 void liberarLista(t_list * );
+char * obtenerDatosBloque(int);
 int is_regular_file(const char *);
 #endif

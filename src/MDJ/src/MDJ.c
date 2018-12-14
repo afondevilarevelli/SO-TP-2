@@ -17,6 +17,7 @@ int main(void) {
      dictionary_put(fns,"borrarArchivo",&borrarArchivo);
      dictionary_put(fns,"identificarProcesoEnMDJ",&identificarProceso);
      dictionary_put(fns,"guardarDatos",&guardarDatos);
+     dictionary_put(fns,"obtenerDatos",&obtenerDatos);
 
      pthread_t hiloConsola;
 
