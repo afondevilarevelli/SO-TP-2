@@ -223,9 +223,9 @@ longitud = tamanioBufferBloques;
 }
 char * res  = string_substring_until(bufferBloques,longitud);
 string_append(&buffer,res);
-//free(bufferBloques);
-//free(res);
-//free(bloques[bloqueInicial]);
+free(bufferBloques);
+free(res);
+free(bloques[bloqueInicial]);
 bloqueInicial++;
 tsize = tsize - longitud;
 }
@@ -241,11 +241,15 @@ runFunction(connection->socket,"MDJ_DAM_obtenemeLosDatos",4,args[0],bytes,strEst
 void guardarDatos(socket_connection* connection,char ** args){
 t_archivo * archivo = malloc(sizeof(t_archivo));
 t_metadata_filesystem * fs = obtenerMetadata();
-archivo->path = args[0];
-off_t offset = atoi(args[1]);
-size_t size = atoi(args[2]);
-char * buffer = args[3];
+archivo->path = args[1];
+off_t offset = atoi(args[2]);
+size_t size = atoi(args[3]);
+char * buffer = args[4];
 char ** bloques = obtenerBloques(archivo->path);
+int bloqueInicial = obtenerBloqueInicial(archivo->path,offset);
+int bloqueFinal = (offset + size) / fs->tamanio_bloques;
+int offRestante = offset - (offset /fs->tamanio_bloques) * fs->tamanio_bloques;
+int longitud;  
 if(string_is_empty(bloques) == 1)
 {
  log_info(logger,"El archivo %s no existe",archivo->path);   
@@ -254,22 +258,55 @@ else if (obtenerBloqueInicial(archivo->path,offset) == -1)
 {
 log_error(logger,"El offset no puede ser mayor al tamanio del archivo"); 
 }
-else{
-int aux=obtenerBloqueInicial(archivo->path,offset);
-char * temp = malloc(sizeof(cantElementos2(bloques)));
-int * fd = malloc(sizeof(cantElementos2(bloques)));
-int i = 0;
-for (aux; aux < cantElementos2(bloques);aux++)
+else
 {
- snprintf(temp, sizeof(temp), "%s%s%i.bin", obtenerPtoMontaje(), "/Bloques/",atoi(bloques[aux]));   
- fd[i] = open(temp,O_RDWR);  
- write(fd[i],buffer,size);
- i++;
-}
-}
+if (size > fs->tamanio_bloques)
+{
+longitud = fs->tamanio_bloques;
+ }
+ else
+ { 
+ longitud = size;
+ }
+longitud =longitud - offRestante;
+escribirBloque(atoi(bloques[bloqueInicial]), offRestante,longitud, string_substring_until(buffer,longitud));
+free(bloques[bloqueInicial]);
+bloqueInicial++;
+size = size - longitud;
+int escritos = longitud;
+while (bloqueInicial <= bloqueFinal && bloques[bloqueInicial] != NULL) { 
+	int tamBloq;
+	if (size > fs->tamanio_bloques)
+	{
+		tamBloq =  fs->tamanio_bloques;
+	} 
+	else
+	{
+    tamBloq = size;
+	}
+    escribirBloque(atoi(bloques[bloqueInicial]), 0,tamBloq, string_substring(buffer,escritos,tamBloq));
+    bloqueInicial++;
+	size = size - tamBloq;
+	escritos =  escritos + tamBloq;
+	free(bloques[bloqueInicial]);
+	}
+free(bloques);
 free(archivo);
 free(fs);
 }
+}
+
+
+
+void escribirBloque(int bloque, int offset, int length, char * buffer) {
+	char temp[200];
+	snprintf(temp, sizeof(temp), "%s%s%i.bin", obtenerPtoMontaje(), "/Bloques/",bloque);
+	FILE* archivoBloque = fopen(temp,"r+");
+	fseek(archivoBloque, offset, SEEK_SET);
+	fwrite(buffer, 1, length, archivoBloque);
+	fclose(archivoBloque);
+}
+
 
 char * obtenerDatosBloque (int bloque) {
     char * temp [200];
@@ -303,16 +340,18 @@ if(offset > tamanio)
 {
    return -1;
 }
-else if (offset == 0 || offset < 64)
+else if (offset == 0 || offset < fs->tamanio_bloques)
 {
     return 0;
 }
-else{
+else
+{
 if(offset % fs->tamanio_bloques == 0)
 {
   return offset / fs->tamanio_bloques;  
 }
-else{
+else
+{
     return (offset / fs->tamanio_bloques) + 1;
 }
 }

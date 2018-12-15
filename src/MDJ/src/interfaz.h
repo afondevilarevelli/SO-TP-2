@@ -92,4 +92,5 @@ int cantElementos1(char *);
 void liberarLista(t_list * );
 char * obtenerDatosBloque(int);
 int is_regular_file(const char *);
+void escribirBloque(int bloque, int offset, int length, char * buffer);
 #endif
