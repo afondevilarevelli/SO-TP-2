@@ -31,6 +31,10 @@ typedef struct{
 	int programCounter; 
 	int flagInicializado;
 	int quantumAEjecutar;
+	int pagina;
+	int segmento;
+	int desplazamiento;
+	int cantLineas;
 }parametros;
 //EJEMPLOS DE SENTENCIAS
 /*

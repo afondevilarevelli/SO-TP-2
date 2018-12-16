@@ -24,7 +24,6 @@ typedef struct {
     int puertoFM9;
     int transferSize;
 } t_config_DAM;
-
 //----------------------------//
 
 //VARIABLES
@@ -60,15 +59,14 @@ void identificarProceso(socket_connection * connection ,char** args);
 void MDJ_DAM_verificarArchivoCreado(socket_connection*,char ** );
 void MDJ_DAM_existeArchivo(socket_connection*,char ** );
 void MDJ_DAM_verificameSiArchivoFueBorrado(socket_connection*,char **);
-void existeArchivo(socket_connection* socketMDJ, char ** args);
-void crearArchivo(socket_connection* connection, char** args);
-void borrarArchivo(socket_connection* connection, char** args);
-void archivoCargadoCorrectamente(socket_connection* , char**);
+void CPU_DAM_existeArchivo(socket_connection* socketMDJ, char ** args);
+void CPU_DAM_crearArchivo(socket_connection* connection, char** args);
+void CPU_DAM_borrarArchivo(socket_connection* connection, char** args);
+void FM9_DAM_archivoCargadoCorrectamente(socket_connection* , char**);
 void MDJ_DAM_avisarResultadoDTB(socket_connection* socketInf,char ** args);
-void solicitudDeFlush(socket_connection* , char** );
-void respuestaFlushFM9(socket_connection* connection, char** args);
-void respuestaFlushMDJ(socket_connection* connection, char** args);
-void solicitudCargaGDT(socket_connection* connection, char ** args);
-void MDJ_DAM_obtenemeLosDatos(socket_connection * , char **);
-
+void CPU_DAM_solicitudDeFlush(socket_connection* , char** );
+void FM9_DAM_respuestaFlush(socket_connection* connection, char** args);
+void MDJ_DAM_respuestaFlush(socket_connection* connection, char** args);
+void CPU_DAM_solicitudCargaGDT(socket_connection* connection, char ** args);
+void MDJ_DAM_respuestaCargaGDT(socket_connection * , char **);
 #endif

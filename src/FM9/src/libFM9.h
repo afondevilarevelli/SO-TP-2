@@ -19,6 +19,7 @@ typedef struct {
 
 typedef struct {
 	int pid;
+	//char* nombreArchivo;
 	int base;
 	int limite;
 } t_tabla_segmentos;

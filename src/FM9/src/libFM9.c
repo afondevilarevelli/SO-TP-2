@@ -124,7 +124,7 @@ int devolverPosicionNuevoSegmento(int tamanioAPersistir){
 			return pos;
 		}
 		//Si no hay nodo siguiente y no supero el maximo de memoria devuelvo la posicion siguiente al ultimo nodo
-		if(list_size(lista_tabla_segmentos)== i+1 && (auxNodo->base + auxNodo->limite < datosConfigFM9->tamanio)){
+		if(list_size(lista_tabla_segmentos)== i+1 && ( (auxNodo->base + auxNodo->limite + tamanioAPersistir) < datosConfigFM9->tamanio) ){
 			return (auxNodo->base + auxNodo->limite);
 		}
 		auxNodoSiguiente = list_get(lista_tabla_segmentos, i+1);
@@ -192,7 +192,7 @@ int cargarArchivoTPI(int tamanioArchivo, char* arch, int idGDT){
 	return -1;
 }
 
-//args[0]: idGDT; args[1]: datos
+//args[0]: idGDT; args[1]: datos, args[2]: 1(Dummy) ó 0(no Dummy)
 //Comunicacion para Desarrollar Cuando El DAM pida a FM9 cargar el archivo ya sea un DTB o el Dummy
 void solicitudCargaArchivo(socket_connection *connection, char **args)
 {
@@ -224,7 +224,7 @@ void solicitudCargaArchivo(socket_connection *connection, char **args)
 			list_sort(lista_tabla_segmentos, ordenarTablaSegmentosDeMenorBaseAMayorBase);
 			log_info(logger, "Se actualizo correctamente la tabla de segmentos");
 
-			runFunction(connection->socket, "FM9_DAM_cargueElArchivoCorrectamente", 2, args[0], "ok");
+			runFunction(socketDAM, "FM9_DAM_cargueElArchivoCorrectamente", 4, args[0], "ok", args[1], args[2]);
 		}else{
 			log_error(logger, "No se encontro una posicion dentro de la tabla de segmentos");
 			log_error(logger, "No se pudo persistir los datos");

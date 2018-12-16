@@ -97,11 +97,17 @@ void ejecutar(char* rutaSc){
 		log_error(logger,"SAFA en estado corrupto, no se admiten nuevos GDT´S");
 	}else{
 		log_trace(logger,"Se hace ingreso del script escriptorio de la ruta %s para su futura ejecucion\n", rutaSc);
+		archivo* archScript = malloc(sizeof(archivo));
+		archScript->nombre = malloc(strlen(rutaSc) + 1);
+		strcpy(archScript->nombre, rutaSc);
+		archScript->pagina = -1;
+		archScript->segmento = -1;
+		archScript->desplazamiento = -1;
+		archScript->cantLineas = -1;
 		DTB* dtb = malloc(sizeof(DTB));
     	dtb->id = generadorDeIds;
     	generadorDeIds++;
-    	dtb->rutaScript = malloc(strlen(rutaSc)+1);
-    	strcpy(dtb->rutaScript, rutaSc);
+    	dtb->script = archScript;
     	dtb->PC = 0;
     	dtb->flagInicializado = 1;
     	dtb->archivosAbiertos = list_create();

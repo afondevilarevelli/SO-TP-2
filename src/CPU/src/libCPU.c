@@ -304,7 +304,8 @@ void finalizacionClose(socket_connection* connection, char** args){
 }
 
 //callable remote functions
-//args[0]: idGDT, args[1]: rutaScript, args[2]: PC, args[3]: flagInicializacionGDT, args[4]: quantum a ejecutar
+//args[0]: idGDT, args[1]: rutaScript, args[2]: PC, args[3]: flagInicializacionGDT, args[4]: quantum a ejecutar,
+//args[5]: pagina, args[6]: segmento, args[7]: desplazamiento, args[8]: cantLineas
 void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 	pthread_t hilo;
 	parametros* params = malloc(sizeof(parametros));
@@ -313,6 +314,10 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 	params->programCounter = atoi(args[2]);
 	params->flagInicializado = atoi(args[3]);
 	params->quantumAEjecutar = atoi(args[4]);
+	params->pagina = atoi(args[5]);
+	params->segmento = atoi(args[6]);
+	params->desplazamiento = atoi(args[7]);
+	params->cantLineas = atoi(args[8]);
 	pthread_create(&hilo, NULL, (void*)&permisoDeEjecucion, params);
 	//pthread_detach(hilo);
 }
@@ -329,6 +334,10 @@ void permisoDeEjecucion(parametros* params){
 	char* rutaScript = params->rutaScript;
 	int programCounter = params->programCounter;
 	int flagInicializado = params->flagInicializado;
+	int pagina = params->pagina;
+	int segmento = params->segmento;
+	int desplazamiento = params->desplazamiento;
+	int cantLineas = params->cantLineas;
 	char string_id[2]; 
 	sprintf(string_id, "%i", idCPU);
 	char string_idGDT[2]; 
@@ -342,7 +351,7 @@ void permisoDeEjecucion(parametros* params){
 	operacion_t sentencia;
 	if (flagInicializado == 0) { //DTB-Dummy
 		log_trace(logger,"Preparando la inicializacion de ejecucion del DTB Dummy\n");
-		runFunction(socketDAM, "CPU_DAM_solicitudCargaGDT", 3,string_idGDT, rutaScript, "1");//el 1 es de Dummy
+		runFunction(socketDAM, "CPU_DAM_solicitudCargaGDT", 2,string_idGDT, rutaScript);
 		runFunction(socketSAFA, "finalizacionProcesamientoCPU",7, string_id, string_idGDT, "0", "bloquear", "0","0", "1");
 		return;
 	}
@@ -360,7 +369,7 @@ void permisoDeEjecucion(parametros* params){
 				case ABRIR:
 					runFunction(socketSAFA, "inicioClock", 1, string_id);
 					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 4, string_id, string_idGDT, "abrir", sentencia.p1);
-					runFunction(socketDAM, "CPU_DAM_existeArchivo", 3,string_idGDT, rutaScript,"0");
+					runFunction(socketDAM, "CPU_DAM_existeArchivo", 2,string_idGDT, rutaScript);
 					pthread_attr_init(&attr);
     				pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 					pthread_create(&hiloAbrir, &attr, (void*)&funcionHiloAbrir, NULL);
@@ -386,7 +395,7 @@ void permisoDeEjecucion(parametros* params){
 								runFunction(socketSAFA, "finalizacionProcesamientoCPU", 7, string_id, string_idGDT, string_sentEjecutadas, "bloquear", "1", "1", "0");
 							else
 								runFunction(socketSAFA, "finalizacionProcesamientoCPU", 7, string_id, string_idGDT, string_sentEjecutadas, "finalizar", "1", "1", "0");
-							runFunction(socketFM9,"FM9_DAM_solicitudCarga",3,string_idGDT, rutaScript, "0");
+							runFunction(socketDAM, "CPU_DAM_solicitudCargaGDT", 2,string_idGDT, rutaScript);
 							runFunction(socketSAFA, "terminoClock", 1, string_id);
 							destruirOperacion(sentencia);
 							pthread_detach(hiloAbrir);

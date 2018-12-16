@@ -489,15 +489,26 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 }
 
 bool condicionArchivoAbierto(void* arch){
-	return strcmp( (char*)arch, archAVerificar) == 0;
+	return strcmp( ((archivo*)arch)->nombre, archAVerificar) == 0;
 }
 
-//args[0]: idGDT,args[1]: nomArch
+//args[0]: idGDT,args[1]: nomArch, args[2]:pagina, args[3]:segmento, args[4]: despl, args[4]: cantLineas
 void archivoAbierto(socket_connection* connection, char** args){
 	int idGDT = atoi(args[0]);
+	int pagina = atoi(args[1]);
+	int segmento = atoi(args[2]);
+	int desplazamiento = atoi(args[3]);
+	int cantLineas = atoi(args[4]);
 	DTB* dtb = buscarDTBEnElSistema(idGDT);
 	if(dtb != NULL){
-		list_add(dtb->archivosAbiertos, args[1]);
+		archivo* archScript = malloc(sizeof(archivo));
+		archScript->nombre = malloc(strlen(args[1]) + 1);
+		strcpy(archScript->nombre, args[1]);
+		archScript->pagina = pagina;
+		archScript->segmento = segmento;
+		archScript->desplazamiento = desplazamiento;
+		archScript->cantLineas = cantLineas;
+		list_add(dtb->archivosAbiertos, archScript);
 	}
 }
 
@@ -573,7 +584,7 @@ void mostrarInformacionDTB(DTB* unDTB){
 
     	printf("Los Datos Almacenados En El DTB Son:\n");
     	printf("ID: %d\n", unDTB->id);
-    	printf("Ruta del Escriptorio: %s\n", unDTB->rutaScript);
+    	printf("Ruta del Escriptorio: %s\n", (unDTB->script)->nombre);
     	printf("Program Counter: %d\n", unDTB->PC);
     	printf("Flag Inicializado: %d\n", unDTB->flagInicializado);
     	estado = stringFromState(unDTB->status);
@@ -587,8 +598,8 @@ void mostrarInformacionDTB(DTB* unDTB){
 		else{
 			int i;
 			for(i=0; i<list_size(unDTB->archivosAbiertos); i++){
-				char* arch = list_get(unDTB->archivosAbiertos, i);
-				printf("%s\n", arch);
+				archivo* arch = list_get(unDTB->archivosAbiertos, i);
+				printf("%s\n", arch->nombre);
 				printf("                   ");
 			}
 			printf("\n");

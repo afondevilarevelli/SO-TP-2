@@ -48,11 +48,12 @@ int ret = config_get_int_value(fileConfig,"RETARDO");
 sleep(ret / 1000);
 config_destroy(fileConfig);
 }
-//args[0]:idGDT ,args[1]: path, args[2]: socketCPU, args[3]: 1(Dummy) ó 0(no Dummy)
+
+//args[0]:idGDT ,args[1]: path, args[2]: socketCPU
 void  validarArchivo(socket_connection * connection,char ** args){
 char strEstado[2];
 t_archivo *  archivo = malloc(sizeof(t_archivo));	
-archivo->path = args[0];
+archivo->path = args[1];
 archivo->fd = verificarSiExisteArchivo(archivo->path);
 if(archivo->fd == noExiste){
 archivo->estado = noExiste;
@@ -63,7 +64,7 @@ archivo->estado=  existe;
 sprintf(strEstado,"%i", archivo->estado);
 aplicarRetardo();
 free(archivo);
-runFunction(connection->socket,"MDJ_DAM_existeArchivo",5, strEstado, args[2], args[1], args[0], args[3]);
+runFunction(connection->socket,"MDJ_DAM_existeArchivo",4, strEstado, args[2], args[1], args[0]);
 }
 
 
@@ -182,6 +183,7 @@ free(tam);
 free(pathMasArchivos);
 }
 
+//args[0]: idGDT, args[1]: path, args[2]: offset, args[3]: size, args[4]: socketCPU
 void obtenerDatos(socket_connection * connection,char ** args){
 t_archivo *  archivo= malloc(sizeof(t_archivo));
 t_metadata_filesystem * fs = obtenerMetadata();
@@ -234,8 +236,10 @@ log_trace(logger,"Se obtuvieron %d bytes",string_length(buffer));
 }
 aplicarRetardo();
 char * bytes = string_itoa(string_length(buffer));
-char * strEstado = string_itoa(archivo->estado);
-runFunction(connection->socket,"MDJ_DAM_obtenemeLosDatos",4,args[0],bytes,strEstado,archivo->path);
+char * strEstado = string_itoa(archivo->estado); // cuando se setea este valor si sale todo bien?
+runFunction(connection->socket,"MDJ_DAM_respuestaDatos",5,args[0],bytes,strEstado,archivo->path, args[4]);
+//El DAM necesita que la variable bytes sea todo el string que pasa, no un numero indicando cuando se leyeron
+//( digo por que no sé qué estas pasando acá)
 }
 
 void guardarDatos(socket_connection* connection,char ** args){

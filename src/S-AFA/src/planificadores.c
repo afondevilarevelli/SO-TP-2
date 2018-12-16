@@ -47,15 +47,31 @@ void planificarSegunRR(CPU* cpu){
                 char string_quantumAEjecutar[2];
                 sprintf(string_quantumAEjecutar, "%i", datosConfigSAFA->quantum);
 
+                char string_pagina[2];
+                sprintf(string_pagina, "%i", (dtbAEjecutar->script)->pagina);
+
+                char string_segmento[2];
+                sprintf(string_segmento, "%i", (dtbAEjecutar->script)->segmento);
+
+                char string_desplazamiento[2];
+                sprintf(string_desplazamiento, "%i", (dtbAEjecutar->script)->desplazamiento);
+
+                char string_cantLineas[2];
+                sprintf(string_cantLineas, "%i", (dtbAEjecutar->script)->cantLineas);
+
                 pthread_mutex_lock(&m_listaEjecutando);
                 list_add(listaEjecutando, dtbAEjecutar);
                 pthread_mutex_unlock(&m_listaEjecutando);
 
-                runFunction(cpu->socket,"ejecutarCPU",5, string_id,
-            										 dtbAEjecutar->rutaScript,
+                runFunction(cpu->socket,"ejecutarCPU",9, string_id,
+            										 (dtbAEjecutar->script)->nombre,
 													 string_pc,
                                                      string_flagInicializacion,
-                                                     string_quantumAEjecutar);
+                                                     string_quantumAEjecutar,
+                                                     string_pagina,
+                                                     string_segmento,
+                                                     string_desplazamiento,
+                                                     string_cantLineas);
 
                 sem_wait(&cpu->aviso);  
              
@@ -101,15 +117,31 @@ void planificarSegunVRR(CPU* cpu){
             else
                 sprintf(string_quantumAEjecutar, "%i", dtbAEjecutar->quantumFaltante);
 
+            char string_pagina[2];
+            sprintf(string_pagina, "%i", (dtbAEjecutar->script)->pagina);
+
+            char string_segmento[2];
+            sprintf(string_segmento, "%i", (dtbAEjecutar->script)->segmento);
+
+            char string_desplazamiento[2];
+            sprintf(string_desplazamiento, "%i", (dtbAEjecutar->script)->desplazamiento);
+
+            char string_cantLineas[2];
+            sprintf(string_cantLineas, "%i", (dtbAEjecutar->script)->cantLineas);
+
             pthread_mutex_lock(&m_listaEjecutando);
             list_add(listaEjecutando, dtbAEjecutar);
             pthread_mutex_unlock(&m_listaEjecutando);
 
-            runFunction(cpu->socket,"ejecutarCPU",5, string_id,
-            										 dtbAEjecutar->rutaScript,
+            runFunction(cpu->socket,"ejecutarCPU",9, string_id,
+            										 (dtbAEjecutar->script)->nombre,
 													 string_pc,
                                                      string_flagInicializacion,
-                                                     string_quantumAEjecutar);
+                                                     string_quantumAEjecutar
+                                                     string_pagina,
+                                                     string_segmento,
+                                                     string_desplazamiento,
+                                                     string_cantLineas);
 
             sem_wait(&cpu->aviso);   
 			
@@ -150,15 +182,31 @@ void planificarSegunIOBF(CPU* cpu){
             char string_pc[2];
             sprintf(string_pc, "%i", dtbAEjecutar->PC);
 
+            char string_pagina[2];
+            sprintf(string_pagina, "%i", (dtbAEjecutar->script)->pagina);
+
+            char string_segmento[2];
+            sprintf(string_segmento, "%i", (dtbAEjecutar->script)->segmento);
+
+            char string_desplazamiento[2];
+            sprintf(string_desplazamiento, "%i", (dtbAEjecutar->script)->desplazamiento);
+
+            char string_cantLineas[2];
+            sprintf(string_cantLineas, "%i", (dtbAEjecutar->script)->cantLineas);
+
             pthread_mutex_lock(&m_listaEjecutando);
             list_add(listaEjecutando, dtbAEjecutar);
             pthread_mutex_unlock(&m_listaEjecutando);
 
-            runFunction(cpu->socket,"ejecutarCPU",5, string_id,
-            										 dtbAEjecutar->rutaScript,
+            runFunction(cpu->socket,"ejecutarCPU",9, string_id,
+            										 (dtbAEjecutar->script)->nombre,
 													 string_pc,
                                                      string_flagInicializacion,
-                                                     "100");
+                                                     "100",
+                                                     string_pagina,
+                                                     string_segmento,
+                                                     string_desplazamiento,
+                                                     string_cantLineas););
 
             sem_wait(&cpu->aviso);   
 			

@@ -28,8 +28,16 @@ typedef struct {
 } t_config_SAFA;
 
 typedef struct{
+	char* nombre;
+	int pagina;
+	int segmento;
+	int desplazamiento;
+	int cantLineas;
+} archivo;
+
+typedef struct{
 	int id;
-	char* rutaScript;
+	archivo* script;
 	int PC; //program counter
 	int flagInicializado;
 	t_list* archivosAbiertos;
