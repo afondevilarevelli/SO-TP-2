@@ -183,7 +183,7 @@ free(tam);
 free(pathMasArchivos);
 }
 
-//args[0]: idGDT, args[1]: path, args[2]: offset, args[3]: size, args[4]: socketCPU
+//args[0]: idGDT, args[1]: path, args[2]: offset, args[3]: size, args[4]: dummy, args[5]:primera o no
 void obtenerDatos(socket_connection * connection,char ** args){
 t_archivo *  archivo= malloc(sizeof(t_archivo));
 t_metadata_filesystem * fs = obtenerMetadata();
@@ -237,7 +237,7 @@ log_trace(logger,"Se obtuvieron %d bytes",string_length(buffer));
 aplicarRetardo();
 char * bytes = string_itoa(string_length(buffer));
 char * strEstado = string_itoa(archivo->estado); // cuando se setea este valor si sale todo bien?
-runFunction(connection->socket,"MDJ_DAM_respuestaDatos",5,args[0],bytes,strEstado,archivo->path, args[4]);
+runFunction(connection->socket,"MDJ_DAM_respuestaDatos",6,args[0],bytes,strEstado,archivo->path, args[4],args[5]);
 //El DAM necesita que la variable bytes sea todo el string que pasa, no un numero indicando cuando se leyeron
 //( digo por que no sé qué estas pasando acá)
 }

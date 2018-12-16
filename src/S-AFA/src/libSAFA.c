@@ -364,7 +364,7 @@ void aumentarCantSentenciasEsperadasEnNew(DTB* dtb){
 	dtb->cantSentEsperadasEnNew += cantSentEsperadasASumar;
 }
 
-//msg[0] = idDTB ,msg[1] = "ok" ó "error"
+//msg[0] = idDTB ,msg[1] = "ok" ó "error",msgs[2]:pag, args[3]:segm, args[4]:despl
 //Segun la explicacion del TP, la CPU es el unico capaz de reconocer si es un DTB o un Dummy
 //Por lo tanto cuando se hace la peticion de "ABRIR" el archivo es indistinto
 void avisoDeDamDeResultadoDTB(socket_connection* socketInfo, char** msg){
@@ -375,6 +375,9 @@ void avisoDeDamDeResultadoDTB(socket_connection* socketInfo, char** msg){
 
 	if(dtb != NULL){ //si no ha sido finalizado...		
 		if( strcmp(msg[1], "ok") == 0 ){
+			(dtb->script)->pagina = atoi(msg[2]);
+			(dtb->script)->baseSegmento = atoi(msg[3]);
+			(dtb->script)->desplazamiento = atoi(msg[4]);
 			log_info(logger,"Se finalizo OK el DTB del GDT de id %d",dtb->id);
 			dtb->status = READY;
 			encolarDTB(colaReady, dtb, m_colaReady);
@@ -492,22 +495,20 @@ bool condicionArchivoAbierto(void* arch){
 	return strcmp( ((archivo*)arch)->nombre, archAVerificar) == 0;
 }
 
-//args[0]: idGDT,args[1]: nomArch, args[2]:pagina, args[3]:segmento, args[4]: despl, args[4]: cantLineas
+//args[0]: idGDT,args[1]: nomArch, args[2]:pagina, args[3]:baseSegmento, args[4]: despl
 void archivoAbierto(socket_connection* connection, char** args){
 	int idGDT = atoi(args[0]);
-	int pagina = atoi(args[1]);
-	int segmento = atoi(args[2]);
-	int desplazamiento = atoi(args[3]);
-	int cantLineas = atoi(args[4]);
+	int pagina = atoi(args[2]);
+	int baseSegmento = atoi(args[3]);
+	int desplazamiento = atoi(args[4]);
 	DTB* dtb = buscarDTBEnElSistema(idGDT);
 	if(dtb != NULL){
 		archivo* archScript = malloc(sizeof(archivo));
 		archScript->nombre = malloc(strlen(args[1]) + 1);
 		strcpy(archScript->nombre, args[1]);
 		archScript->pagina = pagina;
-		archScript->segmento = segmento;
+		archScript->baseSegmento = baseSegmento;
 		archScript->desplazamiento = desplazamiento;
-		archScript->cantLineas = cantLineas;
 		list_add(dtb->archivosAbiertos, archScript);
 	}
 }

@@ -30,9 +30,8 @@ typedef struct {
 typedef struct{
 	char* nombre;
 	int pagina;
-	int segmento;
+	int baseSegmento;
 	int desplazamiento;
-	int cantLineas;
 } archivo;
 
 typedef struct{

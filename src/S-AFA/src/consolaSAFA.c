@@ -101,9 +101,8 @@ void ejecutar(char* rutaSc){
 		archScript->nombre = malloc(strlen(rutaSc) + 1);
 		strcpy(archScript->nombre, rutaSc);
 		archScript->pagina = -1;
-		archScript->segmento = -1;
+		archScript->baseSegmento = -1;
 		archScript->desplazamiento = -1;
-		archScript->cantLineas = -1;
 		DTB* dtb = malloc(sizeof(DTB));
     	dtb->id = generadorDeIds;
     	generadorDeIds++;

@@ -24,6 +24,12 @@ typedef struct {
     int puertoFM9;
     int transferSize;
 } t_config_DAM;
+
+typedef struct{
+    int idGDT;
+    char path[60]; 
+    char dummy[1];
+}parametros;
 //----------------------------//
 
 //VARIABLES
@@ -35,10 +41,17 @@ t_dictionary* callableRemoteFunctionsCPU;
 pthread_mutex_t mx_main;	/* Semaforo de main */
 t_config_DAM*  datosConfigDAM;
 
+pthread_mutex_t m_carga;
+
 int socketSAFA;
 int socketFM9;
 int socketMDJ;
 
+char* ruta;
+char* baseSegmento;
+char* pagina;
+char* desplazamiento;
+int offsetAcumulado;
 //----------------------------//
 
 
@@ -53,6 +66,8 @@ void close_logger();
 //PROTOTIPOS
 void cerrarPrograma();
 void elementoDestructorDiccionario(void *);
+
+void hiloCarga(parametros*);
 
 //diccionarios
 void identificarProceso(socket_connection * connection ,char** args);

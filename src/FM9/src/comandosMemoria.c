@@ -46,16 +46,16 @@ void printMenu() {
 
 void dump(char** args)
 {
-	int* pid = atoi(args[1]);
+	int pid = atoi(args[1]);
 	
 	bool _isPid(void* elemento){
-		return isPid(elemento, pid);
+		return isPid(elemento, &pid);
 	}
 
 	t_list* lista_segmentos_pid;
 	lista_segmentos_pid = list_filter(lista_tabla_segmentos, _isPid);
 	log_info(logger, "%d", list_size(lista_segmentos_pid));
-	list_iterate(lista_segmentos_pid, mostrarDatosPid);
+	list_iterate(lista_segmentos_pid, &mostrarDatosPid);
 
 	list_destroy(lista_segmentos_pid);
 }
@@ -82,8 +82,8 @@ void executeCommand(char * c){
   char * name = args[0];
 
   int i;
-  for(i = 0; i < name[i]; i++)
-  name[i] = tolower(name[i]);
+  for(i = 0; i < strlen(name); i++)
+  	name[i] = tolower(name[i]);
 
   bool _get(Command * cc) {
     return strcmp(cc->name, name) == 0;
@@ -102,8 +102,8 @@ void executeCommand(char * c){
   freeCharArray(args);
 }
 
-bool isPid(t_tabla_segmentos* unNodo, int pidIngresado){
-	return unNodo->pid == pidIngresado;
+bool isPid(t_tabla_segmentos* unNodo, int* pidIngresado){
+	return unNodo->pid == *pidIngresado;
 }
 
 void mostrarDatosPid(t_tabla_segmentos* unNodo){

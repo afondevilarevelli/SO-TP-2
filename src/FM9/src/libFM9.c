@@ -138,7 +138,8 @@ int devolverPosicionNuevoSegmento(int tamanioAPersistir){
 	return -1;
 }
 
-int cargarArchivoTPI(int tamanioArchivo, char* arch, int idGDT){
+retornoCargaTPI cargarArchivoTPI(int tamanioArchivo, char* arch, int idGDT){
+	retornoCargaTPI retorno;
 	int i, pagMasAlta = 0;
 	int tamanioRestante = tamanioArchivo;
 	
@@ -152,12 +153,15 @@ int cargarArchivoTPI(int tamanioArchivo, char* arch, int idGDT){
 
 	for(i=0; i<list_size(tabla_paginasInvertidas); i++){
 		t_PaginasInvertidas* unMarco = (t_PaginasInvertidas*) list_get(tabla_paginasInvertidas, i);
-		if(unMarco->PID == idGDT && unMarco->tamanioOcupado < datosConfigFM9->tamanioPagina){ 
+		if(unMarco->PID == idGDT && unMarco->tamanioOcupado < datosConfigFM9->tamanioPagina){
+			retorno.pagina = unMarco->pagina;
+			retorno.desplazamiento = unMarco->tamanioOcupado; 
 			if( (datosConfigFM9->tamanioPagina - unMarco->tamanioOcupado) >= tamanioArchivo){
 				unMarco->tamanioOcupado += tamanioArchivo;
 				memcpy(memoria + unMarco->marco*datosConfigFM9->tamanioPagina, arch, tamanioArchivo);
 				tamanioRestante = 0;
-				return 1;
+				retorno.cargaOK = true;
+				return retorno;
 			}
 			else{
 				int tamanioParaCargar = tamanioArchivo - (datosConfigFM9->tamanioPagina - unMarco->tamanioOcupado);
@@ -185,18 +189,21 @@ int cargarArchivoTPI(int tamanioArchivo, char* arch, int idGDT){
 				unMarco->libre = false;
 				unMarco->tamanioOcupado += tamanioRestante;
 				memcpy(memoria + unMarco->marco*datosConfigFM9->tamanioPagina, auxBuffer, tamanioRestante);
-				return 1;
+				retorno.cargaOK = true;
+				return retorno;
 			}
 		}
 	}
-	return -1;
+	retorno.cargaOK = false;
+	return retorno;
 }
 
-//args[0]: idGDT; args[1]: datos, args[2]: 1(Dummy) ó 0(no Dummy)
+//args[0]: idGDT; args[1]: datos, args[2]: "ultima" ó "sigue" (para ver si dsp el DAM le avisa al SAFA o sigue cargando)
+//args[3]: 1(Dummy) ó 0(no Dummy), args[4]: primer pedido o no
 //Comunicacion para Desarrollar Cuando El DAM pida a FM9 cargar el archivo ya sea un DTB o el Dummy
 void solicitudCargaArchivo(socket_connection *connection, char **args)
 {
-	int pid = args[0];
+	int pid = atoi(args[0]);
 	int tamanioArchivo = strlen(args[1])+1;
 	log_info(logger, "Voy a persistir: '%s' cuyo tamanio es %d", args[1], strlen(args[1]));
 	if(strcmp(datosConfigFM9->modo,"SEG")==0){ 
@@ -221,25 +228,38 @@ void solicitudCargaArchivo(socket_connection *connection, char **args)
 			nuevoSegmento->base = pos;
 			nuevoSegmento->limite = tamanioReal;
 			list_add(lista_tabla_segmentos, nuevoSegmento);
-			list_sort(lista_tabla_segmentos, ordenarTablaSegmentosDeMenorBaseAMayorBase);
+			list_sort(lista_tabla_segmentos, (void*)&ordenarTablaSegmentosDeMenorBaseAMayorBase);
 			log_info(logger, "Se actualizo correctamente la tabla de segmentos");
-
-			runFunction(socketDAM, "FM9_DAM_cargueElArchivoCorrectamente", 4, args[0], "ok", args[1], args[2]);
+			if(strcmp(args[4],"0")==0)
+				runFunction(socketDAM, "FM9_DAM_archivoCargado", 5, args[0], "ok", args[2], args[3], args[4]);
+			else{ 
+				char string_segmento[2];
+				sprintf(string_segmento, "%i", pos);
+				runFunction(socketDAM, "FM9_DAM_archivoCargado", 8, args[0], "ok", args[2], args[3], args[4], "-1", string_segmento, "0");
+			}
 		}else{
 			log_error(logger, "No se encontro una posicion dentro de la tabla de segmentos");
 			log_error(logger, "No se pudo persistir los datos");
-			runFunction(socketDAM, "FM9_DAM_archivoCargado", 4, args[0], "error", args[1], args[2]);
+			runFunction(socketDAM, "FM9_DAM_archivoCargado", 5, args[0], "error", args[2], args[3], args[4]);
 		}
 	}
 	else if(strcmp(datosConfigFM9->modo,"TPI")==0){
 		int idGDT = atoi(args[0]);
-		int cargado = cargarArchivoTPI(tamanioArchivo, args[1], idGDT);
-		if(cargado){ 
+		retornoCargaTPI cargado = cargarArchivoTPI(tamanioArchivo, args[1], idGDT);
+		if(cargado.cargaOK){ 
 			log_info(logger, "Persisti el contenido %s para el GDT %d", args[1], idGDT);
-			runFunction(socketDAM, "FM9_DAM_archivoCargado", 4, args[0], "ok", args[1], args[2]);
+			if(strcmp(args[4],"0")==0)
+				runFunction(socketDAM, "FM9_DAM_archivoCargado", 5, args[0], "ok", args[2], args[3], args[4]);
+			else{
+				char string_despl[3];
+				sprintf(string_despl, "%i", cargado.desplazamiento);
+				char string_pagina[3];
+				sprintf(string_pagina, "%i", cargado.pagina);
+				runFunction(socketDAM, "FM9_DAM_archivoCargado", 8, args[0], "ok", args[2], args[3], args[4], string_pagina, "-1",string_despl);
+			}
 		}else{
 			log_info(logger, "Error al persistir el contenido %s para el GDT %d",args[1], idGDT);
-			runFunction(socketDAM, "FM9_DAM_archivoCargado", 4, args[0], "error", args[1], args[2]);
+			runFunction(socketDAM, "FM9_DAM_archivoCargado", 5, args[0], "error", args[2], args[3], args[4]);
 		}
 	}
 	else{ //SEGMENTACION PAGINADA
@@ -264,18 +284,18 @@ t_PaginasInvertidas* obtenerUltimoMarcoDeGDT(int idGDT){
 	return ultimo;
 } */
 
-//args[0]: idGDT, args[1]: Path, args[2]:Linea, args[3]:Datos
+//args[0]: idGDT, args[1]: base, args[2]:Linea, args[3]:Datos
 void actualizarDatosDTB(socket_connection* connection, char** args){
 
 	int idGDT = atoi(args[0]);
-	int path = atoi(args[1]);
+	int base = atoi(args[1]);
 	int linea = atoi(args[2]);
 	char* datos = args[3];
 
-	log_info(logger, "Del GDT: %d, recibi los siguientes Datos: %d, %d, %s", idGDT, path, linea, datos);
+	log_info(logger, "Del GDT: %d, recibi los siguientes Datos: %d, %d, %s", idGDT, base, linea, datos);
 
 	bool _buscarSegmento(void* elemento){
-		return buscarSegmento(elemento, idGDT, path);	
+		return buscarSegmento(elemento, &idGDT, &base);	
 	}
 
 	//Me fijo si existe en la tabla de segmentos
@@ -289,7 +309,7 @@ void actualizarDatosDTB(socket_connection* connection, char** args){
 	//me fijo si el espacio que tiene le alcanza y actualizo
 	//sino busco un nuevo hueco donde persistir los datos
 	if((datosSegmento->limite - linea)>strlen(datos)){
-		memcpy(memoria+path+linea, datos, strlen(datos));
+		memcpy(memoria+base+linea, datos, strlen(datos));
 		log_error(logger, "TODO: devolver RunFuction de ok");
 	}else{
 		int cantidadLineas = ((datosSegmento->limite-(datosSegmento->limite-linea) + strlen(datos))/datosConfigFM9->maximoLinea)+1;
@@ -309,7 +329,7 @@ void actualizarDatosDTB(socket_connection* connection, char** args){
 
 			datosSegmento->base = pos;
 			datosSegmento->limite = tamanioReal;
-			list_sort(lista_tabla_segmentos, ordenarTablaSegmentosDeMenorBaseAMayorBase);
+			list_sort(lista_tabla_segmentos, (void*)&ordenarTablaSegmentosDeMenorBaseAMayorBase);
 			log_info(logger, "Se actualizo correctamente la tabla de segmentos");
 			log_error(logger, "TODO: devolver RunFuction de ok con la nueva posicion en memoria");
 		}
@@ -339,6 +359,6 @@ bool ordenarTablaSegmentosDeMenorBaseAMayorBase(t_tabla_segmentos* unNodo, t_tab
 }
 
 bool buscarSegmento(t_tabla_segmentos* unNodo, int* pid, int* base){
-	return (unNodo->pid ==  pid && unNodo->base == base);
+	return (unNodo->pid ==  *pid && unNodo->base == *base);
 }
 

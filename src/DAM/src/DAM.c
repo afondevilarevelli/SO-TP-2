@@ -21,6 +21,8 @@ int main(void){
 	callableRemoteFunctionsFM9 = dictionary_create();
 	 callableRemoteFunctionsSAFA = dictionary_create();
 	callableRemoteFunctionsCPU = dictionary_create();
+
+  pthread_mutex_init(&m_carga, NULL);
 	
 	//--------------------------------------------------------------------
 	//Dicionarios del mdj
@@ -113,6 +115,7 @@ void cerrarPrograma() {
      dictionary_destroy(callableRemoteFunctionsFM9);
      dictionary_destroy(callableRemoteFunctionsMDJ);
      free(datosConfigDAM);
+     pthread_mutex_destroy(&m_carga);
     pthread_mutex_unlock(&mx_main);
     pthread_mutex_destroy(&mx_main);
 }

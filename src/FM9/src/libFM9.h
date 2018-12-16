@@ -6,7 +6,7 @@
 #include <commons/collections/dictionary.h>
 #include <commons/collections/list.h>
 #include <pthread.h>
-#include "socket.h"
+#include "../../sample-socket/socket.h"
 
 //ESTRUCTURAS
 typedef struct {
@@ -31,6 +31,12 @@ typedef struct {
 	bool libre;
 	int tamanioOcupado;
 } t_PaginasInvertidas;
+
+typedef struct{
+	int pagina;
+	int desplazamiento;
+	bool cargaOK;
+}retornoCargaTPI;
 
 //VARIABLES
 t_log* logger;
@@ -66,7 +72,7 @@ int devolverPosicionNuevoSegmento(int);
 //TABLA DE PAGINAS INVERTIDAS
 void inicializarMemoriaConPaginacionInvertida();
 void setearNumerosMarcos(int );
-int cargarArchivoTPI(int tamanioArchivo, char*arch, int idGDT);
+retornoCargaTPI cargarArchivoTPI(int tamanioArchivo, char*arch, int idGDT);
 
 //CONFIG
 t_config_FM9* read_and_log_config(char*);

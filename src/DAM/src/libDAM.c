@@ -95,30 +95,6 @@ void MDJ_DAM_avisarResultadoDTB(socket_connection* socketInf,char ** args){
 
 }
 
-//lamada por el FM9
-//args[0]: idGDT, args[1]: Por ahora ok o error, args[2]: path, args[3]: 1(Dummy) ó 0(no Dummy)
-void FM9_DAM_archivoCargadoCorrectamente(socket_connection* connection, char** args){
-
-	char* estadoCarga = args[1];
-
-	if(strcmp(estadoCarga, "ok") == 0 ){
-		if(strcmp(args[3], "1") == 0)
-			runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "ok");
-		else{ 
-			runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB", 1, args[0]);
-			runFunction(socketSAFA, "aperturaArchivo", 2, args[0], args[2]);
-		}
-	}
-	else{//error
-		if(strcmp(args[3], "1") == 0)
-			runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "error");
-		else
-			runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit", 1, args[0]);
-	}
-
-}
-
-
 //args[0]: idGDT, args[1]: 0(yaCreado), 1(recienCreado), -1(errorCreado), args[2]: arch
 void MDJ_DAM_verificarArchivoCreado(socket_connection* conenction,char ** args){
 	estadoCreacion = atoi(args[1]);
@@ -173,36 +149,92 @@ void CPU_DAM_borrarArchivo(socket_connection* connection, char** args){
 }
 
 //Comunicacion entre CPU-DAM para Cargar GDT
-//args[0]: idGDT, args[1]: path
+//args[0]: idGDT, args[1]: path, args[2]: 1(Dummy) ó 0(noDummy)
 void CPU_DAM_solicitudCargaGDT(socket_connection* connection, char ** args){
-	char string_socket[2];
-	sprintf(string_socket, "%i", connection->socket);
+	pthread_t hilo;
+	parametros* params = malloc(sizeof(parametros));
+	params->idGDT = atoi(args[0]);
+	strcpy(params->path, args[1]);
+	strcpy(params->dummy, args[2]);
 	log_trace(logger, "Voy a intentar cargar el archivo %s para el GDT de id %s",args[1], args[0]);	
-	runFunction(socketMDJ, "obtenerDatos", 5, args[0], args[1], "0", datosConfigDAM->transferSize, string_socket);
+	pthread_create(&hilo, NULL, (void*)&hiloCarga, params);
 }
 
-//args[0]: idGDT, args[1]: bytesLeidos, args[2]: estado, args[3]:path, args[4]: socketCPU
+void hiloCarga(parametros* params){
+	pthread_mutex_lock(&m_carga);
+	ruta = malloc(strlen(params->path) + 1);
+	strcpy(ruta, params->path);
+	runFunction(socketMDJ, "obtenerDatos", 6, params->idGDT, params->path, "0", datosConfigDAM->transferSize, params->dummy, "1");
+}
+
+//args[0]: idGDT, args[1]: bytesLeidos, args[2]: estado, args[3]:path, args[4]: dummy, args[5]: primera o no
 void MDJ_DAM_respuestaCargaGDT(socket_connection * connection,char ** args){
-	int cantBytesLeidos = atoi(strlen(bytes) + 1);
+	int cantBytesLeidos = atoi(strlen(args[1]) + 1);
 	int idGDT = atoi(args[0]); 
 	char* bytes = args[1];
 	int estado = atoi(args[2]);
 	char * path = args[3];
-	int socketCPU = atoi(args[4]);
+	offsetAcumulado = cantBytesLeidos;
+
 	if (estado == -1){
 		log_error(logger,"Archivo %s inexistente",path);
-		runFunction(socketSAFA,"DAM_SAFA_pasarDTBAExit",1, args[0]);
+		if(strcmp(args[4], "0") == 0)
+			runFunction(socketSAFA,"DAM_SAFA_pasarDTBAExit",1, args[0]);
+		else
+			runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "error");
 	}
 	else{
-		log_trace(logger,"Se obtuvieron %i bytes  del archivo %s",cantBytesLeidos, path);
+		log_trace(logger,"Se obtuvieron %i bytes  del archivo %s del MDJ",cantBytesLeidos, path);
+		log_trace(logger,"Bytes: %s",bytes);
 		if(cantBytesLeidos < datosConfigDAM->transferSize){
-			//última lectura de datos del MDJ
-			//runFunction de FM9, con alguna variable que indique que dsp el DAM le avise al SAFA la carga completada
+			runFunction(socketFM9,"DAM_FM9_cargarArchivo",5, args[0], bytes, "ultima", args[4],args[5]);
 		}
 		else{
-			//Se necesitan seguir leyendo datos del MDJ
-			//runFunction de FM9
+			runFunction(socketFM9,"DAM_FM9_cargarArchivo",5, args[0], bytes, "sigue", args[4],args[5]);
 		}	
+	}
+}
+
+//lamada por el FM9
+//args[0]: idGDT, args[1]: Por ahora ok o error, args[2]: 1(Dummy) ó 0(no Dummy), args[3]:"ultima"
+//																						  "sigue"
+//args[4]: primera o no, args[5]: pagina, args[6]:baseSegmento, args[7]:despl
+void FM9_DAM_archivoCargadoCorrectamente(socket_connection* connection, char** args){
+
+	char* estadoCarga = args[1];
+
+	if(strcmp(args[4], "1") == 0){
+		pagina = malloc(strlen(args[5]) + 1);
+		strcpy(pagina, args[5]);
+		baseSegmento = malloc(strlen(args[6]) + 1);
+		strcpy(baseSegmento, args[6]);
+		desplazamiento = malloc(strlen(args[7]) + 1);
+		strcpy(desplazamiento, args[7]);
+	}
+
+	if(strcmp(estadoCarga, "ok") == 0 ){
+		if(strcmp(args[3], "ultima") == 0){
+			if(strcmp(args[2], "1") == 0)
+				runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "ok", pagina, baseSegmento, desplazamiento);
+			else{ 
+				runFunction(socketSAFA, "aperturaArchivo", 2, args[0], ruta, pagina, baseSegmento, desplazamiento);
+				runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB", 1, args[0]);
+			}
+			pthread_mutex_unlock(&m_carga);
+		}
+		else{
+			char string_offset[2];
+			sprintf(string_offset, "%i", offsetAcumulado);
+			log_trace(logger,"Se guardaron los bytes del archivo %s en el FM9", ruta);
+			runFunction(socketMDJ, "obtenerDatos", 5, args[0], args[2], string_offset, datosConfigDAM->transferSize, args[3]);
+		}
+	}
+	else{//error
+		if(strcmp(args[2], "1") == 0)
+			runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "error");
+		else
+			runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit", 1, args[0]);
+		pthread_mutex_unlock(&m_carga);
 	}
 }
 

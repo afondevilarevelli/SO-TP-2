@@ -27,14 +27,13 @@ typedef struct {
 
 typedef struct{
 	int idGDT;
-	char rutaScript[40];
+	char rutaScript[60];
 	int programCounter; 
 	int flagInicializado;
 	int quantumAEjecutar;
 	int pagina;
 	int segmento;
 	int desplazamiento;
-	int cantLineas;
 }parametros;
 //EJEMPLOS DE SENTENCIAS
 /*
