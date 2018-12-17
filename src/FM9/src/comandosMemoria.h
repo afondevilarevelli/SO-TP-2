@@ -5,7 +5,7 @@
 #include <commons/string.h>
 #include <commons/config.h>
 #include <commons/collections/list.h>
-#include "../../sample-socket/socket.h"
+#include "socket.h"
 #include "libFM9.h"
 
 typedef struct

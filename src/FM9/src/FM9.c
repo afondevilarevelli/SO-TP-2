@@ -10,6 +10,7 @@ void cerrarPrograma() {
 	free(datosConfigFM9);
 	free(memoria);
 	list_destroy(lista_tabla_segmentos);
+	list_destroy(lista_archivos);
 	dictionary_destroy(callableRemoteFunctions);
 	pthread_mutex_unlock(&mx_main);
 	pthread_mutex_destroy(&mx_main);
@@ -42,6 +43,7 @@ int main(void) {
 		}
 	}
 	
+	lista_archivos = list_create();
 	callableRemoteFunctions = dictionary_create();
 
 	dictionary_put(callableRemoteFunctions, "identificarProcesoEnFM9", &identificarProceso);
@@ -59,6 +61,11 @@ int main(void) {
 
 	log_info(logger, "Estoy escuchando el puerto: %d", datosConfigFM9->puerto);
 
+	char* args[5] = {"1","hola como\nte va perruno\nlocurometro\n","ultima","1","1"};
+	char** aa = args;
+
+	solicitudCargaArchivo(NULL, aa);
+/*
 	char *buffer;
 	size_t bufsize = 1024;
 	buffer = (char *)malloc(bufsize * sizeof(char));
@@ -76,7 +83,7 @@ int main(void) {
 	
 	pthread_mutex_init(&mx_main, NULL);
 	pthread_mutex_lock(&mx_main);
-	pthread_mutex_lock(&mx_main);
+	pthread_mutex_lock(&mx_main); */
 	return EXIT_SUCCESS;
 }
 

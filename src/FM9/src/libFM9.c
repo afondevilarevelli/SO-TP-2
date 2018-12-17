@@ -124,12 +124,12 @@ int devolverPosicionNuevoSegmento(int tamanioAPersistir){
 			return pos;
 		}
 		//Si no hay nodo siguiente y no supero el maximo de memoria devuelvo la posicion siguiente al ultimo nodo
-		if(list_size(lista_tabla_segmentos)== i+1 && ( (auxNodo->base + auxNodo->limite + tamanioAPersistir) < datosConfigFM9->tamanio) ){
+		if(list_size(lista_tabla_segmentos)== i+1 && ( (auxNodo->base + auxNodo->limite + tamanioAPersistir) <= datosConfigFM9->tamanio) ){
 			return (auxNodo->base + auxNodo->limite);
 		}
 		auxNodoSiguiente = list_get(lista_tabla_segmentos, i+1);
 		//Si hay espacio para persistir los datos entre nodos, devuelvo la posicion entre un nodo y el otro
-		if((auxNodoSiguiente->base - (auxNodo->base + auxNodo-> limite)) > tamanioAPersistir)	{
+		if((auxNodoSiguiente->base - (auxNodo->base + auxNodo-> limite)) >= tamanioAPersistir)	{
 			return (auxNodo->base + auxNodo->limite);
 		}
 
@@ -138,11 +138,12 @@ int devolverPosicionNuevoSegmento(int tamanioAPersistir){
 	return -1;
 }
 
-retornoCargaTPI cargarArchivoTPI(int tamanioArchivo, char* arch, int idGDT){
+retornoCargaTPI cargarArchivoTPI(char* arch, int idGDT){
 	retornoCargaTPI retorno;
 	int i, pagMasAlta = 0;
+	int tamanioArchivo = strlen(arch) + 1;
 	int tamanioRestante = tamanioArchivo;
-	
+	int cantLineas = cantidadDeLineas(arch);
 	for(i=0; i<list_size(tabla_paginasInvertidas); i++){
 		t_PaginasInvertidas* unMarco = (t_PaginasInvertidas*) list_get(tabla_paginasInvertidas, i);
 		if(unMarco->PID == idGDT){ 
@@ -156,14 +157,15 @@ retornoCargaTPI cargarArchivoTPI(int tamanioArchivo, char* arch, int idGDT){
 		if(unMarco->PID == idGDT && unMarco->tamanioOcupado < datosConfigFM9->tamanioPagina){
 			retorno.pagina = unMarco->pagina;
 			retorno.desplazamiento = unMarco->tamanioOcupado; 
-			if( (datosConfigFM9->tamanioPagina - unMarco->tamanioOcupado) >= tamanioArchivo){
-				unMarco->tamanioOcupado += tamanioArchivo;
-				memcpy(memoria + unMarco->marco*datosConfigFM9->tamanioPagina, arch, tamanioArchivo);
+			if( ((datosConfigFM9->tamanioPagina - unMarco->tamanioOcupado) / datosConfigFM9->maximoLinea) >= cantLineas){
+				guardarDatosPorLinea(arch, unMarco->marco*datosConfigFM9->tamanioPagina + unMarco->tamanioOcupado);
+				unMarco->tamanioOcupado += cantLineas*datosConfigFM9->maximoLinea;
 				tamanioRestante = 0;
 				retorno.cargaOK = true;
 				return retorno;
 			}
 			else{
+				int lineasParaCargar = cantLineas - unMarco->tamanioOcupado / datosConfigFM9->maximoLinea;
 				int tamanioParaCargar = tamanioArchivo - (datosConfigFM9->tamanioPagina - unMarco->tamanioOcupado);
 				char auxBuffer[tamanioParaCargar];
 				for(i=0; i<tamanioParaCargar; i++){
@@ -189,6 +191,10 @@ retornoCargaTPI cargarArchivoTPI(int tamanioArchivo, char* arch, int idGDT){
 				unMarco->libre = false;
 				unMarco->tamanioOcupado += tamanioRestante;
 				memcpy(memoria + unMarco->marco*datosConfigFM9->tamanioPagina, auxBuffer, tamanioRestante);
+				if(tamanioArchivo == tamanioRestante){ 
+					retorno.pagina = pagMasAlta;
+					retorno.desplazamiento = 0;
+				}
 				retorno.cargaOK = true;
 				return retorno;
 			}
@@ -205,20 +211,20 @@ void solicitudCargaArchivo(socket_connection *connection, char **args)
 {
 	int pid = atoi(args[0]);
 	int tamanioArchivo = strlen(args[1])+1;
+	char* datos = args[1];
 	log_info(logger, "Voy a persistir: '%s' cuyo tamanio es %d", args[1], strlen(args[1]));
-	if(strcmp(datosConfigFM9->modo,"SEG")==0){ 
-		
-
-		int cantidadLineas = (tamanioArchivo/datosConfigFM9->maximoLinea)+1;
-		log_info(logger, "Cantidad de lineas a utilizar: %d", cantidadLineas);
-		int tamanioReal = cantidadLineas*datosConfigFM9->maximoLinea;
-	
+	if(strcmp(datosConfigFM9->modo,"SEG")==0){ 	
+		int tamanioReal;
+		int cantLineas = cantidadDeLineas(datos);	
+		tamanioReal = cantLineas * datosConfigFM9->maximoLinea;
+		log_info(logger, "Se van a guardar %d lineas",cantLineas);
 		log_info(logger, "Voy a buscar una posicion para almacenar los datos");
 		int pos = devolverPosicionNuevoSegmento(tamanioReal);
 		log_info(logger, "La posicion es %d", pos);
 		if (pos != -1)
 		{
-			memcpy(memoria + pos, args[1], tamanioArchivo);
+			guardarDatosPorLinea(datos, pos);
+			
 			log_info(logger, "Persisti el contenido");
 
 			log_info(logger, "Voy a actualizar tabla de segmentos");
@@ -245,7 +251,7 @@ void solicitudCargaArchivo(socket_connection *connection, char **args)
 	}
 	else if(strcmp(datosConfigFM9->modo,"TPI")==0){
 		int idGDT = atoi(args[0]);
-		retornoCargaTPI cargado = cargarArchivoTPI(tamanioArchivo, args[1], idGDT);
+		retornoCargaTPI cargado = cargarArchivoTPI( args[1], idGDT);
 		if(cargado.cargaOK){ 
 			log_info(logger, "Persisti el contenido %s para el GDT %d", args[1], idGDT);
 			if(strcmp(args[4],"0")==0)
@@ -284,63 +290,81 @@ t_PaginasInvertidas* obtenerUltimoMarcoDeGDT(int idGDT){
 	return ultimo;
 } */
 
+void guardarDatosPorLinea(char* datos, int pos){
+	char datosLineas[datosConfigFM9->maximoLinea];
+	int tamanioArchivo = strlen(datos) + 1;
+	int posActual = pos;
+	int i = 0;
+	while(1){ 
+		int j = 0;
+		while( datos[i] != '\n'){
+			datosLineas[j] = datos[i];
+			i++;
+			j++;
+		}
+		datosLineas[j] = '\n';
+		i++;
+		memcpy(memoria + posActual, datosLineas, datosConfigFM9->maximoLinea);
+		posActual += datosConfigFM9->maximoLinea;
+		if(i+1 == tamanioArchivo){ 
+			datosLineas[0] = '\0';
+			memcpy(memoria + posActual, datosLineas, datosConfigFM9->maximoLinea);
+			break;
+		}
+	}
+}
+
+int cantidadDeLineas(char* datos){
+	int tamanioArchivo = strlen(datos) + 1; 
+	int cantLineas = 1;
+	int m = 0;
+	for(m = 0; m < tamanioArchivo; m++){ 
+		if( datos[m] == '\n'){
+			cantLineas++;
+		}
+	}	
+	return cantLineas;
+}
+
 //args[0]: idGDT, args[1]: base, args[2]:Linea, args[3]:Datos
-void actualizarDatosDTB(socket_connection* connection, char** args){
+void actualizarDatosDTB(socket_connection* connection, char** args){ //La primer linea es la 1!!!
 
 	int idGDT = atoi(args[0]);
 	int base = atoi(args[1]);
 	int linea = atoi(args[2]);
 	char* datos = args[3];
 
-	log_info(logger, "Del GDT: %d, recibi los siguientes Datos: %d, %d, %s", idGDT, base, linea, datos);
+	log_info(logger, "Del GDT: %d, recibi los siguientes Datos:\n Base: %d, Linea: %d, Datos: %s", idGDT, base, linea, datos);
 
 	bool _buscarSegmento(void* elemento){
 		return buscarSegmento(elemento, &idGDT, &base);	
 	}
+	if(strcmp(datosConfigFM9->modo,"SEG")==0){
+		//Me fijo si existe en la tabla de segmentos
+		t_tabla_segmentos* datosSegmento = list_find(lista_tabla_segmentos, _buscarSegmento);
 
-	//Me fijo si existe en la tabla de segmentos
-	t_tabla_segmentos* datosSegmento = list_find(lista_tabla_segmentos, _buscarSegmento);
+		if(datosSegmento == NULL){
+			log_error(logger, "TODO: devolver RunFuction de errors: no existe el segmento pedido");
+			return;
+		}
 
-	if(datosSegmento == NULL){
-		log_error(logger, "TODO: devolver RunFuction de errors: no existe el segmento pedido");
-		return;
+		//me fijo si el espacio que tiene le alcanza y actualizo
+		//sino busco un nuevo hueco donde persistir los datos
+		if( datosSegmento->limite / datosConfigFM9->maximoLinea >= linea){ //La primer linea es la 1!!!
+			char datosLinea[datosConfigFM9->maximoLinea];
+			strcpy(datosLinea, datos);
+			memcpy(memoria+base+(linea-1)*datosConfigFM9->maximoLinea, datosLinea, datosConfigFM9->maximoLinea);
+			log_trace(logger, "TODO: devolver RunFuction de ok");
+		}else{ 
+			log_error(logger, "TODO: devolver RunFuction de error");
+			//intenta escribir en una linea que no existe del archivo
+		}
 	}
-
-	//me fijo si el espacio que tiene le alcanza y actualizo
-	//sino busco un nuevo hueco donde persistir los datos
-	if((datosSegmento->limite - linea)>strlen(datos)){
-		memcpy(memoria+base+linea, datos, strlen(datos));
-		log_error(logger, "TODO: devolver RunFuction de ok");
-	}else{
-		int cantidadLineas = ((datosSegmento->limite-(datosSegmento->limite-linea) + strlen(datos))/datosConfigFM9->maximoLinea)+1;
-		log_info(logger, "Cantidad de lineas a utilizar: %d", cantidadLineas);
-		int tamanioReal = cantidadLineas*datosConfigFM9->maximoLinea;
-		log_info(logger, "Voy a buscar una posicion para almacenar los datos");
-		int pos = devolverPosicionNuevoSegmento(tamanioReal);
-		log_info(logger, "La posicion es %d", pos);
-
-		if (pos != -1)
-		{
-			memcpy(memoria + pos, memoria+datosSegmento->base, datosSegmento->limite);
-			memcpy(memoria+pos+linea, datos, strlen(datos));
-			log_info(logger, "Persisti el contenido");
-
-			log_info(logger, "Voy a actualizar tabla de segmentos");
-
-			datosSegmento->base = pos;
-			datosSegmento->limite = tamanioReal;
-			list_sort(lista_tabla_segmentos, (void*)&ordenarTablaSegmentosDeMenorBaseAMayorBase);
-			log_info(logger, "Se actualizo correctamente la tabla de segmentos");
-			log_error(logger, "TODO: devolver RunFuction de ok con la nueva posicion en memoria");
-		}
-		else
-		{
-			log_error(logger, "No se encontro una posicion dentro de la tabla de segmentos");
-			log_error(logger, "No se pudo persistir los datos");
-			log_error(logger, "TODO: devolver RunFuction de errors");
-		}
-
-
+	else if(strcmp(datosConfigFM9->modo,"TPI")==0){
+		log_error(logger, "TODO: no implementado actualizar para TPI");
+	}
+	else{
+		log_error(logger, "TODO: no implementado Seg Pag");
 	}
 	
 }
