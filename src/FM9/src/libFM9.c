@@ -102,6 +102,7 @@ void setearNumerosMarcos(int cantMarcos){
 		marco->pagina = -1;
 		marco->PID = -1;
 		marco->tamanioOcupado = 0;
+		marco->siguiente = NULL;
 		list_add(tabla_paginasInvertidas, marco);
 	}
 }
@@ -144,6 +145,8 @@ retornoCargaTPI cargarArchivoTPI(char* arch, int idGDT){
 	int tamanioArchivo = strlen(arch) + 1;
 	int tamanioRestante = tamanioArchivo;
 	int cantLineas = cantidadDeLineas(arch);
+	int lineasRestantes, lineasParaCargar;
+	t_PaginasInvertidas* marcoAnterior;
 	for(i=0; i<list_size(tabla_paginasInvertidas); i++){
 		t_PaginasInvertidas* unMarco = (t_PaginasInvertidas*) list_get(tabla_paginasInvertidas, i);
 		if(unMarco->PID == idGDT){ 
@@ -154,7 +157,7 @@ retornoCargaTPI cargarArchivoTPI(char* arch, int idGDT){
 
 	for(i=0; i<list_size(tabla_paginasInvertidas); i++){
 		t_PaginasInvertidas* unMarco = (t_PaginasInvertidas*) list_get(tabla_paginasInvertidas, i);
-		if(unMarco->PID == idGDT && unMarco->tamanioOcupado < datosConfigFM9->tamanioPagina){
+		if(unMarco->PID == idGDT && unMarco->tamanioOcupado < datosConfigFM9->tamanioPagina && unMarco->pagina == pagMasAlta){
 			retorno.pagina = unMarco->pagina;
 			retorno.desplazamiento = unMarco->tamanioOcupado; 
 			if( ((datosConfigFM9->tamanioPagina - unMarco->tamanioOcupado) / datosConfigFM9->maximoLinea) >= cantLineas){
@@ -165,34 +168,35 @@ retornoCargaTPI cargarArchivoTPI(char* arch, int idGDT){
 				return retorno;
 			}
 			else{
-				int lineasParaCargar = cantLineas - unMarco->tamanioOcupado / datosConfigFM9->maximoLinea;
-				int tamanioParaCargar = tamanioArchivo - (datosConfigFM9->tamanioPagina - unMarco->tamanioOcupado);
-				char auxBuffer[tamanioParaCargar];
-				for(i=0; i<tamanioParaCargar; i++){
-					auxBuffer[i] = *(arch + i);
+				lineasParaCargar = datosConfigFM9->tamanioPagina / datosConfigFM9->maximoLinea - unMarco->tamanioOcupado / datosConfigFM9->maximoLinea;
+				if(lineasParaCargar != 0){ 
+				guardarDatosDeLineas(arch, 
+									unMarco->marco*datosConfigFM9->tamanioPagina + unMarco->tamanioOcupado,
+									0,
+									lineasParaCargar);
 				}
-				unMarco->tamanioOcupado += tamanioParaCargar;
-				memcpy(memoria + unMarco->marco*datosConfigFM9->tamanioPagina, auxBuffer, tamanioParaCargar);
-				tamanioRestante = tamanioArchivo - tamanioParaCargar;
+				unMarco->tamanioOcupado += lineasParaCargar * datosConfigFM9->maximoLinea;
+				lineasRestantes = cantLineas - lineasParaCargar;
+				marcoAnterior = unMarco;
 			}
 		}
 	}
 
-	if(tamanioRestante != 0){ 
+	if(lineasRestantes != 0){ 
 		for(i=0; i<list_size(tabla_paginasInvertidas); i++){
 			t_PaginasInvertidas* unMarco = (t_PaginasInvertidas*) list_get(tabla_paginasInvertidas, i);
 			if(unMarco->libre){ 
-				char auxBuffer[tamanioRestante];
-				for(i=0; i<tamanioRestante; i++){
-					auxBuffer[i] = *(arch + tamanioArchivo - tamanioRestante + i);
-				}
+				guardarDatosDeLineas(arch, 
+									unMarco->marco*datosConfigFM9->tamanioPagina + unMarco->tamanioOcupado,
+									lineasParaCargar,
+									lineasRestantes);
 				unMarco->PID = idGDT;
-				unMarco->pagina = pagMasAlta;
+				unMarco->pagina = pagMasAlta + 1;
 				unMarco->libre = false;
-				unMarco->tamanioOcupado += tamanioRestante;
-				memcpy(memoria + unMarco->marco*datosConfigFM9->tamanioPagina, auxBuffer, tamanioRestante);
-				if(tamanioArchivo == tamanioRestante){ 
-					retorno.pagina = pagMasAlta;
+				unMarco->tamanioOcupado += lineasRestantes * datosConfigFM9->maximoLinea;
+				marcoAnterior->siguiente = unMarco;
+				if(cantLineas == lineasRestantes){ 
+					retorno.pagina = pagMasAlta + 1;
 					retorno.desplazamiento = 0;
 				}
 				retorno.cargaOK = true;
@@ -314,6 +318,46 @@ void guardarDatosPorLinea(char* datos, int pos){
 			memcpy(memoria + posActual, datosLineas, datosConfigFM9->maximoLinea);
 			break;
 		}
+	}
+}
+
+//lineaInicial == 0 -> primeraLinea
+//cantLineasEnAdelante (la linea inicial incluida)
+void guardarDatosDeLineas(char* datos, int pos, int lineaInicial, int cantLineasEnAdelante){
+	char* datosFiltrados[cantLineasEnAdelante];//array de lineas filtradas
+	char lineaFiltrada[datosConfigFM9->maximoLinea];
+	int posFiltrado = 0, cantLineasAux = 0;
+
+	while(cantLineasAux < lineaInicial){ 
+		while( datos[posFiltrado] != '\n'){
+			posFiltrado++;
+		}
+		posFiltrado++;
+		cantLineasAux++;
+	}
+	if(datos[posFiltrado] != '\0'){
+		for(int q = 0; q < cantLineasEnAdelante; q++){
+			datosFiltrados[q] = malloc(datosConfigFM9->maximoLinea);
+			int u = 0;
+			while( datos[posFiltrado] != '\n'){
+				lineaFiltrada[u] = datos[posFiltrado];
+				u++;
+				posFiltrado++;
+			}
+			lineaFiltrada[u] = '\n';
+			lineaFiltrada[u+1] = '\0';
+			posFiltrado++;
+			strcpy(datosFiltrados[q], lineaFiltrada);
+		}
+	}	
+	else{
+		lineaFiltrada[0] = '\0';
+		memcpy(memoria + pos, lineaFiltrada, datosConfigFM9->maximoLinea);
+		return;
+	}
+
+	for(int m = 0; m < cantLineasEnAdelante; m++){
+		memcpy(memoria + pos + m * datosConfigFM9->maximoLinea, datosFiltrados[m], datosConfigFM9->maximoLinea);
 	}
 }
 

@@ -24,12 +24,13 @@ typedef struct {
 	int limite;
 } t_tabla_segmentos;
 
-typedef struct {
+typedef struct paginasInvertidas{
 	int pagina;
 	int PID; //id del GDT 
 	int marco;
 	bool libre;
 	int tamanioOcupado;
+	struct paginasInvertidas* siguiente;
 } t_PaginasInvertidas;
 
 typedef struct{
