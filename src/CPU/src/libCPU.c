@@ -358,7 +358,7 @@ void permisoDeEjecucion(parametros* params){
 		while(sentenciasEjecutadas < quantumAEjecutar){
 			sleep(datosCPU->retardo);
 			pthread_mutex_lock(&m_puedeEjecutar);
-			sentencia = obtenerSentenciaParseada(rutaScript, programCounter);
+			sentencia = obtenerSentenciaParseada(idGDT, programCounter, pagina, segmento, desplazamiento);
 			pthread_mutex_unlock(&m_puedeEjecutar);
 			char string_sentEjecutadas[2];
 			char string_quantumAEjecutar[2];
@@ -600,58 +600,45 @@ void establecerQuantumYID(socket_connection * connection ,char** args){
 }
 
 //SOLO PARA LOS SCRIPTS QUE CREAMOS NOSOTROS
-operacion_t obtenerSentenciaParseada(char* script,int programCounter){
-	operacion_t sentenciaParseada;
-    char * line = NULL;
-    size_t len = 0;
-    ssize_t read;
-	int i;
+operacion_t obtenerSentenciaParseada(int idGDT, int programCounter, int pagina, int segmento, int desplazamiento){
+	pthread_t hiloDatos;
+	pthread_attr_t attr;
+	operacion_t sentencia;
+	char string_id[2];
+	sprintf(string_id, "%i", idGDT);
+	char string_pc[2];
+	sprintf(string_pc, "%i", programCounter);
+	char string_pag[3];
+	sprintf(string_pag, "%i", pagina);
+	char string_seg[3];
+	sprintf(string_seg, "%i", segmento);
+	char string_despl[2];
+	sprintf(string_despl, "%i", desplazamiento);
 
+	runFunction(socketFM9, "CPU_FM9_obtenerDatos", 5, string_id, string_pc, string_pag, string_seg, string_despl);
 
-	FILE* arch = abrirScript(script);
-	for(i=0; i<programCounter; i++){
-		getline(&line, &len, arch);
-	}
-	
-	if( read = getline(&line, &len, arch) != -1){
-		log_trace(logger, "Sentencia: %s", line);
-		sentenciaParseada = parse(line);
-		int prevPos = ftell(arch);
-		
-		read = getline(&line, &len, arch);
-		if( read == -1){
-			sentenciaParseada.ultimaSentencia = true;
-		}
-			fseek(arch, prevPos, SEEK_SET);
-	}
-	else{
-		sentenciaParseada.palabraReservada == 500;
-		log_error(logger, "El GDT ya no tiene mas sentencias ");
-	}
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+	pthread_create(&hiloDatos, &attr, (void*)funcionHiloObtencionDatos, NULL);
+	pthread_attr_destroy(&attr);
+	pthread_join(hiloDatos, NULL);
 
-    if (line){ 
-        free(line);
-	}
-	fclose(arch);
-	return sentenciaParseada;
+	sentencia = parse(datosPedidos);
+	if(ultimaSentencia)
+		sentencia.ultimaSentencia = true;
+	else
+		sentencia.ultimaSentencia = false;
+	return sentencia;
 }
 
-FILE * abrirScript(char * scriptFilename)
-{
-  char* ruta = malloc(100*sizeof(char));
-  strcpy(ruta, "../../Scripts/");
-  strcat(ruta,scriptFilename);
-  
-  FILE * scriptf = fopen(ruta, "r");
-  if (scriptf == NULL)
-  {
-    log_error(logger, "Error al abrir el archivo %s", scriptFilename);
-    exit(EXIT_FAILURE);
-  }
-  
-  free(ruta);
-  return scriptf;
-} 
+//args[0]: ok ó error, args[1]: datos, args[2]: esUltima
+void resultadoObtencionDatos(socket_connection * connection ,char** args){
+	int resultado = atoi(args[0]);
+	if(resultado)
+		strcpy(datosPedidos, args[1]);
+	ultimaSentencia = atoi(args[2]);
+	sem_post(&sem_esperaDatos);
+}
 
 void funcionHiloAbrir(){
 	sem_wait(&sem_esperaAbrir);
@@ -666,153 +653,10 @@ void funcionHiloClose(){
 }
 
 void funcionHilo(char* tipoEjecucion){
-
 	sem_wait(&sem_esperaEjecucion);
 	log_trace(logger, "Continuando Ejecucion: %s", tipoEjecucion);
 }
 
-//Esta funcion es la posta, pero para los Scripts creados por nosotros usamos la funcion obtenerSentenciaParseada
-//que está más arriba
-/*
-operacion_t obtenerSentenciaParseada(char* nomArch,int pc){
-	operacion_t sentenciaParseada;
-	int i = 0;
-	int indice = 0;
-	int indLinea = 0;
-	char linea[100];
-	char * line = NULL;
-    size_t len = 0;
-    ssize_t read;
-	int bloques[50];
-	int j = 0;
-	int k;
-	char bloque[3];
-	int cant = 0;
-	char scriptCompleto[1000];
-	int contadorScript = 0;
-	int c;
-	char* ruta;
-
-	FILE* arch = abrirArchivoScript(nomArch);
-	getline(&line, &len, arch);
-	if( read = getline(&line, &len, arch) != -1){
-		while(line[i] != '['){			
-			i++;
-		}
-		i++;
-
-		while(line[i] != ']'){ 
-			while(line[i] != ','){
-				if(line[i] == ']'){
-					break;
-				}
-				else{
-					bloque[j] = line[i];
-					i++;
-					j++;
-				}	
-			}
-			if(line[i] != ']'){ 
-				bloques[cant] = atoi(bloque);
-				bloque[0] = '\0';
-				bloque[1] = '\0';
-				bloque[2] = '\0';
-				cant++;
-				j = 0;
-				i++;
-			}
-		}
-
-		bloques[cant] = atoi(bloque);
-	} // bloques ya obtenidos, tiene ( cant+1 ) bloques
-
-	if (line){ 
-        free(line);
-	}
-	fclose(arch);
-
-	for(k = 0; k <= cant; k++){
-		FILE* bf = abrirArchivoBloque(bloques[k]);
-		if(bf!=NULL){
-			while( ( c=fgetc(bf) ) != EOF){
-				scriptCompleto[contadorScript] = c;
-				contadorScript++;
-			}
-		fclose(bf);
-		}
-	}
-	i=0;
-	while(i<pc){
-		while(scriptCompleto[indice] != '\n'){
-			indice++;
-		}
-		indice++;
-		i++;
-	}
-
-	while(scriptCompleto[indice] != '\n'){
-		linea[indLinea] = scriptCompleto[indice];
-		indLinea++;
-		indice++;
-	}
-
-	linea[indLinea] = '\0';
-
-	if(linea[0] != '\n'){
-		log_trace(logger, "Sentencia: %s", linea);
-		sentenciaParseada = parse(linea);
-		if(scriptCompleto[indice+1] != '#' && scriptCompleto[indice+1] != 'a' && scriptCompleto[indice+1] != 'c' &&
-		   scriptCompleto[indice+1] != 'w' && scriptCompleto[indice+1] != 's' && scriptCompleto[indice+1] != 'f' &&
-		   scriptCompleto[indice+1] != 'b'){
-			sentenciaParseada.ultimaSentencia = true;
-		}
-		else{
-			sentenciaParseada.ultimaSentencia = false;
-		}
-	}
-	else{
-		sentenciaParseada.palabraReservada = 500;
-	}
-	return sentenciaParseada;
-}
-*/
-
-FILE * abrirArchivoScript(char * nomArchivo)
-{
-  char* ruta = malloc(100*sizeof(char));
-  strcpy(ruta, "../../fifa-entrega-Scripts/Archivos/scripts/");
-  strcat(ruta,nomArchivo);
-  
-  FILE * scriptf = fopen(ruta, "r");
-  if (scriptf == NULL)
-  {
-	  printf("Error al abrir archivo script\n");
-    //log_error(logger, "Error al abrir el archivo %s", nomArchivo);
-    exit(EXIT_FAILURE);
-  }
-  
-  free(ruta);
-  return scriptf;
-}
-
-FILE * abrirArchivoBloque(int numBloque)
-{
-  char bloque[5];
-  sprintf(bloque, "%i", numBloque);
-  char* ruta = malloc(100*sizeof(char));
-  char* ext = ".bin";
-  strcpy(ruta, "../../fifa-entrega-Scripts/Bloques/");
-  strcat(ruta,bloque);
-  strcat(ruta, ext);
-  
-  FILE * scriptf = fopen(ruta, "r");
-  if (scriptf == NULL)
-  {
-	  printf("Error al abrir archivo bloque\n");
-    //log_error(logger, "Error al abrir el archivo del bloque %d", numBloque);
-    exit(EXIT_FAILURE);
-  }
-  
-  free(ruta);
-  return scriptf;
+void funcionHiloObtencionDatos(){
+	sem_wait(&sem_esperaDatos);
 }

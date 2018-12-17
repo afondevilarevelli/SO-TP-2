@@ -8,7 +8,8 @@ int main() {
 
   pthread_mutex_init(&m_busqueda, NULL);
   pthread_mutex_init(&m_puedeEjecutar, NULL);
-  sem_init(&sem_esperaAbrir, 0, 0);
+  sem_init(&sem_esperaAbrir, 0, 0); 
+  sem_init(&sem_esperaDatos, 0, 0);
   sem_init(&sem_esperaEjecucion, 0, 0); 
   sem_init(&sem_esperaClose, 0, 0);
   configure_loggerCPU();
@@ -26,6 +27,7 @@ int main() {
   dictionary_put(callableRemoteFunctionsCPU, "SAFA_CPU_continuarEjecucionWait", &ejecucionWait);
   dictionary_put(callableRemoteFunctionsCPU, "SAFA_CPU_continuarEjecucionClose", &ejecucionClose);
   dictionary_put(callableRemoteFunctionsCPU, "FM9_CPU_resultadoDeClose", &finalizacionClose);
+  dictionary_put(callableRemoteFunctionsCPU, "FM9_CPU_resultadoDatos", &resultadoObtencionDatos);
 
   socketDAM = connectServer(datosCPU->ipD, datosCPU->puertoD, callableRemoteFunctionsCPU, &disconnect, NULL);
 

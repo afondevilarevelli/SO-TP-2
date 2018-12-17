@@ -53,7 +53,7 @@ t_dictionary * callableRemoteFunctions;
 pthread_mutex_t mx_main;
 int socketDAM;
 
-void* memoria;
+char* memoria;//void* memoria;
 
 t_list* lista_tabla_segmentos;
 t_list* tabla_paginasInvertidas;
@@ -66,7 +66,7 @@ t_list* lista_archivos;
 void solicitudCargaArchivo(socket_connection*, char**);
 void actualizarDatosDTB(socket_connection*, char**);
 void cerrarArchivoDelDTB(socket_connection*, char**);
-
+void obtenerDatos(socket_connection* connection, char** args);
 //LOGS
 void configure_logger();
 void close_logger();

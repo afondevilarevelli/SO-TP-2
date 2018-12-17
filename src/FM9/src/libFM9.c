@@ -292,18 +292,21 @@ t_PaginasInvertidas* obtenerUltimoMarcoDeGDT(int idGDT){
 
 void guardarDatosPorLinea(char* datos, int pos){
 	char datosLineas[datosConfigFM9->maximoLinea];
+	char datosAux[datosConfigFM9->maximoLinea];
 	int tamanioArchivo = strlen(datos) + 1;
 	int posActual = pos;
 	int i = 0;
 	while(1){ 
 		int j = 0;
 		while( datos[i] != '\n'){
-			datosLineas[j] = datos[i];
+			datosAux[j] = datos[i];
 			i++;
 			j++;
 		}
-		datosLineas[j] = '\n';
+		datosAux[j] = '\n';
+		datosAux[j+1] = '\0';
 		i++;
+		strcpy(datosLineas, datosAux);
 		memcpy(memoria + posActual, datosLineas, datosConfigFM9->maximoLinea);
 		posActual += datosConfigFM9->maximoLinea;
 		if(i+1 == tamanioArchivo){ 
@@ -334,8 +337,8 @@ void actualizarDatosDTB(socket_connection* connection, char** args){ //La primer
 	int linea = atoi(args[2]);
 	char* datos = args[3];
 
-	log_info(logger, "Del GDT: %d, recibi los siguientes Datos:\n Base: %d, Linea: %d, Datos: %s", idGDT, base, linea, datos);
-
+	log_info(logger, "Del GDT: %d, recibi los siguientes Datos:", idGDT);
+	log_info(logger, "	Base: %d, Linea: %d, Datos: %s",base, linea, datos);
 	bool _buscarSegmento(void* elemento){
 		return buscarSegmento(elemento, &idGDT, &base);	
 	}
@@ -367,6 +370,40 @@ void actualizarDatosDTB(socket_connection* connection, char** args){ //La primer
 		log_error(logger, "TODO: no implementado Seg Pag");
 	}
 	
+}
+
+//args[0]: idGDT, args[1]:Linea, args[2]: pag, args[3]: baseSeg, args[4]: despl
+void obtenerDatos(socket_connection* connection, char** args){
+	int idGDT = atoi(args[0]);
+	int base = atoi(args[3]);
+	int numLinea = atoi(args[1]);
+	int pagina = atoi(args[2]);
+	int despl = atoi(args[4]);
+
+	bool _buscarSegmento(void* elemento){
+		return buscarSegmento(elemento, &idGDT, &base);	
+	}
+	if(strcmp(datosConfigFM9->modo,"SEG")==0){
+		t_tabla_segmentos* segmento = list_find(lista_tabla_segmentos, _buscarSegmento);
+		if(segmento == NULL || (segmento->limite / datosConfigFM9->maximoLinea) < numLinea){
+			runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, "0", "", "0");
+		}
+		else{ 
+			char* linea = malloc(datosConfigFM9->maximoLinea);
+			memcpy(linea, memoria + segmento->base + numLinea*datosConfigFM9->maximoLinea, datosConfigFM9->maximoLinea);
+			log_info(logger, "Se obtuvieron los siguientes datos: %s", linea);
+			if( *(memoria + segmento->base + numLinea*datosConfigFM9->maximoLinea + datosConfigFM9->maximoLinea) == '\0' )
+				runFunction(connection->socket, "FM9_CPU_resultadoDatos", 3, "1", linea, "1");
+			else
+				runFunction(connection->socket, "FM9_CPU_resultadoDatos", 3, "1", linea, "0");
+			free(linea);
+		}
+	} else if(strcmp(datosConfigFM9->modo,"TPI")==0){
+
+	}
+	else{ //SPA
+
+	}
 }
 
 //args[0]: idGDT, args[1]: rutaScript

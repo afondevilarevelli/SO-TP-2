@@ -7,6 +7,7 @@
 #include <commons/collections/list.h>
 #include "socket.h"
 #include "libFM9.h"
+#include <readline/readline.h>
 
 typedef struct
 {

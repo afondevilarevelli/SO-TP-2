@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS= -Wall -O0 -g3
-LIBFLAGS=-lcommons -pthread 
+LIBFLAGS=-lcommons -pthread -lreadline
 
 C_SRCS=$(shell find ./src -iname "*.c" | sed -e 's/.*\/src\/*/.\//g' | tr '\n' ' ')
 OBJS=$(C_SRCS:./%.c=build/%.o)

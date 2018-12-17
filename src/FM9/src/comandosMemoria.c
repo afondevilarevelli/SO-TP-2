@@ -71,7 +71,7 @@ void loadCommands()
 
 // Valida y ejecuta comando especifico
 void executeCommand(char * c){
-  c[strlen(c)-1] = '\0'; //quito /n final
+   // c[strlen(c)-1] = '\0'; //quito \n final
 
   if(string_is_empty(c) || c[0] == ' ' || c[strlen(c)-1] == ' ') {
 		log_warning(logger, "Ingrese comando, escribe *help* para ver el menú");
@@ -107,8 +107,14 @@ bool isPid(t_tabla_segmentos* unNodo, int* pidIngresado){
 }
 
 void mostrarDatosPid(t_tabla_segmentos* unNodo){
-	log_info(logger, "PID: %d			base: %d			offset: %d", unNodo->pid, unNodo->base, unNodo->limite);
-	char* datos = malloc(unNodo->limite);
-	memcpy(datos, memoria + unNodo->base, unNodo->limite);
-	log_info(logger, "Datos almacenados: %s", datos);
+	int cantLineas = unNodo->limite / datosConfigFM9->maximoLinea;
+	char* linea;
+	linea = malloc(datosConfigFM9->maximoLinea);
+	log_info(logger, "PID: %d  Base: %d	  Offset: %d", unNodo->pid, unNodo->base, unNodo->limite);
+	log_info(logger, "Datos almacenados:");
+	for(int i=0; i<cantLineas; i++){
+		memcpy(linea, memoria + unNodo->base + i*datosConfigFM9->maximoLinea , datosConfigFM9->maximoLinea);
+		log_info(logger, "	%s", linea);
+	}
+	free(linea);
 }

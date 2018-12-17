@@ -85,6 +85,7 @@ pthread_mutex_t m_puedeEjecutar;
 sem_t sem_esperaAbrir;
 sem_t sem_esperaClose;
 sem_t sem_esperaEjecucion;
+sem_t sem_esperaDatos;
 
 //VAR GLOB SOCKETS
 int socketDAM;
@@ -99,6 +100,8 @@ bool archivoAbiertoClose;
 bool resultadoCloseOk;
 bool resultadoWaitOk;
 
+char datosPedidos[200];
+int ultimaSentencia;
 
 //FUNCIONES
 
@@ -111,11 +114,7 @@ void* intentandoConexionConDAM(int );
 void* intentandoConexionConFM9(int );
 void disconnect();
 
-FILE * abrirScript(char * scriptFilename);
-operacion_t obtenerSentenciaParseada(char* script,int programCounter);
-FILE * abrirArchivoScript(char * nomArchivo);
-FILE * abrirArchivoBloque(int numBloque);
-
+operacion_t obtenerSentenciaParseada(int, int, int, int, int);
 
 //PARSER
 operacion_t parse(char* line);
@@ -137,4 +136,6 @@ void finalizacionClose(socket_connection*, char**);
 void funcionHiloAbrir();
 void funcionHiloClose();
 void funcionHilo(char*); 
+void funcionHiloObtencionDatos();
+void resultadoObtencionDatos(socket_connection * connection ,char** args);
 #endif
