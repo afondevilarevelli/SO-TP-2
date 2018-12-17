@@ -209,17 +209,35 @@ retornoCargaTPI cargarArchivoTPI(char* arch, int idGDT){
 }
 
 //args[0]: idGDT; args[1]: datos, args[2]: "ultima" ó "sigue" (para ver si dsp el DAM le avisa al SAFA o sigue cargando)
+//args[3]: 1(Dummy) ó 0(no Dummy), args[4]: primera o no
+void cargarBuffer(socket_connection* connection, char** args){
+	if(strcmp(args[4], "1") == 0){ 
+		bufferAuxiliar = malloc(2000);
+		tamanioOcupadoBufferAux = 0;
+	}
+	if(strcmp(args[2], "ultima") == 0){
+		memcpy(bufferAuxiliar + tamanioOcupadoBufferAux, args[1], strlen(args[1]) + 1);
+		bufferArchivoACargar = malloc(strlen(bufferAuxiliar) + 1);
+		strcpy(bufferArchivoACargar, bufferAuxiliar);
+		free(bufferAuxiliar);
+		cargarArchivo(args[0], args[3]);
+	}
+	else{
+		memcpy(bufferAuxiliar + tamanioOcupadoBufferAux, args[1], strlen(args[1]) + 1);
+		tamanioOcupadoBufferAux += strlen(args[1]);
+	}
+}
+
+//args[0]: idGDT; args[1]: datos, args[2]: "ultima" ó "sigue" (para ver si dsp el DAM le avisa al SAFA o sigue cargando)
 //args[3]: 1(Dummy) ó 0(no Dummy), args[4]: primer pedido o no
-//Comunicacion para Desarrollar Cuando El DAM pida a FM9 cargar el archivo ya sea un DTB o el Dummy
-void solicitudCargaArchivo(socket_connection *connection, char **args)
+void cargarArchivo(char* idGDT, char* esDummy)
 {
-	int pid = atoi(args[0]);
-	int tamanioArchivo = strlen(args[1])+1;
-	char* datos = args[1];
-	log_info(logger, "Voy a persistir: '%s' cuyo tamanio es %d", args[1], strlen(args[1]));
+	int pid = atoi(idGDT);
+	int tamanioArchivo = strlen(bufferArchivoACargar)+1;
+	log_info(logger, "Voy a persistir: '%s' cuyo tamanio es %d", bufferArchivoACargar, tamanioArchivo-1);
 	if(strcmp(datosConfigFM9->modo,"SEG")==0){ 	
 		int tamanioReal;
-		int cantLineas = cantidadDeLineas(datos);	
+		int cantLineas = cantidadDeLineas(bufferArchivoACargar);	
 		tamanioReal = cantLineas * datosConfigFM9->maximoLinea;
 		log_info(logger, "Se van a guardar %d lineas",cantLineas);
 		log_info(logger, "Voy a buscar una posicion para almacenar los datos");
@@ -227,7 +245,7 @@ void solicitudCargaArchivo(socket_connection *connection, char **args)
 		log_info(logger, "La posicion es %d", pos);
 		if (pos != -1)
 		{
-			guardarDatosPorLinea(datos, pos);
+			guardarDatosPorLinea(bufferArchivoACargar, pos);
 			
 			log_info(logger, "Persisti el contenido");
 
@@ -240,40 +258,39 @@ void solicitudCargaArchivo(socket_connection *connection, char **args)
 			list_add(lista_tabla_segmentos, nuevoSegmento);
 			list_sort(lista_tabla_segmentos, (void*)&ordenarTablaSegmentosDeMenorBaseAMayorBase);
 			log_info(logger, "Se actualizo correctamente la tabla de segmentos");
-			if(strcmp(args[4],"0")==0)
-				runFunction(socketDAM, "FM9_DAM_archivoCargado", 5, args[0], "ok", args[2], args[3], args[4]);
-			else{ 
-				char string_segmento[2];
-				sprintf(string_segmento, "%i", pos);
-				runFunction(socketDAM, "FM9_DAM_archivoCargado", 8, args[0], "ok", args[2], args[3], args[4], "-1", string_segmento, "0");
-			}
+
+			char string_segmento[2];
+			sprintf(string_segmento, "%i", pos);
+			free(bufferArchivoACargar);
+			runFunction(socketDAM, "FM9_DAM_archivoCargado", 6, idGDT, "ok", esDummy, "-1", string_segmento, "0");
+
 		}else{
 			log_error(logger, "No se encontro una posicion dentro de la tabla de segmentos");
 			log_error(logger, "No se pudo persistir los datos");
-			runFunction(socketDAM, "FM9_DAM_archivoCargado", 5, args[0], "error", args[2], args[3], args[4]);
+			free(bufferArchivoACargar);
+			runFunction(socketDAM, "FM9_DAM_archivoCargado", 6, idGDT, "error", esDummy, "-1", "-1", "-1");
 		}
 	}
 	else if(strcmp(datosConfigFM9->modo,"TPI")==0){
-		int idGDT = atoi(args[0]);
-		retornoCargaTPI cargado = cargarArchivoTPI( args[1], idGDT);
+		retornoCargaTPI cargado = cargarArchivoTPI( bufferArchivoACargar, pid);
 		if(cargado.cargaOK){ 
-			log_info(logger, "Persisti el contenido %s para el GDT %d", args[1], idGDT);
-			if(strcmp(args[4],"0")==0)
-				runFunction(socketDAM, "FM9_DAM_archivoCargado", 5, args[0], "ok", args[2], args[3], args[4]);
-			else{
-				char string_despl[3];
-				sprintf(string_despl, "%i", cargado.desplazamiento);
-				char string_pagina[3];
-				sprintf(string_pagina, "%i", cargado.pagina);
-				runFunction(socketDAM, "FM9_DAM_archivoCargado", 8, args[0], "ok", args[2], args[3], args[4], string_pagina, "-1",string_despl);
-			}
+			log_info(logger, "Persisti el contenido %s para el GDT %d", bufferArchivoACargar, pid);
+			char string_despl[3];
+			sprintf(string_despl, "%i", cargado.desplazamiento);
+			char string_pagina[3];
+			sprintf(string_pagina, "%i", cargado.pagina);
+			free(bufferArchivoACargar);
+			runFunction(socketDAM, "FM9_DAM_archivoCargado", 6, idGDT, "ok", esDummy, string_pagina, "-1",string_despl);
+			
 		}else{
-			log_info(logger, "Error al persistir el contenido %s para el GDT %d",args[1], idGDT);
-			runFunction(socketDAM, "FM9_DAM_archivoCargado", 5, args[0], "error", args[2], args[3], args[4]);
+			log_info(logger, "Error al persistir el contenido %s para el GDT %d",bufferArchivoACargar, pid);
+			free(bufferArchivoACargar);
+			runFunction(socketDAM, "FM9_DAM_archivoCargado", 6, idGDT, "error", esDummy, "-1", "-1", "-1");
 		}
 	}
 	else{ //SEGMENTACION PAGINADA
 		printf("No esta implementado papu\n");
+		free(bufferArchivoACargar);
 	}
 }
 /*
@@ -303,6 +320,8 @@ void guardarDatosPorLinea(char* datos, int pos){
 	while(1){ 
 		int j = 0;
 		while( datos[i] != '\n'){
+			if(i + 1 == tamanioArchivo)
+				break;
 			datosAux[j] = datos[i];
 			i++;
 			j++;

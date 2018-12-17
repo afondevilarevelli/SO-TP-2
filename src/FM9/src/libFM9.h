@@ -22,6 +22,7 @@ typedef struct {
 	//char* nombreArchivo;
 	int base;
 	int limite;
+	bool ultimaLineaCompleta;
 } t_tabla_segmentos;
 
 typedef struct paginasInvertidas{
@@ -56,6 +57,10 @@ int socketDAM;
 
 char* memoria;//void* memoria;
 
+char* bufferArchivoACargar;
+char* bufferAuxiliar;
+int tamanioOcupadoBufferAux;
+
 t_list* lista_tabla_segmentos;
 t_list* tabla_paginasInvertidas;
 
@@ -64,10 +69,10 @@ t_list* lista_archivos;
 //FUNCIONES
 
 //CallableRemoteFunctions
-void solicitudCargaArchivo(socket_connection*, char**);
 void actualizarDatosDTB(socket_connection*, char**);
 void cerrarArchivoDelDTB(socket_connection*, char**);
 void obtenerDatos(socket_connection* connection, char** args);
+void cargarBuffer(socket_connection* connection, char** args);
 //LOGS
 void configure_logger();
 void close_logger();
@@ -93,4 +98,6 @@ bool buscarSegmento(t_tabla_segmentos*, int*, int*);
 
 int cantidadDeLineas(char* datos);
 void guardarDatosPorLinea(char* datos, int pos);
+
+void cargarArchivo(char* idGDT, char* esDummy);
 

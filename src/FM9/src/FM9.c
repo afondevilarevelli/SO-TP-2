@@ -20,6 +20,7 @@ void cerrarPrograma() {
 
 int main(void) {
 	pthread_t hiloConsola;
+	tamanioOcupadoBufferAux = 0;
 	//Esto es para liberar memoria despues de ctrl-c
 	signal(SIGINT, cerrarPrograma);
 
@@ -50,10 +51,10 @@ int main(void) {
 	callableRemoteFunctions = dictionary_create();
 
 	dictionary_put(callableRemoteFunctions, "identificarProcesoEnFM9", &identificarProceso);
-	dictionary_put(callableRemoteFunctions, "DAM_FM9_cargarArchivo", &solicitudCargaArchivo);
 	dictionary_put(callableRemoteFunctions, "CPU_FM9_actualizarLosDatosDelArchivo", &actualizarDatosDTB);
 	dictionary_put(callableRemoteFunctions, "CPU_FM9_cerrarElArchivo", &cerrarArchivoDelDTB);
 	dictionary_put(callableRemoteFunctions, "CPU_FM9_obtenerDatos", &obtenerDatos);
+	dictionary_put(callableRemoteFunctions, "DAM_FM9_cargarBuffer", &cargarBuffer);
 	//Funcion para iniciar la ejecucion del Flush
 	//dictionary_put(callableRemoteFunctions, "DAM_FM9_obtenerArchivo", &obtenerArchivo);
 
