@@ -21,14 +21,14 @@ int main(void){
 	 callableRemoteFunctionsSAFA = dictionary_create();
 	callableRemoteFunctionsCPU = dictionary_create();
 
-  pthread_mutex_init(&m_carga, NULL);
+  pthread_mutex_init(&m_pedido, NULL);
 	
 	//--------------------------------------------------------------------
 	//Dicionarios del mdj
     dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_existeArchivo", &MDJ_DAM_existeArchivo);
-    dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_verificarArchivoCreado",&MDJ_DAM_verificarArchivoCreado);
+    dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_resultadoCreacionArchivo",&MDJ_DAM_resultadoCreacionArchivo);
     dictionary_put(callableRemoteFunctionsMDJ,"MDJ_DAM_respuestaDatos",&MDJ_DAM_respuestaCargaGDT);
-    dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_verificameSiArchivoFueBorrado",&MDJ_DAM_verificameSiArchivoFueBorrado);
+    dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_resultadoBorradoArchivo",&MDJ_DAM_resultadoBorradoArchivo);
     dictionary_put(callableRemoteFunctionsFM9, "MDJ_DAM_respuestaFlush", &MDJ_DAM_respuestaFlush);
     dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_avisoSAFAResultadoDTBDummy",&MDJ_DAM_avisarResultadoDTB);
 	//--------------------------------------------------------------------
@@ -114,7 +114,7 @@ void cerrarPrograma() {
      dictionary_destroy(callableRemoteFunctionsFM9);
      dictionary_destroy(callableRemoteFunctionsMDJ);
      free(datosConfigDAM);
-     pthread_mutex_destroy(&m_carga);
+     pthread_mutex_destroy(&m_pedido);
     pthread_mutex_unlock(&mx_main);
     pthread_mutex_destroy(&mx_main);
 }

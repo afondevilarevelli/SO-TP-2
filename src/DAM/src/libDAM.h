@@ -26,10 +26,20 @@ typedef struct {
 } t_config_DAM;
 
 typedef struct{
-    int idGDT;
+    char idGDT[2];
     char path[60]; 
     char dummy[1];
-}parametros;
+    char socketCPU[2];
+}parametrosCarga;
+
+typedef struct{
+    char idGDT[2];
+    char path[60];
+    char pagina[3]; 
+    char segmento[3];
+    char desplazamiento[4];
+    char socketCPU[2];
+}parametrosFlush;
 //----------------------------//
 
 //VARIABLES
@@ -41,7 +51,7 @@ t_dictionary* callableRemoteFunctionsCPU;
 pthread_mutex_t mx_main;	/* Semaforo de main */
 t_config_DAM*  datosConfigDAM;
 
-pthread_mutex_t m_carga;
+pthread_mutex_t m_pedido;
 
 int socketSAFA;
 int socketFM9;
@@ -67,13 +77,14 @@ void close_logger();
 void cerrarPrograma();
 void elementoDestructorDiccionario(void *);
 
-void hiloCarga(parametros*);
+void hiloCarga(parametrosCarga*);
+void hiloFlush(parametrosFlush* params);
 
 //diccionarios
 void identificarProceso(socket_connection * connection ,char** args);
-void MDJ_DAM_verificarArchivoCreado(socket_connection*,char ** );
+void MDJ_DAM_resultadoCreacionArchivo(socket_connection*,char ** );
 void MDJ_DAM_existeArchivo(socket_connection*,char ** );
-void MDJ_DAM_verificameSiArchivoFueBorrado(socket_connection*,char **);
+void MDJ_DAM_resultadoBorradoArchivo(socket_connection*,char **);
 void CPU_DAM_existeArchivo(socket_connection* socketMDJ, char ** args);
 void CPU_DAM_crearArchivo(socket_connection* connection, char** args);
 void CPU_DAM_borrarArchivo(socket_connection* connection, char** args);

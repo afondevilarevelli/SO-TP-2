@@ -28,6 +28,7 @@ int main() {
   dictionary_put(callableRemoteFunctionsCPU, "SAFA_CPU_continuarEjecucionClose", &ejecucionClose);
   dictionary_put(callableRemoteFunctionsCPU, "FM9_CPU_resultadoDeClose", &finalizacionClose);
   dictionary_put(callableRemoteFunctionsCPU, "FM9_CPU_resultadoDatos", &resultadoObtencionDatos);
+  dictionary_put(callableRemoteFunctionsCPU, "avisarTerminoClock", &avisarTerminoClock);
 
   socketDAM = connectServer(datosCPU->ipD, datosCPU->puertoD, callableRemoteFunctionsCPU, &disconnect, NULL);
 

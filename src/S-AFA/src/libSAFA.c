@@ -449,8 +449,16 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 		pthread_mutex_lock(&m_verificacion);
 		archAVerificar = malloc(strlen(msgs[3]) + 1);
 		strcpy(archAVerificar, msgs[3]);
-		if(list_any_satisfy(dtb->archivosAbiertos, &condicionArchivoAbierto) )
-    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAsignar", 1, "1");
+		if(list_any_satisfy(dtb->archivosAbiertos, &condicionArchivoAbierto) ){ 
+			archivo* arch = list_find(dtb->archivosAbiertos, &condicionArchivoAbierto);
+			char string_pag[3];
+			sprintf(string_pag,"%i", arch->pagina);
+			char string_seg[3];
+			sprintf(string_seg,"%i", arch->baseSegmento);
+			char string_despl[3];
+			sprintf(string_despl,"%i", arch->desplazamiento);
+    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAsignar", 4, "1",string_pag,string_seg,string_despl);
+		}
 		else
 			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAsignar", 1, "0");
 		free(archAVerificar);
@@ -462,8 +470,15 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 		archAVerificar = malloc(strlen(msgs[3]) + 1);
 		strcpy(archAVerificar, msgs[3]);
 		if(list_any_satisfy(dtb->archivosAbiertos, &condicionArchivoAbierto) ){
-			list_remove_and_destroy_by_condition(dtb->archivosAbiertos,&condicionArchivoAbierto,(void*)&free);
-    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionClose", 1, "1");
+			archivo* arch = list_find(dtb->archivosAbiertos, &condicionArchivoAbierto);
+			char string_pag[3];
+			sprintf(string_pag,"%i", arch->pagina);
+			char string_seg[3];
+			sprintf(string_seg,"%i", arch->baseSegmento);
+			char string_despl[3];
+			sprintf(string_despl,"%i", arch->desplazamiento);
+			list_remove_and_destroy_by_condition(dtb->archivosAbiertos,&condicionArchivoAbierto,&liberarMemoriaArchivo);
+    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionClose", 4, "1", string_pag,string_seg,string_despl);
 		}
 		else
 			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionClose", 1, "0");
@@ -475,8 +490,16 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 		pthread_mutex_lock(&m_verificacion);
 		archAVerificar = malloc(strlen(msgs[3]) + 1);
 		strcpy(archAVerificar, msgs[3]);
-		if(list_any_satisfy(dtb->archivosAbiertos, &condicionArchivoAbierto) )
-    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionFlush", 1, "1");
+		if(list_any_satisfy(dtb->archivosAbiertos, &condicionArchivoAbierto) ){ 
+			archivo* arch = list_find(dtb->archivosAbiertos, &condicionArchivoAbierto);
+			char string_pag[3];
+			sprintf(string_pag,"%i", arch->pagina);
+			char string_seg[3];
+			sprintf(string_seg,"%i", arch->baseSegmento);
+			char string_despl[3];
+			sprintf(string_despl,"%i", arch->desplazamiento);
+    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionFlush", 4, "1", string_pag,string_seg,string_despl);
+		}
 		else{ 
 			dtb->cantIOs++;
 			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionFlush", 1, "0");
@@ -493,6 +516,11 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 
 bool condicionArchivoAbierto(void* arch){
 	return strcmp( ((archivo*)arch)->nombre, archAVerificar) == 0;
+}
+
+void liberarMemoriaArchivo(archivo* arch){
+	free(arch->nombre);
+	free(arch);
 }
 
 //args[0]: idGDT,args[1]: nomArch, args[2]:pagina, args[3]:baseSegmento, args[4]: despl

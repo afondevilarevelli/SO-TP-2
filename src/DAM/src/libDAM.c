@@ -95,79 +95,89 @@ void MDJ_DAM_avisarResultadoDTB(socket_connection* socketInf,char ** args){
 
 }
 
-//args[0]: idGDT, args[1]: 0(yaCreado), 1(recienCreado), -1(errorCreado), args[2]: arch
-void MDJ_DAM_verificarArchivoCreado(socket_connection* conenction,char ** args){
+//args[0]: idGDT, args[1]: 0(yaCreado), 1(recienCreado), -1(errorCreado), args[2]: arch, args[3]: socketCPU
+void MDJ_DAM_resultadoCreacionArchivo(socket_connection* conenction,char ** args){
 	estadoCreacion = atoi(args[1]);
+	int socketCPU = atoi(args[3]);
 
 	if(estadoCreacion ==  1)
 	{	
 		log_trace(logger,"El MDJ informa que se ha creado el archivo %s por el GDT %s",args[2], args[0]);
+		runFunction(socketCPU, "avisarTerminoClock", 0);
 		runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB",1, args[0]);
 	}
 	else
 	{
 		if(estadoCreacion == 0)
-			log_error(logger,"Archivo %s ya creado",args[2]);
+			log_error(logger,"Archivo %s previamente existia",args[2]);
 		else
 			log_error(logger,"Error al crear el archivo %s",args[2]);
-
+		runFunction(socketCPU, "avisarTerminoClock", 0);
 		runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, args[0]);
 	}	
 }
 
-//args[0]: idGDT, args[1]: 0(yaCreado), 1(recienCreado), -1(errorCreado), args[2]: arch
-void MDJ_DAM_verificameSiArchivoFueBorrado(socket_connection * connection,char ** args/*char* pam1, char* pam2*/){
+//args[0]: idGDT, args[1]: 0(yaCreado), 1(recienCreado), -1(errorCreado), args[2]: arch,  args[3]: socketCPU
+void MDJ_DAM_resultadoBorradoArchivo(socket_connection * connection,char ** args){
 	estadoBorrado = atoi(args[1]);
-
+	int socketCPU = atoi(args[3]);
 	if(estadoBorrado == 0)
 	{
 		log_trace(logger,"El MDJ informa que se ha borrado el archivo %s por el GDT %s",args[2], args[0]);
+		runFunction(socketCPU, "avisarTerminoClock", 0);
 		runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB",1, args[0]);
 	}
 	else if (estadoBorrado == -1)
 	{
 		log_error(logger,"El archivo %s es inexistente",args[2]);
+		runFunction(socketCPU, "avisarTerminoClock", 0);
 		runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1,args[0]);
 	}
 	else
 	{
 		log_error(logger,"Ocurrio un error al querer borrar el archivo %s",args[2]);
+		runFunction(socketCPU, "avisarTerminoClock", 0);
 		runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, args[0]);	
 	}
 }
 
-//args[0]: idGDT, args[1]: nomArch, args[2]: cantLineas
+//args[0]: idGDT, args[1]: nomArch, args[2]: cantLineas, args[3]: socketCPU
 void CPU_DAM_crearArchivo(socket_connection* connection, char** args){
 	log_info(logger,"Envio al MDJ la solicitud de creacion del archivo %s por parte del GDT de id %s",args[1], args[0]);
-	runFunction(socketMDJ,"crearArchivo",3, args[0], args[1], args[2]);
+	runFunction(socketMDJ,"crearArchivo",4, args[0], args[1], args[2],args[3]);
 }
 
-//args[0]: idGDT, args[1]: arch
+//args[0]: idGDT, args[1]: arch, args[2]: socketCPU
 void CPU_DAM_borrarArchivo(socket_connection* connection, char** args){
 	log_info(logger,"Envio al MDJ la solicitud de borrado del archivo %s por parte del GDT de id %s",args[1], args[0]);
-	runFunction(socketMDJ,"borrarArchivo",2, args[0], args[1]);
+	runFunction(socketMDJ,"borrarArchivo",3, args[0], args[1], args[2]);
 }
 
 //Comunicacion entre CPU-DAM para Cargar GDT
 //args[0]: idGDT, args[1]: path, args[2]: 1(Dummy) ó 0(noDummy)
 void CPU_DAM_solicitudCargaGDT(socket_connection* connection, char ** args){
 	pthread_t hilo;
-	parametros* params = malloc(sizeof(parametros));
-	params->idGDT = atoi(args[0]);
+	parametrosCarga* params = malloc(sizeof(parametrosCarga));
+	strcpy(params->idGDT, args[0]);
 	strcpy(params->path, args[1]);
 	strcpy(params->dummy, args[2]);
+	int socketCPU = connection->socket;
+	sprintf(params->socketCPU, "%i", socketCPU);
 	log_trace(logger, "Voy a intentar cargar el archivo %s para el GDT de id %s",args[1], args[0]);	
 	pthread_create(&hilo, NULL, (void*)&hiloCarga, params);
 }
 
-void hiloCarga(parametros* params){
-	pthread_mutex_lock(&m_carga);
+void hiloCarga(parametrosCarga* params){
+	pthread_mutex_lock(&m_pedido);
 	ruta = malloc(strlen(params->path) + 1);
 	strcpy(ruta, params->path);
-	runFunction(socketMDJ, "obtenerDatos", 6, params->idGDT, params->path, "0", datosConfigDAM->transferSize, params->dummy, "1");
+	char string_transferSize[3];
+	sprintf(string_transferSize, "%i", datosConfigDAM->transferSize);
+	runFunction(socketMDJ, "obtenerDatos", 7, params->idGDT, params->path, "0", string_transferSize, params->dummy, "1",params->socketCPU);
 }
 
 //args[0]: idGDT, args[1]: bytesLeidos, args[2]: estado, args[3]:path, args[4]: dummy, args[5]: primera o no
+//args[6]: socketCPU
 void MDJ_DAM_respuestaCargaGDT(socket_connection * connection,char ** args){
 	int cantBytesLeidos = atoi(strlen(args[1]) + 1);
 	int idGDT = atoi(args[0]); 
@@ -175,6 +185,7 @@ void MDJ_DAM_respuestaCargaGDT(socket_connection * connection,char ** args){
 	int estado = atoi(args[2]);
 	char * path = args[3];
 	offsetAcumulado = cantBytesLeidos;
+	int socketCPU = atoi(args[6]);
 
 	if (estado == -1){
 		log_error(logger,"Archivo %s inexistente",path);
@@ -187,23 +198,26 @@ void MDJ_DAM_respuestaCargaGDT(socket_connection * connection,char ** args){
 		log_trace(logger,"Se obtuvieron %i bytes  del archivo %s del MDJ",cantBytesLeidos, path);
 		log_trace(logger,"Bytes: %s",bytes);
 		if(cantBytesLeidos < datosConfigDAM->transferSize){
-			runFunction(socketFM9,"DAM_FM9_cargarBuffer",5, args[0], bytes, "ultima", args[4],args[5]);
+			runFunction(socketFM9,"DAM_FM9_cargarBuffer",6, args[0], bytes, "ultima", args[4],args[5],args[6]);
 		}
 		else{
 			char string_offset[2];
 			sprintf(string_offset, "%i", offsetAcumulado);
-			runFunction(socketFM9,"DAM_FM9_cargarBuffer",5, args[0], bytes, "sigue", args[4],args[5]);
-			runFunction(socketMDJ, "obtenerDatos", 6, args[0], ruta, string_offset, datosConfigDAM->transferSize, args[4], "0");
+			char string_transferSize[3];
+			sprintf(string_transferSize, "%i", datosConfigDAM->transferSize);
+			runFunction(socketFM9,"DAM_FM9_cargarBuffer",6, args[0], bytes, "sigue", args[4],args[5], args[6]);
+			runFunction(socketMDJ, "obtenerDatos", 7, args[0], ruta, string_offset, string_transferSize, args[4], "0",args[6]);
 		}	
 	}
 }
 
 //lamada por el FM9
 //args[0]: idGDT, args[1]: Por ahora ok o error, args[2]: 1(Dummy) ó 0(no Dummy), 
-// args[3]: pagina, args[4]:baseSegmento, args[5]:despl
+// args[3]: pagina, args[4]:baseSegmento, args[5]:despl, args[6]: socketCPU
 void FM9_DAM_archivoCargadoCorrectamente(socket_connection* connection, char** args){
 
 	char* estadoCarga = args[1];
+	int socketCPU = atoi(args[6]);
 
 	if(strcmp(estadoCarga, "ok") == 0 ){
 		pagina = malloc(strlen(args[3]) + 1);
@@ -218,15 +232,18 @@ void FM9_DAM_archivoCargadoCorrectamente(socket_connection* connection, char** a
 		else{ 
 			runFunction(socketSAFA, "aperturaArchivo", 2, args[0], ruta, pagina, baseSegmento, desplazamiento);
 			runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB", 1, args[0]);
+			runFunction(socketCPU, "avisarTerminoClock", 0);
 		}
-		pthread_mutex_unlock(&m_carga);
+		pthread_mutex_unlock(&m_pedido);
 	}
 	else{//error
 		if(strcmp(args[2], "1") == 0)
 			runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "error");
-		else
+		else{ 
 			runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit", 1, args[0]);
-		pthread_mutex_unlock(&m_carga);
+			runFunction(socketCPU, "avisarTerminoClock", 0);
+		}
+		pthread_mutex_unlock(&m_pedido);
 	}
 }
 
@@ -246,19 +263,24 @@ void MDJ_DAM_existeArchivo(socket_connection* socket, char** args){
 	runFunction(socketCPU,"CPU_DAM_continuacionExistenciaAbrir",1,args[0]);
 }
 
-//args[0]: idGDT, args[1]: rutaArchivo
+//args[0]: idGDT, args[1]: pagina, args[2]:baseSegmento, args[3]:despl, args[4]: arch
 void CPU_DAM_solicitudDeFlush(socket_connection* connection, char** args)
 {
-	int idGDT = atoi(args[0]);
-	char* rutaArchivo = args[1];
-	
-	char* string_transferSize;
-	sprintf(string_transferSize, "%i", datosConfigDAM->transferSize);
-
-	runFunction(socketFM9,"DAM_FM9_obtenerArchivo",2, args[0], string_transferSize);
+	pthread_t hilo;
+	parametrosFlush* params = malloc(sizeof(parametrosFlush));
+	strcpy(params->idGDT, args[0]);
+	strcpy(params->pagina, args[1]);
+	strcpy(params->segmento, args[2]);
+	strcpy(params->desplazamiento, args[3]);
+	strcpy(params->path, args[4]);
+	int socketCPU = connection->socket;
+	sprintf(params->socketCPU, "%i", socketCPU);
+	log_trace(logger, "Se va a hacer flush del archivo %s para el GDT de id %s",args[4], args[0]);	
+	pthread_create(&hilo, NULL, (void*)&hiloFlush, params);
 }
 
-//args[0]: idGDT, args[1]: rutaArchivo, ...
+//args[0]: idGDT, args[1]: bytesLeidos, args[2]: estado, args[3]:path, args[4]: dummy, args[5]: primera o no
+//args[6]: socketCPU
 void FM9_DAM_respuestaFlush(socket_connection* connection, char** args){
 	int idGDT = atoi(args[0]);
 	char* rutaArchivo = args[1];
@@ -273,4 +295,14 @@ void MDJ_DAM_respuestaFlush(socket_connection* connection, char** args){
 		runFunction(socketSAFA,"DAM_SAFA_desbloquearDTB",1, args[0]);
 	else
 		runFunction(socketSAFA,"DAM_SAFA_pasarDTBAExit",1, args[0]);
+}
+
+void hiloFlush(parametrosFlush* params){
+	pthread_mutex_lock(&m_pedido);
+	ruta = malloc(strlen(params->path) + 1);
+	strcpy(ruta, params->path);
+	char string_transferSize[3];
+	sprintf(string_transferSize, "%i", datosConfigDAM->transferSize);
+
+	runFunction(socketFM9,"DAM_FM9_obtenerDatosFlush",1,string_transferSize);//faltan args
 }

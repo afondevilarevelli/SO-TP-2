@@ -53,6 +53,7 @@ t_log* logger;
 t_config_FM9* datosConfigFM9;
 t_dictionary * callableRemoteFunctions;
 pthread_mutex_t mx_main;
+pthread_mutex_t m_memoria;
 int socketDAM;
 
 char* memoria;//void* memoria;
@@ -71,8 +72,9 @@ t_list* lista_archivos;
 //CallableRemoteFunctions
 void actualizarDatosDTB(socket_connection*, char**);
 void cerrarArchivoDelDTB(socket_connection*, char**);
-void obtenerDatos(socket_connection* connection, char** args);
+void obtenerDatosCPU(socket_connection* connection, char** args);
 void cargarBuffer(socket_connection* connection, char** args);
+void DAM_FM9_obtenerDatosFlush(socket_connection* connection, char** args);
 //LOGS
 void configure_logger();
 void close_logger();
@@ -99,5 +101,5 @@ bool buscarSegmento(t_tabla_segmentos*, int*, int*);
 int cantidadDeLineas(char* datos);
 void guardarDatosPorLinea(char* datos, int pos);
 
-void cargarArchivo(char* idGDT, char* esDummy);
+void cargarArchivo(char* idGDT, char* esDummy, char* cpuSocket);
 

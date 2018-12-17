@@ -103,6 +103,10 @@ bool resultadoWaitOk;
 char datosPedidos[200];
 int ultimaSentencia;
 
+char* paginaArchivo;
+char* segmentoArchivo;
+char* desplazamientoArchivo;
+
 //FUNCIONES
 
 void configure_loggerCPU();
@@ -138,4 +142,5 @@ void funcionHiloClose();
 void funcionHilo(char*); 
 void funcionHiloObtencionDatos();
 void resultadoObtencionDatos(socket_connection * connection ,char** args);
+void avisarTerminoClock(socket_connection * connection ,char** args);
 #endif

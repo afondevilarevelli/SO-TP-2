@@ -69,7 +69,7 @@ runFunction(connection->socket,"MDJ_DAM_existeArchivo",4, strEstado, args[2], ar
 
 
 
-//args[0]: idGDT, args[1]: rutaDelArchivo, args[2]: cantidadDeBytes
+//args[0]: idGDT, args[1]: rutaDelArchivo, args[2]: CANTIDAD DE LINEAS! (no de bytes), args[3]: socketCPU
 void crearArchivo(socket_connection * connection ,char** args)
 {
 t_archivo *  archivo= malloc(sizeof(t_archivo));
@@ -169,7 +169,7 @@ log_info(logger,"Archivo %s ya creado",archivo->path);
 }
 char * strEstado = string_itoa(archivo->estado);
 aplicarRetardo();
-runFunction(connection->socket,"MDJ_DAM_verificarArchivoCreado",3,args[0],strEstado,archivo->path);
+runFunction(connection->socket,"MDJ_DAM_resultadoCreacionArchivo",4,args[0],strEstado,archivo->path, args[3]);
 list_destroy(bloquesLibres);
 list_destroy(bloquesOcupados);
 free(archivo);
@@ -183,7 +183,7 @@ free(tam);
 free(pathMasArchivos);
 }
 
-//args[0]: idGDT, args[1]: path, args[2]: offset, args[3]: size, args[4]: dummy, args[5]:primera o no
+//args[0]: idGDT, args[1]: path, args[2]: offset, args[3]: size, args[4]: dummy, args[5]:primera o no,args[6]:socketCPU
 void obtenerDatos(socket_connection * connection,char ** args){
 t_archivo *  archivo= malloc(sizeof(t_archivo));
 t_metadata_filesystem * fs = obtenerMetadata();
@@ -237,7 +237,7 @@ log_trace(logger,"Se obtuvieron %d bytes",string_length(buffer));
 aplicarRetardo();
 char * bytes = string_itoa(string_length(buffer));
 char * strEstado = string_itoa(archivo->estado); // cuando se setea este valor si sale todo bien?
-runFunction(connection->socket,"MDJ_DAM_respuestaDatos",6,args[0],bytes,strEstado,archivo->path, args[4],args[5]);
+runFunction(connection->socket,"MDJ_DAM_respuestaDatos",7,args[0],bytes,strEstado,archivo->path, args[4],args[5], args[6]);
 //El DAM necesita que la variable bytes sea todo el string que pasa, no un numero indicando cuando se leyeron
 //( digo por que no sé qué estas pasando acá)
 }
@@ -362,7 +362,7 @@ else
 }
 
 
-//args[0]: idGDT, args[1]: arch
+//args[0]: idGDT, args[1]: arch, args[2]: socketCPU
 void borrarArchivo(socket_connection* connection,char ** args){
 t_archivo * archivo= malloc(sizeof(t_archivo));
 archivo->path = args[1];
@@ -423,7 +423,7 @@ free(dir);
 }
 char * strEstado = string_itoa(archivo->estado);
 aplicarRetardo();
-runFunction(connection->socket,"MDJ_DAM_verificameSiArchivoFueBorrado",3,args[0], strEstado, archivo->path);
+runFunction(connection->socket,"MDJ_DAM_resultadoBorradoArchivo",4,args[0], strEstado, archivo->path, args[2]);
 free(fs);
 free(bitarray);
 free(temp);

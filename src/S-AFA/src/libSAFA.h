@@ -150,6 +150,8 @@ void crearRecurso(char* nombre, int valor);
 
 bool condicionArchivoAbierto(void* arch);
 
+void liberarMemoriaArchivo(archivo* arch);
+
 //LOGS
 void configure_logger();
 void close_logger();

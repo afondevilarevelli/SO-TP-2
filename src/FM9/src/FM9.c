@@ -11,6 +11,7 @@ void cerrarPrograma() {
 	close_logger();
 	free(datosConfigFM9);
 	free(memoria);
+	pthread_mutex_destroy(&m_memoria);
 	list_destroy(lista_tabla_segmentos);
 	list_destroy(lista_archivos);
 	dictionary_destroy(callableRemoteFunctions);
@@ -46,15 +47,16 @@ int main(void) {
 			}
 		}
 	}
-	
+	pthread_mutex_init(&m_memoria, NULL);
 	lista_archivos = list_create();
 	callableRemoteFunctions = dictionary_create();
 
 	dictionary_put(callableRemoteFunctions, "identificarProcesoEnFM9", &identificarProceso);
 	dictionary_put(callableRemoteFunctions, "CPU_FM9_actualizarLosDatosDelArchivo", &actualizarDatosDTB);
 	dictionary_put(callableRemoteFunctions, "CPU_FM9_cerrarElArchivo", &cerrarArchivoDelDTB);
-	dictionary_put(callableRemoteFunctions, "CPU_FM9_obtenerDatos", &obtenerDatos);
+	dictionary_put(callableRemoteFunctions, "CPU_FM9_obtenerDatos", &obtenerDatosCPU);
 	dictionary_put(callableRemoteFunctions, "DAM_FM9_cargarBuffer", &cargarBuffer);
+	dictionary_put(callableRemoteFunctions, "DAM_FM9_obtenerDatosFlush", &DAM_FM9_obtenerDatosFlush);
 	//Funcion para iniciar la ejecucion del Flush
 	//dictionary_put(callableRemoteFunctions, "DAM_FM9_obtenerArchivo", &obtenerArchivo);
 
@@ -68,17 +70,30 @@ int main(void) {
 	loadCommands();  
 
 	log_info(logger, "Estoy escuchando el puerto: %d", datosConfigFM9->puerto);
-/*
-	char* args[5] = {"1","linea 1\nlinea 2\nlinea 3\n","ultima","1","1"};
-	char** aa = args;
+	
+	char* buffers[5] = {"hola c","omo es","tas?\nY","o todo"," bien"};
+	char* args1[5] = {"1", buffers[0], "sigue", "0", "1"};
+	char* args2[5] = {"1", buffers[1], "sigue", "0", "0"};
+	char* args3[5] = {"1", buffers[2], "sigue", "0", "0"};
+	char* args4[5] = {"1", buffers[3], "sigue", "0", "0"};
+	char* args5[5] = {"1", buffers[4], "ultima", "0", "0"};
+	char** aa = args1;
+	char** bb = args2;
+	char** cc = args3;
+	char** dd = args4;
+	char** ee = args5;
 
-	char* args4[4] = {"1", "2", "-1", "0", "-1"};
-	char** cc = args4;
-	solicitudCargaArchivo(NULL, aa);
+	cargarBuffer(NULL,aa);
+	cargarBuffer(NULL,bb);
+	cargarBuffer(NULL,cc);
+	cargarBuffer(NULL,dd);
+	cargarBuffer(NULL,ee);
 
-	obtenerDatos(NULL, cc);
+	char* args6[5] = {"1", "1", "-1", "0", "-1"};
+	char** tt = args6;
+	obtenerDatos(NULL, tt);
 
-	executeCommand("dump 1");*/
+	//executeCommand("dump 1");
 	//conexion al servidor----------------------------
 	
 	pthread_mutex_init(&mx_main, NULL);
