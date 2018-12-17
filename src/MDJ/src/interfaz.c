@@ -205,7 +205,7 @@ else
 {
 if(bloqueInicial < 0)
 {
-log_error("El offset no puede ser mayor al tamanio de %s",archivo->path);  
+log_error(logger,"El offset no puede ser mayor al tamanio de %s",archivo->path);  
 }
 else{
 char * temp [200];
@@ -254,7 +254,7 @@ int bloqueInicial = obtenerBloqueInicial(archivo->path,offset);
 int bloqueFinal = (offset + size) / fs->tamanio_bloques;
 int offRestante = offset - (offset /fs->tamanio_bloques) * fs->tamanio_bloques;
 int longitud;  
-if(string_is_empty(bloques) == 1)
+if(cantElementos2(bloques) == 0)
 {
  log_info(logger,"El archivo %s no existe",archivo->path);   
 }
@@ -313,7 +313,7 @@ void escribirBloque(int bloque, int offset, int length, char * buffer) {
 
 
 char * obtenerDatosBloque (int bloque) {
-    char * temp [200];
+    char temp [200];
     snprintf(temp,sizeof(temp),"%s%s%i.bin",obtenerPtoMontaje(),"/Bloques/",bloque);
 	FILE * bloqueFile = fopen(temp,"r");
 	int size;
@@ -471,7 +471,7 @@ return cont;
 int cantElementos1(char * array)
 {
 int cont = 0;
-while (array[cont] != NULL){
+while (array[cont] != '\0'){ //caracter nulo
 cont = cont + 1;	
 }	
 return cont;
@@ -523,7 +523,7 @@ bloques->bloqLibres = list_duplicate(libres);
 bloques->bloqOcupados = list_duplicate(ocupados);
 bloques->bloqArchivo = calloc(nBloques,sizeof(int));
 for (int i=0;i <list_size(temp);i++){
- bloques->bloqArchivo[i]=  list_get(temp,i);
+ bloques->bloqArchivo[i]=  (char)list_get(temp,i);
 }
 for(int i = 0;i < nBloques;i++){
 bitarray_set_bit(bitarray,bloques->bloqArchivo[i]);	

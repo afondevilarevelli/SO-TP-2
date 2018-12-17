@@ -158,7 +158,7 @@ log_info(logger,"Voy a intentar mostrar el contenido de %s",pathA);
            buffer = NULL;
        }
        fclose(handler);
-     log_trace("Archivo %s leido correctamente",pathA);  
+     log_trace(logger,"Archivo %s leido correctamente",pathA);  
      printf("\e[1m\e[37m%s\e[0m\e[0m", buffer);
     }
   else

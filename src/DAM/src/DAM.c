@@ -10,7 +10,6 @@
 void disconnect(socket_connection* socketInfo);
 
 int main(void){
-
 	 signal(SIGINT, cerrarPrograma);
 	
        	configure_logger();

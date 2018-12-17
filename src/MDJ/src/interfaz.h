@@ -93,4 +93,5 @@ void liberarLista(t_list * );
 char * obtenerDatosBloque(int);
 int is_regular_file(const char *);
 void escribirBloque(int bloque, int offset, int length, char * buffer);
+int obtenerBloqueInicial(char * path,off_t offset);
 #endif
