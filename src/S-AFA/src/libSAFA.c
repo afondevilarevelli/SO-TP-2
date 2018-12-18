@@ -364,7 +364,7 @@ void aumentarCantSentenciasEsperadasEnNew(DTB* dtb){
 	dtb->cantSentEsperadasEnNew += cantSentEsperadasASumar;
 }
 
-//msg[0] = idDTB ,msg[1] = "ok" ó "error",msgs[2]:pag, args[3]:segm, args[4]:despl
+//msg[0] = idDTB ,msg[1] = "ok" ó "error",msgs[2]:pag, args[3]:segm, args[4]:despl, args[5]:cantLineas
 //Segun la explicacion del TP, la CPU es el unico capaz de reconocer si es un DTB o un Dummy
 //Por lo tanto cuando se hace la peticion de "ABRIR" el archivo es indistinto
 void avisoDeDamDeResultadoDTB(socket_connection* socketInfo, char** msg){
@@ -378,6 +378,7 @@ void avisoDeDamDeResultadoDTB(socket_connection* socketInfo, char** msg){
 			(dtb->script)->pagina = atoi(msg[2]);
 			(dtb->script)->baseSegmento = atoi(msg[3]);
 			(dtb->script)->desplazamiento = atoi(msg[4]);
+			(dtb->script)->cantLineas = atoi(msg[5]);
 			log_info(logger,"Se finalizo OK el DTB del GDT de id %d",dtb->id);
 			dtb->status = READY;
 			encolarDTB(colaReady, dtb, m_colaReady);
@@ -387,7 +388,6 @@ void avisoDeDamDeResultadoDTB(socket_connection* socketInfo, char** msg){
 			finalizarDTB(dtb);
 		}				
 	}
-	
 }
 //Se debe verificar si no es nulo, puesto que si es nulo significa que el dtb con dicho id ya fue finalizado 
 // (por consola), y si no se verificara la nulidad tiraría segmentationFault.
@@ -457,7 +457,9 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 			sprintf(string_seg,"%i", arch->baseSegmento);
 			char string_despl[3];
 			sprintf(string_despl,"%i", arch->desplazamiento);
-    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAsignar", 4, "1",string_pag,string_seg,string_despl);
+			char string_cantLineas[3];
+			sprintf(string_cantLineas,"%i", arch->cantLineas);
+    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAsignar", 5, "1",string_pag,string_seg,string_despl,string_cantLineas);
 		}
 		else
 			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionAsignar", 1, "0");
@@ -477,8 +479,10 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 			sprintf(string_seg,"%i", arch->baseSegmento);
 			char string_despl[3];
 			sprintf(string_despl,"%i", arch->desplazamiento);
+			char string_cantLineas[3];
+			sprintf(string_cantLineas,"%i", arch->cantLineas);
 			list_remove_and_destroy_by_condition(dtb->archivosAbiertos,&condicionArchivoAbierto,&liberarMemoriaArchivo);
-    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionClose", 4, "1", string_pag,string_seg,string_despl);
+    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionClose", 5, "1", string_pag,string_seg,string_despl, string_cantLineas);
 		}
 		else
 			runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionClose", 1, "0");
@@ -498,7 +502,9 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 			sprintf(string_seg,"%i", arch->baseSegmento);
 			char string_despl[3];
 			sprintf(string_despl,"%i", arch->desplazamiento);
-    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionFlush", 4, "1", string_pag,string_seg,string_despl);
+			char string_cantLineas[3];
+			sprintf(string_cantLineas,"%i", arch->cantLineas);
+    		runFunction(cpu->socket, "SAFA_CPU_continuarEjecucionFlush", 5, "1", string_pag,string_seg,string_despl,string_cantLineas);
 		}
 		else{ 
 			dtb->cantIOs++;
@@ -523,12 +529,13 @@ void liberarMemoriaArchivo(archivo* arch){
 	free(arch);
 }
 
-//args[0]: idGDT,args[1]: nomArch, args[2]:pagina, args[3]:baseSegmento, args[4]: despl
+//args[0]: idGDT,args[1]: nomArch, args[2]:pagina, args[3]:baseSegmento, args[4]: despl, args[5]:cantLineas
 void archivoAbierto(socket_connection* connection, char** args){
 	int idGDT = atoi(args[0]);
 	int pagina = atoi(args[2]);
 	int baseSegmento = atoi(args[3]);
 	int desplazamiento = atoi(args[4]);
+	int cantLineas = atoi(args[5]);
 	DTB* dtb = buscarDTBEnElSistema(idGDT);
 	if(dtb != NULL){
 		archivo* archScript = malloc(sizeof(archivo));
@@ -537,6 +544,7 @@ void archivoAbierto(socket_connection* connection, char** args){
 		archScript->pagina = pagina;
 		archScript->baseSegmento = baseSegmento;
 		archScript->desplazamiento = desplazamiento;
+		archScript->cantLineas = cantLineas;
 		list_add(dtb->archivosAbiertos, archScript);
 	}
 }

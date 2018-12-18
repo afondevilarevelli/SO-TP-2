@@ -32,6 +32,7 @@ typedef struct{
 	int pagina;
 	int baseSegmento;
 	int desplazamiento;
+	int cantLineas;
 } archivo;
 
 typedef struct{

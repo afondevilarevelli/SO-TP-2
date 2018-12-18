@@ -22,7 +22,6 @@ typedef struct {
 	//char* nombreArchivo;
 	int base;
 	int limite;
-	bool ultimaLineaCompleta;
 } t_tabla_segmentos;
 
 typedef struct paginasInvertidas{
@@ -34,17 +33,18 @@ typedef struct paginasInvertidas{
 	struct paginasInvertidas* siguiente;
 } t_PaginasInvertidas;
 
-typedef struct{
+/*typedef struct{
 	int idGDT;
 	char* nombre;
 	int pagina;
 	int desplazamiento;
 	int segmento;
-} archivo;
+} archivo;*/
 
 typedef struct{
 	int pagina;
 	int desplazamiento;
+	int marco;
 	bool cargaOK;
 }retornoCargaTPI;
 
@@ -65,13 +65,13 @@ int tamanioOcupadoBufferAux;
 t_list* lista_tabla_segmentos;
 t_list* tabla_paginasInvertidas;
 
-t_list* lista_archivos;
+//t_list* lista_archivos;
 
 //FUNCIONES
 
 //CallableRemoteFunctions
 void actualizarDatosDTB(socket_connection*, char**);
-void cerrarArchivoDelDTB(socket_connection*, char**);
+void cerrarArchivoDeDTB(socket_connection*, char**);
 void obtenerDatosCPU(socket_connection* connection, char** args);
 void cargarBuffer(socket_connection* connection, char** args);
 void DAM_FM9_obtenerDatosFlush(socket_connection* connection, char** args);
@@ -100,6 +100,9 @@ bool buscarSegmento(t_tabla_segmentos*, int*, int*);
 
 int cantidadDeLineas(char* datos);
 void guardarDatosPorLinea(char* datos, int pos);
+void guardarDatosDeLineas(char* datos, int pos, int lineaInicial, int cantLineasEnAdelante);
 
 void cargarArchivo(char* idGDT, char* esDummy, char* cpuSocket);
+
+bool buscarPaginaInvertida(t_PaginasInvertidas* pag, int* idGDT, int* pagina);
 

@@ -28,4 +28,6 @@ void executeCommand(char*);
 #endif /* SRC_COMANDOSMEMORIA_H_ */
 
 bool isPid(t_tabla_segmentos*, int*);
+bool pagInv(t_PaginasInvertidas* elemento, int* pid);
 void mostrarDatosPid(t_tabla_segmentos*);
+void consolaFM9();

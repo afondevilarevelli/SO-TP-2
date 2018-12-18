@@ -34,6 +34,7 @@ typedef struct{
 	int pagina;
 	int segmento;
 	int desplazamiento;
+	int cantLineas; //del archivo script
 }parametros;
 //EJEMPLOS DE SENTENCIAS
 /*
@@ -106,6 +107,7 @@ int ultimaSentencia;
 char* paginaArchivo;
 char* segmentoArchivo;
 char* desplazamientoArchivo;
+char* cantLineasArchivo;
 
 //FUNCIONES
 

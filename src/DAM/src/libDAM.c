@@ -169,6 +169,7 @@ void CPU_DAM_solicitudCargaGDT(socket_connection* connection, char ** args){
 
 void hiloCarga(parametrosCarga* params){
 	pthread_mutex_lock(&m_pedido);
+	offsetAcumulado = 0;
 	ruta = malloc(strlen(params->path) + 1);
 	strcpy(ruta, params->path);
 	char string_transferSize[3];
@@ -213,11 +214,11 @@ void MDJ_DAM_respuestaCargaGDT(socket_connection * connection,char ** args){
 
 //lamada por el FM9
 //args[0]: idGDT, args[1]: Por ahora ok o error, args[2]: 1(Dummy) ó 0(no Dummy), 
-// args[3]: pagina, args[4]:baseSegmento, args[5]:despl, args[6]: socketCPU
+// args[3]: pagina, args[4]:baseSegmento, args[5]:despl, args[6]: cantLineas, args[7]socketCPU
 void FM9_DAM_archivoCargadoCorrectamente(socket_connection* connection, char** args){
 
 	char* estadoCarga = args[1];
-	int socketCPU = atoi(args[6]);
+	int socketCPU = atoi(args[7]);
 
 	if(strcmp(estadoCarga, "ok") == 0 ){
 		pagina = malloc(strlen(args[3]) + 1);
@@ -226,17 +227,24 @@ void FM9_DAM_archivoCargadoCorrectamente(socket_connection* connection, char** a
 		strcpy(baseSegmento, args[4]);
 		desplazamiento = malloc(strlen(args[5]) + 1);
 		strcpy(desplazamiento, args[5]);
-	
+		cantidadDeLineas = malloc(strlen(args[6]) + 1);
+		strcpy(cantidadDeLineas, args[6]);
+
 		if(strcmp(args[2], "1") == 0)
-			runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "ok", pagina, baseSegmento, desplazamiento);
+			runFunction(socketSAFA, "avisoDamDTB", 6, args[0], "ok", pagina, baseSegmento, desplazamiento, cantidadDeLineas);
 		else{ 
-			runFunction(socketSAFA, "aperturaArchivo", 2, args[0], ruta, pagina, baseSegmento, desplazamiento);
+			runFunction(socketSAFA, "aperturaArchivo", 6, args[0], ruta, pagina, baseSegmento, desplazamiento, cantidadDeLineas);
 			runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB", 1, args[0]);
 			runFunction(socketCPU, "avisarTerminoClock", 0);
 		}
 		if(ruta != NULL)
 			free(ruta);
+		free(pagina);
+		free(baseSegmento);
+		free(desplazamiento);
+		free(cantidadDeLineas);
 		pthread_mutex_unlock(&m_pedido);
+
 	}
 	else{//error
 		if(strcmp(args[2], "1") == 0)
@@ -267,17 +275,17 @@ void MDJ_DAM_existeArchivo(socket_connection* socket, char** args){
 	runFunction(socketCPU,"CPU_DAM_continuacionExistenciaAbrir",1,args[0]);
 }
 
-//args[0]: idGDT, args[1]: pagina, args[2]:baseSegmento, args[3]:despl, args[4]: arch
+//args[0]: idGDT, args[1]: pagina, args[2]:baseSegmento, args[3]:despl, args[4]: cantLineas, args[5]: arch
 void CPU_DAM_solicitudDeFlush(socket_connection* connection, char** args)
 {
 	pthread_t hilo;
 	parametrosFlush* params = malloc(sizeof(parametrosFlush));
-	offsetAcumulado = 0;
 	strcpy(params->idGDT, args[0]);
 	strcpy(params->pagina, args[1]);
 	strcpy(params->segmento, args[2]);
 	strcpy(params->desplazamiento, args[3]);
-	strcpy(params->path, args[4]);
+	strcpy(params->path, args[5]);
+	strcpy(params->cantLineas, args[4]);
 	int socketCPU = connection->socket;
 	sprintf(params->socketCPU, "%i", socketCPU);
 	log_trace(logger, "Se va a hacer flush del archivo %s para el GDT de id %s",args[4], args[0]);	
@@ -292,29 +300,39 @@ void FM9_DAM_respuestaFlush(socket_connection* connection, char** args){
 	offsetAcumulado += cantBytesLeidos;
 
 	runFunction(socketMDJ,"guardarDatos",4,ruta, offsetAcumulado, cantBytesLeidos, args[1], args[4]);
+
 }
 
 
-//args[0]: idGDT, args[1]: 1(ok) ó 0(error)
+//args[0]: idGDT, args[1]: bytesGuardados, args[2]: estado,
+//args[3]: socketCPU, args[4]: 1(ultimo) ó 0 (sigue)
 void MDJ_DAM_respuestaFlush(socket_connection* connection, char** args){
-	if(strcmp(args[1],"1") == 0)
-		runFunction(socketSAFA,"DAM_SAFA_desbloquearDTB",1, args[0]);
-	else
-		runFunction(socketSAFA,"DAM_SAFA_pasarDTBAExit",1, args[0]);
+	if(strcmp(args[4], "1") == 0){ 
+		if(strcmp(args[2],"1") == 0)
+			runFunction(socketSAFA,"DAM_SAFA_desbloquearDTB",1, args[0]);
+		else
+			runFunction(socketSAFA,"DAM_SAFA_pasarDTBAExit",1, args[0]);
+		pthread_mutex_unlock(&m_pedido);
+	}
+	else{
+
+	}
 } 
 
 void hiloFlush(parametrosFlush* params){
 	pthread_mutex_lock(&m_pedido);
+	offsetAcumulado = 0;
 	ruta = malloc(strlen(params->path) + 1);
 	strcpy(ruta, params->path);
 	char string_transferSize[3];
 	sprintf(string_transferSize, "%i", datosConfigDAM->transferSize);
 
-	runFunction(socketFM9,"DAM_FM9_obtenerDatosFlush",6,params->idGDT, 
+	runFunction(socketFM9,"DAM_FM9_obtenerDatosFlush",8,params->idGDT, 
 														"0", 
 													    string_transferSize,
 														params->pagina,
 														params->segmento,
 														params->desplazamiento,
+														params->cantLineas,
 														params->socketCPU);
 }

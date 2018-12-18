@@ -51,13 +51,56 @@ void dump(char** args)
 	bool _isPid(void* elemento){
 		return isPid(elemento, &pid);
 	}
+	bool _pagInv(void* elemento){
+		return pagInv(elemento, &pid);
+	}
+	bool _sorted(void* elemento1,void* elemento2){
+		return ( (t_PaginasInvertidas*) elemento1 )->pagina < ( (t_PaginasInvertidas*) elemento2 )->pagina;
+	}
+	if(strcmp(datosConfigFM9->modo,"SEG")==0){ 
+		t_list* lista_segmentos_pid;
+		lista_segmentos_pid = list_filter(lista_tabla_segmentos, _isPid);
+		if(list_size(lista_segmentos_pid) != 0){ 
+			log_info(logger, "%d", list_size(lista_segmentos_pid));
+			list_iterate(lista_segmentos_pid, &mostrarDatosPid);
+			list_destroy(lista_segmentos_pid);
+		} else
+			log_info(logger, "No hay datos");
+	}
+	else if(strcmp(datosConfigFM9->modo,"TPI")==0){
+		t_list* lista_pagsInv;
+		lista_pagsInv = list_filter(tabla_paginasInvertidas, _pagInv);
+		if(list_size(lista_pagsInv) != 0){ 
+			list_sort(lista_pagsInv, &_sorted);
+			for(int j=0; j< list_size(lista_pagsInv); j++){
+				t_PaginasInvertidas* pag = list_get(lista_pagsInv, j);
 
-	t_list* lista_segmentos_pid;
-	lista_segmentos_pid = list_filter(lista_tabla_segmentos, _isPid);
-	log_info(logger, "%d", list_size(lista_segmentos_pid));
-	list_iterate(lista_segmentos_pid, &mostrarDatosPid);
+				int cantLineas = pag->tamanioOcupado / datosConfigFM9->maximoLinea;
+				char* linea;
+				linea = malloc(datosConfigFM9->maximoLinea);
+				log_info(logger, "Marco: %d   Pagina: %d   PID: %d", pag->marco, pag->pagina, pag->PID);
+				log_info(logger, "Datos almacenados:");
+				for(int i=0; i<cantLineas; i++){
+					memcpy(linea, memoria + datosConfigFM9->tamanioPagina*pag->marco + i*datosConfigFM9->maximoLinea , datosConfigFM9->maximoLinea);
+					log_info(logger, "	%s", linea);
+				}
+				free(linea);
+			}
+		}
+		else	
+			log_info(logger, "No hay datos");
+	} else{ //SPA
 
-	list_destroy(lista_segmentos_pid);
+	}
+
+}
+
+bool isPid(t_tabla_segmentos* unNodo, int* pidIngresado){
+	return unNodo->pid == *pidIngresado;
+}
+
+bool pagInv(t_PaginasInvertidas* elemento, int* pid){
+	return elemento->PID == *pid;
 }
 
 // Carga de lista de comandos
@@ -71,7 +114,7 @@ void loadCommands()
 
 // Valida y ejecuta comando especifico
 void executeCommand(char * c){
-   // c[strlen(c)-1] = '\0'; //quito \n final
+    c[strlen(c)-1] = '\0'; //quito \n final
 
   if(string_is_empty(c) || c[0] == ' ' || c[strlen(c)-1] == ' ') {
 		log_warning(logger, "Ingrese comando, escribe *help* para ver el menú");
@@ -102,10 +145,6 @@ void executeCommand(char * c){
   freeCharArray(args);
 }
 
-bool isPid(t_tabla_segmentos* unNodo, int* pidIngresado){
-	return unNodo->pid == *pidIngresado;
-}
-
 void mostrarDatosPid(t_tabla_segmentos* unNodo){
 	int cantLineas = unNodo->limite / datosConfigFM9->maximoLinea;
 	char* linea;
@@ -117,4 +156,22 @@ void mostrarDatosPid(t_tabla_segmentos* unNodo){
 		log_info(logger, "	%s", linea);
 	}
 	free(linea);
+}
+
+void consolaFM9(){
+	char *buffer;
+	size_t bufsize = 1024;
+	buffer = (char *)malloc(bufsize * sizeof(char));
+	while(1) {
+		log_info(logger, "Ingrese un Comando");
+		getline(&buffer, &bufsize, stdin);
+		while(buffer == NULL)
+			getline(&buffer, &bufsize, stdin);
+		if(strcmp(buffer, "salir") != 0)
+			executeCommand(buffer);
+		else
+			break;
+	}
+	if(buffer != NULL)
+		free(buffer);
 }

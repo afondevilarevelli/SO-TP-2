@@ -39,6 +39,7 @@ typedef struct{
     char segmento[3];
     char desplazamiento[4];
     char socketCPU[2];
+    char cantLineas[2];
 }parametrosFlush;
 //----------------------------//
 
@@ -61,6 +62,7 @@ char* ruta;
 char* baseSegmento;
 char* pagina;
 char* desplazamiento;
+char* cantidadDeLineas;
 int offsetAcumulado;
 //----------------------------//
 

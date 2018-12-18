@@ -234,7 +234,7 @@ void ejecucionAbrirExistencia(socket_connection* connection, char** args){
 	sem_post(&sem_esperaAbrir);
 }
 
-//args[0]: 1 ó 0, args[1]: pag, args[2]: baseSeg, args[3]: despl
+//args[0]: 1 ó 0, args[1]: pag, args[2]: baseSeg, args[3]: despl, args[4]: cantLineas
 void ejecucionAsignar(socket_connection* connection, char** args){
 	int estadoSituacionArchivo = atoi(args[0]);
 
@@ -245,6 +245,8 @@ void ejecucionAsignar(socket_connection* connection, char** args){
 		strcpy(segmentoArchivo, args[1]);
 		desplazamientoArchivo = malloc(strlen(args[3]) + 1);
 		strcpy(desplazamientoArchivo, args[1]);
+		cantLineasArchivo = malloc(strlen(args[4]) + 1);
+		strcpy(cantLineasArchivo, args[4]);
 		archivoAbiertoAsignar = true;
 	}
 	else
@@ -253,7 +255,7 @@ void ejecucionAsignar(socket_connection* connection, char** args){
 	sem_post(&sem_esperaEjecucion);
 }
 
-//args[0]: estadoArchivo, args[1]: pag, args[2]: baseSeg, args[3]: despl
+//args[0]: estadoArchivo, args[1]: pag, args[2]: baseSeg, args[3]: despl, args[4]: cantLineas
 void ejecucionFlush(socket_connection* connection, char** args){
 
 	int estadoSituacionArchivo = atoi(args[0]);
@@ -265,6 +267,8 @@ void ejecucionFlush(socket_connection* connection, char** args){
 		strcpy(segmentoArchivo, args[1]);
 		desplazamientoArchivo = malloc(strlen(args[3]) + 1);
 		strcpy(desplazamientoArchivo, args[1]);
+		cantLineasArchivo = malloc(strlen(args[4]) + 1);
+		strcpy(cantLineasArchivo, args[4]);
 		archivoAbiertoFlush = true;
 	}
 	else{
@@ -287,7 +291,7 @@ void ejecucionWait(socket_connection* connection, char** args){
 	sem_post(&sem_esperaEjecucion);
 }
 
-//args[0]: estadoArchivo, args[1]: pag, args[2]: baseSeg, args[3]: despl
+//args[0]: estadoArchivo, args[1]: pag, args[2]: baseSeg, args[3]: despl, args[4]: cantLineas
 void ejecucionClose(socket_connection* connection, char** args){
 
 	int estadoSituacionArchivo = atoi(args[0]);
@@ -299,6 +303,8 @@ void ejecucionClose(socket_connection* connection, char** args){
 		strcpy(segmentoArchivo, args[1]);
 		desplazamientoArchivo = malloc(strlen(args[3]) + 1);
 		strcpy(desplazamientoArchivo, args[1]);
+		cantLineasArchivo = malloc(strlen(args[4]) + 1);
+		strcpy(cantLineasArchivo, args[4]);
 		archivoAbiertoClose = true;
 	}
 	else {
@@ -322,7 +328,7 @@ void finalizacionClose(socket_connection* connection, char** args){
 
 //callable remote functions
 //args[0]: idGDT, args[1]: rutaScript, args[2]: PC, args[3]: flagInicializacionGDT, args[4]: quantum a ejecutar,
-//args[5]: pagina, args[6]: segmento, args[7]: desplazamiento
+//args[5]: pagina, args[6]: segmento, args[7]: desplazamiento, args[8]: cantLineas
 void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 	pthread_t hilo;
 	parametros* params = malloc(sizeof(parametros));
@@ -334,6 +340,7 @@ void permisoConcedidoParaEjecutar(socket_connection * connection ,char** args){
 	params->pagina = atoi(args[5]);
 	params->segmento = atoi(args[6]);
 	params->desplazamiento = atoi(args[7]);
+	params->cantLineas = atoi(args[8]);
 	pthread_create(&hilo, NULL, (void*)&permisoDeEjecucion, params);
 	//pthread_detach(hilo);
 }
@@ -353,6 +360,7 @@ void permisoDeEjecucion(parametros* params){
 	int pagina = params->pagina;
 	int segmento = params->segmento;
 	int desplazamiento = params->desplazamiento;
+	int cantLineas = params->cantLineas;
 	char string_id[2]; 
 	sprintf(string_id, "%i", idCPU);
 	char string_idGDT[2]; 
@@ -432,10 +440,11 @@ void permisoDeEjecucion(parametros* params){
 
 					if(archivoAbiertoAsignar){
 						log_trace(logger,"Se Enviaran Los Datos Necesarios A FM9 para actualizar los datos del archivo %s", sentencia.p1);
-						runFunction(socketFM9, "CPU_FM9_actualizarLosDatosDelArchivo", 6,  string_idGDT, 
+						runFunction(socketFM9, "CPU_FM9_actualizarLosDatosDelArchivo", 7,  string_idGDT, 
 																						   paginaArchivo,
 																			   			   segmentoArchivo,
 																			               desplazamientoArchivo,
+																						   cantLineasArchivo,
 																						   sentencia.p2,//linea
 																						   sentencia.p3);//datos	
 	
@@ -443,6 +452,7 @@ void permisoDeEjecucion(parametros* params){
 						free(paginaArchivo);
 						free(segmentoArchivo);
 						free(desplazamientoArchivo);
+						free(cantLineasArchivo);
 					//No se bloquea ya que el enunciado dice que cada vez que interfiera el DAM se lo bloquea al proceso
 					//Al ser la comunicacion entre CPU y FM9 nadie interviene
 					}
@@ -510,12 +520,14 @@ void permisoDeEjecucion(parametros* params){
 						runFunction(socketDAM, "CPU_DAM_solicitudDeFlush", 5, string_idGDT, paginaArchivo,
 																							segmentoArchivo,
 																							desplazamientoArchivo,
+																							cantLineasArchivo,
 																							sentencia.p1);
 						destruirOperacion(sentencia);
 						pthread_detach(hiloEjecucion);
 						free(paginaArchivo);
 						free(segmentoArchivo);
 						free(desplazamientoArchivo);
+						free(cantLineasArchivo);
 					}
 					else{
 						log_error(logger, "El Archivo Solicitado: %s No Se Encuentra Abierto", sentencia.p1);
@@ -549,12 +561,15 @@ void permisoDeEjecucion(parametros* params){
 						return;
 					}
 					else{
-						runFunction(socketFM9, "CPU_FM9_cerrarElArchivo", 4, string_idGDT, paginaArchivo,
+						runFunction(socketFM9, "CPU_FM9_cerrarElArchivo", 6, string_idGDT, paginaArchivo,
 																					       segmentoArchivo,
-																						   desplazamientoArchivo);
+																						   desplazamientoArchivo,
+																						   cantLineasArchivo,
+																						   sentencia.p1);
 						free(paginaArchivo);
 						free(segmentoArchivo);
 						free(desplazamientoArchivo);
+						free(cantLineasArchivo);
 						pthread_attr_init(&attr);
     					pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 						pthread_create(&hiloEjecucion, &attr, (void*)funcionHiloClose, NULL);
@@ -658,12 +673,13 @@ operacion_t obtenerSentenciaParseada(int idGDT, int programCounter, int pagina, 
 	return sentencia;
 }
 
-//args[0]: ok ó error, args[1]: datos, args[2]: esUltima
+//args[0]: datos, args[1]: esUltima
 void resultadoObtencionDatos(socket_connection * connection ,char** args){
-	int resultado = atoi(args[0]);
-	if(resultado)
-		strcpy(datosPedidos, args[1]);
-	ultimaSentencia = atoi(args[2]);
+	int length = strlen(args[0]);
+	strcpy(datosPedidos, args[0]);
+	if(datosPedidos[length-1] == '\n')
+		datosPedidos[length-1] = '\0';
+	ultimaSentencia = atoi(args[1]);
 	sem_post(&sem_esperaDatos);
 }
 
