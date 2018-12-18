@@ -102,6 +102,7 @@ void ejecutar(char* rutaSc){
 		strcpy(archScript->nombre, rutaSc);
 		archScript->pagina = -1;
 		archScript->baseSegmento = -1;
+		archScript->cantLineas = 0;
 		archScript->desplazamiento = -1;
 		DTB* dtb = malloc(sizeof(DTB));
     	dtb->id = generadorDeIds;

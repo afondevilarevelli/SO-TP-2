@@ -18,8 +18,7 @@
 #include "../../sample-socket/socket.h"
 #include "consolaMDJ.h"
 #include "interfaz.h"
-
-
+#include <commons/collections/list.h>
 
 //ESTRUCTURAS
 typedef struct {

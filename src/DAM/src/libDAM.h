@@ -27,7 +27,7 @@ typedef struct {
 
 typedef struct{
     char idGDT[2];
-    char path[60]; 
+    char path[40]; 
     char dummy[1];
     char socketCPU[2];
 }parametrosCarga;

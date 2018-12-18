@@ -381,6 +381,7 @@ void avisoDeDamDeResultadoDTB(socket_connection* socketInfo, char** msg){
 			(dtb->script)->cantLineas = atoi(msg[5]);
 			log_info(logger,"Se finalizo OK el DTB del GDT de id %d",dtb->id);
 			dtb->status = READY;
+			dtb->flagInicializado = 1;
 			encolarDTB(colaReady, dtb, m_colaReady);
 			sem_post(&cantProcesosEnReady);
 		} else{ // "error"

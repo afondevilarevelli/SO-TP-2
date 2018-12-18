@@ -160,7 +160,7 @@ void CPU_DAM_solicitudCargaGDT(socket_connection* connection, char ** args){
 	parametrosCarga* params = malloc(sizeof(parametrosCarga));
 	strcpy(params->idGDT, args[0]);
 	strcpy(params->path, args[1]);
-	strcpy(params->dummy, args[2]);
+	params->dummy[0] = *(args[2]);
 	int socketCPU = connection->socket;
 	sprintf(params->socketCPU, "%i", socketCPU);
 	log_trace(logger, "Voy a intentar cargar el archivo %s para el GDT de id %s",args[1], args[0]);	
@@ -175,6 +175,7 @@ void hiloCarga(parametrosCarga* params){
 	char string_transferSize[3];
 	sprintf(string_transferSize, "%i", datosConfigDAM->transferSize);
 	runFunction(socketMDJ, "obtenerDatos", 7, params->idGDT, params->path, "0", string_transferSize, params->dummy, "1",params->socketCPU);
+//runFunction(socketFM9,"DAM_FM9_cargarBuffer",6, params->idGDT, "abrir hola.txt\nclose hola.txt\n", "ultima", params->dummy,"1",params->socketCPU);
 }
 
 //args[0]: idGDT, args[1]: bytesLeidos, args[2]: estado, args[3]:path, args[4]: dummy, args[5]: primera o no
@@ -230,7 +231,7 @@ void FM9_DAM_archivoCargadoCorrectamente(socket_connection* connection, char** a
 		cantidadDeLineas = malloc(strlen(args[6]) + 1);
 		strcpy(cantidadDeLineas, args[6]);
 
-		if(strcmp(args[2], "1") == 0)
+		if(*(args[2]) == '1')
 			runFunction(socketSAFA, "avisoDamDTB", 6, args[0], "ok", pagina, baseSegmento, desplazamiento, cantidadDeLineas);
 		else{ 
 			runFunction(socketSAFA, "aperturaArchivo", 6, args[0], ruta, pagina, baseSegmento, desplazamiento, cantidadDeLineas);
@@ -247,7 +248,7 @@ void FM9_DAM_archivoCargadoCorrectamente(socket_connection* connection, char** a
 
 	}
 	else{//error
-		if(strcmp(args[2], "1") == 0)
+		if(*(args[2]) == '1')
 			runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "error");
 		else{ 
 			runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit", 1, args[0]);
