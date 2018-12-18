@@ -232,14 +232,12 @@ bloqueInicial++;
 tsize = tsize - longitud;
 }
 }
-log_trace(logger,"Se obtuvieron %d bytes",string_length(buffer));
+log_trace(logger,"Se obtuvieron %d bytes: %s ",string_length(buffer),buffer);
 }
 aplicarRetardo();
-char * bytes = string_itoa(string_length(buffer));
-char * strEstado = string_itoa(archivo->estado); // cuando se setea este valor si sale todo bien?
-runFunction(connection->socket,"MDJ_DAM_respuestaDatos",7,args[0],bytes,strEstado,archivo->path, args[4],args[5], args[6]);
-//El DAM necesita que la variable bytes sea todo el string que pasa, no un numero indicando cuando se leyeron
-//( digo por que no sé qué estas pasando acá)
+char * strEstado = string_itoa(archivo->estado); // cuando se setea ete valor si sale todo bien?
+runFunction(connection->socket,"MDJ_DAM_respuestaDatos",7,args[0],buffer,strEstado,archivo->path, args[4],args[5], args[6]);
+
 }
 
 //args[0]: path, args[1]: offset, args[2]: size, args[3]: datos, , args[4]: 1(ultimo) ó 0 (sigue)
