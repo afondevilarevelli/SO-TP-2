@@ -56,8 +56,6 @@ int main(void) {
 	dictionary_put(callableRemoteFunctions, "DAM_FM9_cargarBuffer", &cargarBuffer);
 	dictionary_put(callableRemoteFunctions, "DAM_FM9_obtenerDatosFlush", &DAM_FM9_obtenerDatosFlush);
 
-	log_info(logger, "Voy a escuchar el puerto: %d", datosConfigFM9->puerto);
-
 	pthread_create(&hiloConsola, NULL, (void*)&consolaFM9, NULL);       
     pthread_detach(hiloConsola); 
 
@@ -133,10 +131,10 @@ int main(void) {
 	DAM_FM9_obtenerDatosFlush(NULL,gn);
 	DAM_FM9_obtenerDatosFlush(NULL,go); */
 
-	//char* args19[5] = {"1","-1","0","-1","juanito.txt"};
-	//char** memo = args19;
+	//char* args324[5] = {"1","1","-1","0","4","juanito.txt"};
+	//char** memo = args324;
 	//cerrarArchivoDeDTB(NULL, memo);
-	//executeCommand("dump 1"); 
+
 	//conexion al servidor----------------------------
 	
 	pthread_mutex_init(&mx_main, NULL);

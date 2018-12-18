@@ -269,13 +269,13 @@ void cargarArchivo(char* idGDT, char* esDummy, char* cpuSocket)
 			char string_cantLineas[2];
 			sprintf(string_cantLineas, "%i", cantLineas);
 			free(bufferArchivoACargar);
-			runFunction(socketDAM, "FM9_DAM_archivoCargado", 8, idGDT, "ok", esDummy, "-1", string_segmento, "0", string_cantLineas, cpuSocket);
+			//runFunction(socketDAM, "FM9_DAM_archivoCargado", 8, idGDT, "ok", esDummy, "-1", string_segmento, "0", string_cantLineas, cpuSocket);
 
 		}else{
 			log_error(logger, "No se encontro una posicion dentro de la tabla de segmentos");
 			log_error(logger, "No se pudo persistir los datos");
 			free(bufferArchivoACargar);
-			runFunction(socketDAM, "FM9_DAM_archivoCargado", 8, idGDT, "error", esDummy, "-1", "-1", "-1","0", cpuSocket);
+			//runFunction(socketDAM, "FM9_DAM_archivoCargado", 8, idGDT, "error", esDummy, "-1", "-1", "-1","0", cpuSocket);
 		}
 	}
 	else if(strcmp(datosConfigFM9->modo,"TPI")==0){
@@ -283,6 +283,7 @@ void cargarArchivo(char* idGDT, char* esDummy, char* cpuSocket)
 		if(cargado.cargaOK){ 
 			log_info(logger, "Persisti el contenido '%s' para el GDT %d", bufferArchivoACargar, pid);
 			log_info(logger, "Pagina: %d   Marco: %d   Desplazamiento: %d", cargado.pagina,cargado.marco, cargado.desplazamiento);
+			log_info(logger,"");
 			char string_despl[3];
 			sprintf(string_despl, "%i", cargado.desplazamiento);
 			char string_pagina[3];
@@ -290,12 +291,12 @@ void cargarArchivo(char* idGDT, char* esDummy, char* cpuSocket)
 			char string_cantLineas[2];
 			sprintf(string_cantLineas, "%i", cantLineas);
 			free(bufferArchivoACargar);
-			runFunction(socketDAM, "FM9_DAM_archivoCargado", 8, idGDT, "ok", esDummy, string_pagina, "-1",string_despl,string_cantLineas,cpuSocket);
+			//runFunction(socketDAM, "FM9_DAM_archivoCargado", 8, idGDT, "ok", esDummy, string_pagina, "-1",string_despl,string_cantLineas,cpuSocket);
 			
 		}else{
 			log_info(logger, "Error al persistir el contenido %s para el GDT %d",bufferArchivoACargar, pid);
 			free(bufferArchivoACargar);
-			runFunction(socketDAM, "FM9_DAM_archivoCargado", 8, idGDT, "error", esDummy, "-1", "-1", "-1","0", cpuSocket);
+			//runFunction(socketDAM, "FM9_DAM_archivoCargado", 8, idGDT, "error", esDummy, "-1", "-1", "-1","0", cpuSocket);
 		}
 	}
 	else{ //SEGMENTACION PAGINADA
@@ -471,7 +472,7 @@ void actualizarDatosDTB(socket_connection* connection, char** args){ //La primer
 	else{
 		log_error(logger, "TODO: no implementado Seg Pag");
 	}
-	runFunction(socketCPU, "avisarTerminoClock", 0);
+	//runFunction(socketCPU, "avisarTerminoClock", 0);
 }
 
 //args[0]: idGDT, args[1]:Linea (0 es la primer linea), args[2]: pag, args[3]: baseSeg, args[4]: despl
@@ -491,7 +492,7 @@ void obtenerDatosCPU(socket_connection* connection, char** args){
 	if(strcmp(datosConfigFM9->modo,"SEG")==0){
 		t_tabla_segmentos* segmento = list_find(lista_tabla_segmentos, _buscarSegmento);
 		if(segmento == NULL || (segmento->limite / datosConfigFM9->maximoLinea) < numLinea){
-			runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, "", "0");
+			//runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, "", "0");
 		}
 		else{ 
 			char* linea = malloc(datosConfigFM9->maximoLinea);
@@ -499,9 +500,9 @@ void obtenerDatosCPU(socket_connection* connection, char** args){
 			memcpy(linea, memoria + segmento->base + numLinea*datosConfigFM9->maximoLinea, datosConfigFM9->maximoLinea);
 			log_info(logger, "Se obtuvieron los siguientes datos: '%s'", linea);
 			if( *(memoria + segmento->base + numLinea*datosConfigFM9->maximoLinea + datosConfigFM9->maximoLinea) == '\0' ){ 
-				runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, linea, "1");
+				//runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, linea, "1");
 			}else{ 
-				runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, linea, "0");
+				//runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, linea, "0");
 			}
 			pthread_mutex_unlock(&m_memoria);
 			free(linea);
@@ -509,7 +510,7 @@ void obtenerDatosCPU(socket_connection* connection, char** args){
 	} else if(strcmp(datosConfigFM9->modo,"TPI")==0){
 		t_PaginasInvertidas* paginaInvertida = list_find(tabla_paginasInvertidas, _buscarPaginaInvertida);
 		if(paginaInvertida == NULL){
-			runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, "", "0");
+			//runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, "", "0");
 		}
 		else{
 			char* linea = malloc(datosConfigFM9->maximoLinea);
@@ -517,9 +518,9 @@ void obtenerDatosCPU(socket_connection* connection, char** args){
 			memcpy(linea, memoria + datosConfigFM9->tamanioPagina*paginaInvertida->marco + despl + numLinea*datosConfigFM9->maximoLinea, datosConfigFM9->maximoLinea);
 			log_info(logger, "Se obtuvieron los siguientes datos: '%s'", linea);
 			if( *(memoria + datosConfigFM9->tamanioPagina*paginaInvertida->marco + despl + numLinea*datosConfigFM9->maximoLinea + datosConfigFM9->maximoLinea) == '\0' ){ 
-				runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, linea, "1");
+				//runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, linea, "1");
 			}else{ 
-				runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, linea, "0");
+				//runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, linea, "0");
 			}
 			pthread_mutex_unlock(&m_memoria);
 			free(linea);
@@ -550,7 +551,7 @@ void DAM_FM9_obtenerDatosFlush(socket_connection* connection, char** args){
 	if(strcmp(datosConfigFM9->modo,"SEG")==0){
 		t_tabla_segmentos* segmento = list_find(lista_tabla_segmentos, _buscarSegmento);
 		if(segmento == NULL){
-			runFunction(connection->socket, "FM9_DAM_respuestaFlush", 2, "0", "", "0");
+			//runFunction(connection->socket, "FM9_DAM_respuestaFlush", 2, "0", "", "0");
 		}
 		else{ 
 			posicionLimite = (int) (memoria + segmento->base + segmento->limite);
@@ -591,11 +592,11 @@ void DAM_FM9_obtenerDatosFlush(socket_connection* connection, char** args){
 			datosArchivo[i] = '\0';
 			log_info(logger, "Se obtuvieron los siguientes datos: '%s' para el GDT %s", datosArchivo, args[0]);
 			//en datosArchivo están los datos que leí
-			runFunction(socketDAM, "FM9_DAM_respuestaFlush", 5 , args[0],
-																 datosArchivo,
-																 "1",
-																 args[7],
-																 ultima); 
+			//runFunction(socketDAM, "FM9_DAM_respuestaFlush", 5 , args[0],
+			//													 datosArchivo,
+			//													 "1",
+			//													 args[7],
+			//													 ultima); 
 
 		}
 	} else if(strcmp(datosConfigFM9->modo,"TPI")==0){
@@ -613,25 +614,74 @@ void cerrarArchivoDeDTB(socket_connection* connection, char** args){
 	int baseSegmento = atoi(args[2]);
 	int pagina = atoi(args[1]);
 	int despl = atoi(args[3]);
+	int cantLineasABorrar = atoi(args[4]);
 
 	bool _buscarSegmento(void* elemento){
 		return buscarSegmento(elemento, &idGDT, &baseSegmento);	
+	}
+	bool _buscarPaginaInvertida(void* elemento){
+		return buscarPaginaInvertida(elemento, &idGDT, &pagina);
 	}
 	if(strcmp(datosConfigFM9->modo,"SEG")==0){
 		t_tabla_segmentos* segmento = list_remove_by_condition(lista_tabla_segmentos, &_buscarSegmento);
 		if(segmento == NULL){
 			log_error(logger, "No se puede cerrar el archivo %s", args[5]);
-			runFunction(connection->socket, "FM9_CPU_resultadoDeClose", 1 , "0");
+			//runFunction(connection->socket, "FM9_CPU_resultadoDeClose", 1 , "0");
 		}
 		else{ 
 			log_trace(logger, "Se ha cerrado el archivo %s y liberado la memoria que ocupaba",args[5]);
 			char basura[segmento->limite];
 			memcpy(memoria+segmento->base, basura, segmento->limite); //lleno el espacio con basura
 			free(segmento);
-			runFunction(connection->socket, "FM9_CPU_resultadoDeClose", 1 ,"1");
+			//runFunction(connection->socket, "FM9_CPU_resultadoDeClose", 1 ,"1");
 		}
 	} else if(strcmp(datosConfigFM9->modo,"TPI")==0){
-
+		t_PaginasInvertidas* paginaInvertida = list_find(tabla_paginasInvertidas, _buscarPaginaInvertida);
+		if(paginaInvertida == NULL){
+			log_error(logger, "No se puede cerrar el archivo %s", args[5]);
+			//runFunction(connection->socket, "FM9_CPU_resultadoDeClose", 1 , "0");
+		}
+		else{ //cantLineasABorrar, despl
+			int contador = 0;
+			for(int i=0; i<cantLineasABorrar; i++){
+				int j = i - contador;
+				if( despl + j*datosConfigFM9->maximoLinea < datosConfigFM9->tamanioPagina){//si no termina el marco 
+					char basura[datosConfigFM9->maximoLinea];
+					memcpy(memoria+datosConfigFM9->tamanioPagina*paginaInvertida->marco + despl + j*datosConfigFM9->maximoLinea,
+					       basura, 
+					       datosConfigFM9->maximoLinea); //lleno el espacio con basura
+					paginaInvertida->tamanioOcupado -= datosConfigFM9->maximoLinea;
+				}
+				else{
+					if(paginaInvertida->tamanioOcupado == 0){
+						paginaInvertida->pagina = 0;
+						paginaInvertida->PID = -1; //id del GDT 
+						paginaInvertida->libre = true;
+					}
+					t_PaginasInvertidas* pagAnterior = paginaInvertida;
+					t_PaginasInvertidas* paginaInvertida = paginaInvertida->siguiente;
+					if(pagAnterior->tamanioOcupado == 0){
+						pagAnterior->siguiente = NULL;
+					}
+					if(paginaInvertida == NULL){//Si no salió del bucle es porque falta leer
+						//error
+						log_error(logger, "Fallo de memoria, no pide cerrar un archivo cuyas lineas son menores a las solicitadas");
+						//runFunction(connection->socket, "FM9_CPU_resultadoDeClose", 1 , "0");
+						return;
+					}
+					else{
+						contador = i;
+						char basura[datosConfigFM9->maximoLinea];
+						memcpy(memoria+datosConfigFM9->tamanioPagina*paginaInvertida->marco,
+					    basura, 
+					    datosConfigFM9->maximoLinea); //lleno el espacio con basura
+						despl = 0;
+					}
+				}
+			}
+			log_trace(logger, "Se ha cerrado el archivo %s y liberado la memoria que ocupaba",args[5]);
+			//runFunction(connection->socket, "FM9_CPU_resultadoDeClose", 1 ,"1");
+		}
 	}
 	else{ //SPA
 
