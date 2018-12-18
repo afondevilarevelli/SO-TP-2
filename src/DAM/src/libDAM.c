@@ -179,7 +179,7 @@ void hiloCarga(parametrosCarga* params){
 //args[0]: idGDT, args[1]: bytesLeidos, args[2]: estado, args[3]:path, args[4]: dummy, args[5]: primera o no
 //args[6]: socketCPU
 void MDJ_DAM_respuestaCargaGDT(socket_connection * connection,char ** args){
-	int cantBytesLeidos = atoi(strlen(args[1]) + 1);
+	int cantBytesLeidos = strlen(args[1]) + 1;
 	int idGDT = atoi(args[0]); 
 	char* bytes = args[1];
 	int estado = atoi(args[2]);
@@ -234,6 +234,8 @@ void FM9_DAM_archivoCargadoCorrectamente(socket_connection* connection, char** a
 			runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB", 1, args[0]);
 			runFunction(socketCPU, "avisarTerminoClock", 0);
 		}
+		if(ruta != NULL)
+			free(ruta);
 		pthread_mutex_unlock(&m_pedido);
 	}
 	else{//error
@@ -243,6 +245,8 @@ void FM9_DAM_archivoCargadoCorrectamente(socket_connection* connection, char** a
 			runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit", 1, args[0]);
 			runFunction(socketCPU, "avisarTerminoClock", 0);
 		}
+		if(ruta != NULL)
+			free(ruta);
 		pthread_mutex_unlock(&m_pedido);
 	}
 }
@@ -268,6 +272,7 @@ void CPU_DAM_solicitudDeFlush(socket_connection* connection, char** args)
 {
 	pthread_t hilo;
 	parametrosFlush* params = malloc(sizeof(parametrosFlush));
+	offsetAcumulado = 0;
 	strcpy(params->idGDT, args[0]);
 	strcpy(params->pagina, args[1]);
 	strcpy(params->segmento, args[2]);
@@ -279,15 +284,16 @@ void CPU_DAM_solicitudDeFlush(socket_connection* connection, char** args)
 	pthread_create(&hilo, NULL, (void*)&hiloFlush, params);
 }
 
-//args[0]: idGDT, args[1]: bytesLeidos, args[2]: estado, args[3]:path, args[4]: dummy, args[5]: primera o no
-//args[6]: socketCPU
+//args[0]: idGDT, args[1]: bytesLeidos, args[2]: estado,
+//args[3]: socketCPU, args[4]: 1(ultimo) ó 0 (sigue)
 void FM9_DAM_respuestaFlush(socket_connection* connection, char** args){
 	int idGDT = atoi(args[0]);
-	char* rutaArchivo = args[1];
+	int cantBytesLeidos = strlen(args[1]) + 1;
+	offsetAcumulado += cantBytesLeidos;
 
-	//no sé qué funcion llama del MDJ
-	runFunction(socketMDJ,"guardarDatos",2, args[0], args[1]);//más argumentos faltan
+	runFunction(socketMDJ,"guardarDatos",4,ruta, offsetAcumulado, cantBytesLeidos, args[1], args[4]);
 }
+
 
 //args[0]: idGDT, args[1]: 1(ok) ó 0(error)
 void MDJ_DAM_respuestaFlush(socket_connection* connection, char** args){
@@ -295,7 +301,7 @@ void MDJ_DAM_respuestaFlush(socket_connection* connection, char** args){
 		runFunction(socketSAFA,"DAM_SAFA_desbloquearDTB",1, args[0]);
 	else
 		runFunction(socketSAFA,"DAM_SAFA_pasarDTBAExit",1, args[0]);
-}
+} 
 
 void hiloFlush(parametrosFlush* params){
 	pthread_mutex_lock(&m_pedido);
@@ -304,5 +310,11 @@ void hiloFlush(parametrosFlush* params){
 	char string_transferSize[3];
 	sprintf(string_transferSize, "%i", datosConfigDAM->transferSize);
 
-	runFunction(socketFM9,"DAM_FM9_obtenerDatosFlush",1,string_transferSize);//faltan args
+	runFunction(socketFM9,"DAM_FM9_obtenerDatosFlush",6,params->idGDT, 
+														"0", 
+													    string_transferSize,
+														params->pagina,
+														params->segmento,
+														params->desplazamiento,
+														params->socketCPU);
 }

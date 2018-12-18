@@ -492,9 +492,40 @@ void obtenerDatosCPU(socket_connection* connection, char** args){
 	}
 }
 
-//args[0]: idGDT, args[1]: pagina, args[2]: baseSegmento, args[3]: desplazamiento
+//args[0]: idGDT, args[1]: inicio, args[2]: cantBytes, args[3]: pag,
+//args[4]:baseSeg, args[5]:despl, args[6]: socketCPU
 void DAM_FM9_obtenerDatosFlush(socket_connection* connection, char** args){
+	int idGDT = atoi(args[0]);
+	int base = atoi(args[4]);
+	int pagina = atoi(args[3]);
+	int despl = atoi(args[5]);
 
+	bool _buscarSegmento(void* elemento){
+		return buscarSegmento(elemento, &idGDT, &base);	
+	}
+	if(strcmp(datosConfigFM9->modo,"SEG")==0){
+		t_tabla_segmentos* segmento = list_find(lista_tabla_segmentos, _buscarSegmento);
+		if(segmento == NULL || (segmento->limite / datosConfigFM9->maximoLinea) < numLinea){
+			runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, "0", "", "0");
+		}
+		else{ 
+			char* linea = malloc(datosConfigFM9->maximoLinea);
+			pthread_mutex_lock(&m_memoria);
+			memcpy(linea, memoria + segmento->base + numLinea*datosConfigFM9->maximoLinea, datosConfigFM9->maximoLinea);
+			log_info(logger, "Se obtuvieron los siguientes datos: %s", linea);
+			if( *(memoria + segmento->base + numLinea*datosConfigFM9->maximoLinea + datosConfigFM9->maximoLinea) == '\0' )
+				runFunction(connection->socket, "FM9_CPU_resultadoDatos", 3, "1", linea, "1");
+			else
+				runFunction(connection->socket, "FM9_CPU_resultadoDatos", 3, "1", linea, "0");
+			pthread_mutex_unlock(&m_memoria);
+			free(linea);
+		}
+	} else if(strcmp(datosConfigFM9->modo,"TPI")==0){
+
+	}
+	else{ //SPA
+
+	}
 }
 
 //args[0]: idGDT, args[1]: pagina, args[2]: baseSegmento, args[3]: desplazamiento

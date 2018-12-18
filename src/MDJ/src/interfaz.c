@@ -242,13 +242,14 @@ runFunction(connection->socket,"MDJ_DAM_respuestaDatos",7,args[0],bytes,strEstad
 //( digo por que no sé qué estas pasando acá)
 }
 
+//args[0]: path, args[1]: offset, args[2]: size, args[3]: datos, , args[4]: 1(ultimo) ó 0 (sigue)
 void guardarDatos(socket_connection* connection,char ** args){
 t_archivo * archivo = malloc(sizeof(t_archivo));
 t_metadata_filesystem * fs = obtenerMetadata();
-archivo->path = args[1];
-off_t offset = atoi(args[2]);
-size_t size = atoi(args[3]);
-char * buffer = args[4];
+archivo->path = args[0];
+off_t offset = atoi(args[1]);
+size_t size = atoi(args[2]);
+char * buffer = args[3];
 char ** bloques = obtenerBloques(archivo->path);
 int bloqueInicial = obtenerBloqueInicial(archivo->path,offset);
 int bloqueFinal = (offset + size) / fs->tamanio_bloques;
@@ -298,6 +299,7 @@ free(bloques);
 free(archivo);
 free(fs);
 }
+//falta un funFunction al DAM para ver si hubo error o no
 }
 
 
