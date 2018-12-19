@@ -578,7 +578,12 @@ void inicioClock(socket_connection* connection, char** msgs){
 
 //FIN callable remote functions
 void finalizarDTB(DTB* dtb){
+	void destructorArch(void* elemento){
+		free( ((archivo*) elemento)->nombre);
+		free((archivo*) elemento) ;
+	}
 	dtb->status = FINISHED;
+	list_destroy_and_destroy_elements(dtb->archivosAbiertos, (void*)&destructorArch);
 	encolarDTB(colaFinalizados, dtb, m_colaFinalizados);
 	sem_post(&puedeEntrarAlSistema);
 }
@@ -631,7 +636,7 @@ void mostrarInformacionDTB(DTB* unDTB){
 		printf("Cantidad de sentencias esperadas en estado NEW: %d\n", unDTB->cantSentEsperadasEnNew);
 		printf("Cantidad de I/O: %d\n", unDTB->cantIOs);
 		printf("Archivos abiertos: ");
-		if(list_size(unDTB->archivosAbiertos) == 0)
+		if(list_size(unDTB->archivosAbiertos) == 0 || unDTB->archivosAbiertos == NULL)
 			printf("No tiene archivos abiertos\n");
 		else{
 			int i;
@@ -644,4 +649,54 @@ void mostrarInformacionDTB(DTB* unDTB){
 		}
     	printf("----------------------\n");
 
+}
+
+void cerrarPrograma() {
+        void destructorArch(void* elemento){
+		free( ((archivo*) elemento)->nombre);
+		free((archivo*) elemento) ;
+	}
+        void destructorDTB(void* elemento){
+                free( (( (DTB*) elemento) ->script)->nombre );
+                free( ( (DTB*) elemento) ->script );
+                if(((DTB*) elemento) ->archivosAbiertos != NULL)
+                        list_destroy_and_destroy_elements(((DTB*) elemento) ->archivosAbiertos, (void*)&destructorArch);
+                free( (DTB*) elemento );
+        }
+	//pthread_join(hiloConsola, NULL);
+	//pthread_join(hiloPLP, NULL);
+    log_info(logger, "Voy a cerrar SAFA");
+    pthread_mutex_destroy(&m_colaReady);
+    pthread_mutex_destroy(&m_colaBloqueados);
+    pthread_mutex_destroy(&m_colaNew);
+    pthread_mutex_destroy(&m_listaEjecutando);
+    pthread_mutex_destroy(&m_busqueda);
+    pthread_mutex_destroy(&m_colaFinalizados);
+    pthread_mutex_destroy(&m_listaDeRecursos);
+    pthread_mutex_destroy(&m_recurso);
+    pthread_mutex_destroy(&m_verificacion);
+    pthread_mutex_destroy(&m_cantSent);
+    pthread_mutex_destroy(&m_cantDiego);
+    pthread_mutex_destroy(&m_tiempoRespuesta);
+    if(linea!=NULL)
+        free(linea);
+
+    close_logger();
+    dictionary_destroy(fns); 
+    free(datosConfigSAFA->algoritmoPlanif);
+    free(datosConfigSAFA);
+
+    queue_destroy_and_destroy_elements(colaReady, (void*)&destructorDTB);
+    queue_destroy_and_destroy_elements(colaFinalizados, (void*)&destructorDTB);
+    queue_destroy_and_destroy_elements(colaNew, (void*)&destructorDTB);
+    queue_destroy_and_destroy_elements(colaBloqueados, (void*)&destructorDTB);
+    list_destroy(hilos);
+    list_destroy_and_destroy_elements(listaCPUs, (void*)free);
+    list_destroy_and_destroy_elements(listaEjecutando, (void*)&destructorDTB);
+    list_destroy_and_destroy_elements(listaDeRecursos, (void*)&destruirRecurso);
+    list_destroy(tiemposDeRespuestas);
+
+
+    pthread_mutex_unlock(&mx_main);
+    pthread_mutex_destroy(&mx_main);
 }

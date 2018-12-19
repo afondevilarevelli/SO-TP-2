@@ -2,7 +2,7 @@
 
 // Crea un nuevo comando
 Command * newCommand(char * name, void (*fn)(), int args, char * description) {
-	cmd = malloc(sizeof(Command));
+	Command* cmd = malloc(sizeof(Command));
 	cmd->name = name;
 	cmd->fn = fn;
 	cmd->args = args;
@@ -38,7 +38,7 @@ void printMenu() {
 	log_info(logger, "Listado de comandos disponibles:");
 	for(i = 0; i < list_size(commands); i++)
 	{
-		cmd = list_get(commands, i);
+		Command* cmd = list_get(commands, i);
 		log_info(logger, "   %-20s (%d)   %s", cmd->name, cmd->args, cmd->description);
 	}
 	//puts("\n");
@@ -89,6 +89,7 @@ void dump(char** args)
 		}
 		else	
 			log_info(logger, "No hay datos");
+		list_destroy(lista_pagsInv);
 	} else{ //SPA
 
 	}
@@ -132,7 +133,7 @@ void executeCommand(char * c){
     return strcmp(cc->name, name) == 0;
   }
 
-  cmd = list_find(commands,(void*) _get);
+  Command* cmd = list_find(commands,(void*) _get);
 
   if(cmd == NULL) {
 		log_error(logger, "Comando inexistente.");
@@ -162,16 +163,22 @@ void consolaFM9(){
 	char *buffer;
 	size_t bufsize = 1024;
 	buffer = (char *)malloc(bufsize * sizeof(char));
+	void _destructor(void* comando){
+		free( ( (Command*) comando )->name );
+		free( ( (Command*) comando )->description );
+	}
 	while(1) {
 		log_info(logger, "Ingrese un Comando");
 		getline(&buffer, &bufsize, stdin);
 		while(buffer == NULL)
 			getline(&buffer, &bufsize, stdin);
-		if(strcmp(buffer, "salir") != 0)
+		if(strcmp(buffer, "salir\n") != 0)
 			executeCommand(buffer);
 		else
 			break;
 	}
+	log_info(logger, "Se ha cerrado la consola");
 	if(buffer != NULL)
 		free(buffer);
+	list_destroy_and_destroy_elements(commands, (void*)&_destructor);
 }

@@ -45,10 +45,7 @@ typedef struct{
 
 //VARIABLES
 t_log* logger;
-t_dictionary* callableRemoteFunctionsSAFA;
-t_dictionary* callableRemoteFunctionsFM9;
-t_dictionary* callableRemoteFunctionsMDJ;
-t_dictionary* callableRemoteFunctionsCPU;
+t_dictionary* callableRemoteFunctions;
 pthread_mutex_t mx_main;	/* Semaforo de main */
 t_config_DAM*  datosConfigDAM;
 

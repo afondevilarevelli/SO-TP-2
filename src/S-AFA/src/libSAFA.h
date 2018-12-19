@@ -66,6 +66,7 @@ typedef struct{
 
 
 //VARIABLES GLOBALES
+char* linea;
 int cantSentenciasEjecutadas;
 int cantSentConDiego;
 int generadorDeIdsCPU;
@@ -125,6 +126,8 @@ bool unCpuConectado;
 //para las metricas
 int cantGDTsEjecutados;
 int cantSentEsperadasASumar;
+pthread_t hiloConsola; 
+pthread_t hiloPLP;
 
 //--------------------------------------------//
 

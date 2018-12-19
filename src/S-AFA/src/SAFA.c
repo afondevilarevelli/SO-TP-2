@@ -42,7 +42,6 @@ int main(void){
         listaDeRecursos = list_create();
         tiemposDeRespuestas = list_create();
 
-        pthread_t hiloConsola, hiloPLP;
         list_add(hilos, &hiloConsola);
         list_add(hilos, &hiloPLP);
 
@@ -97,39 +96,4 @@ int main(void){
 
 void disconnect(socket_connection* socketInfo) {
   log_info(logger,"socket n° %d se ha desconectado.\n", socketInfo->socket);
-}
-
-void cerrarPrograma() {
-    log_info(logger, "Voy a cerrar SAFA");
-    pthread_mutex_destroy(&m_colaReady);
-    pthread_mutex_destroy(&m_colaBloqueados);
-    pthread_mutex_destroy(&m_colaNew);
-    pthread_mutex_destroy(&m_listaEjecutando);
-    pthread_mutex_destroy(&m_busqueda);
-    pthread_mutex_destroy(&m_colaFinalizados);
-    pthread_mutex_destroy(&m_listaDeRecursos);
-    pthread_mutex_destroy(&m_recurso);
-    pthread_mutex_destroy(&m_verificacion);
-    pthread_mutex_destroy(&m_cantSent);
-    pthread_mutex_destroy(&m_cantDiego);
-    pthread_mutex_destroy(&m_tiempoRespuesta);
-
-    close_logger();
-    dictionary_destroy(fns); 
-    free(datosConfigSAFA->algoritmoPlanif);
-    free(datosConfigSAFA);
-
-    queue_destroy_and_destroy_elements(colaReady, (void*)free);
-    queue_destroy_and_destroy_elements(colaFinalizados, (void*)free);
-    queue_destroy_and_destroy_elements(colaNew, (void*)free);
-    queue_destroy_and_destroy_elements(colaBloqueados, (void*)free);
-    list_destroy(hilos);
-    list_destroy_and_destroy_elements(listaCPUs, (void*)free);
-    list_destroy(listaEjecutando);
-    list_destroy_and_destroy_elements(listaDeRecursos, (void*)&destruirRecurso);
-    list_destroy(tiemposDeRespuestas);
-
-
-    pthread_mutex_unlock(&mx_main);
-    pthread_mutex_destroy(&mx_main);
 }

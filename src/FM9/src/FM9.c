@@ -141,6 +141,7 @@ int main(void) {
 
 void cerrarPrograma() {
 	log_info(logger, "Voy a cerrar FM9");
+	free(datosConfigFM9->modo);
 	free(datosConfigFM9);
 	free(memoria);
 	pthread_mutex_destroy(&m_memoria);

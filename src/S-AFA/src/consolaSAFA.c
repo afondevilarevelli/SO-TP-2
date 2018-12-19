@@ -2,7 +2,7 @@
 
 void consolaSAFA(){
 	generadorDeIds = 1;
-	char* linea=NULL;
+	linea=NULL;
 	char espaBlan[4]=" \n\t";
 	int debeContinuar = 1; //TRUE
 
@@ -67,7 +67,7 @@ void consolaSAFA(){
 
 	}while(debeContinuar);
 
-	free(linea);
+	cerrarPrograma();
 
 	exit(0);
 
@@ -161,11 +161,16 @@ void status(int idGDT){
 
 //FALTA IMPLEMENTAR
 void metricas(int idGDT){	
-	double tiempoRespProm = tiempoRespuestaPromedio();
-	double porcSentDiego = cantSentConDiego*100/cantSentenciasEjecutadas;
+	float tiempoRespProm = tiempoRespuestaPromedio();
+	float porcSentDiego;
+	float cantExit = calcularMetricaExit();
+	if(cantSentenciasEjecutadas < 0)
+		porcSentDiego = cantSentConDiego*100/cantSentenciasEjecutadas;
+	else
+		porcSentDiego = 0;
 	log_info(logger,"Cant.de sentencias ejecutadas prom. del sistema que usaron a El Diego: %d", cantSentConDiego);
-	log_info(logger,"Porcentaje de las sentencias ejecutadas promedio que fueron a El Diego: %f por ciento", porcSentDiego);
-	log_info(logger,"Cant. de sentencias ejecutadas prom. del sistema para que un DTB termine en la cola EXIT: ");
+	log_info(logger,"Porcentaje de las sentencias ejecutadas promedio que fueron a El Diego: %.2f por ciento", porcSentDiego);
+	log_info(logger,"Cant. de sentencias ejecutadas prom. del sistema para que un DTB termine en la cola EXIT: %.2f", cantExit);
 	log_info(logger,"Tiempo de Respuesta promedio del Sistema: %.9f segs"/**10^9 segs"*/,tiempoRespProm);
 	 
 	if(idGDT != 0){ 
@@ -177,7 +182,7 @@ void metricas(int idGDT){
 	}
 }
 
-double tiempoRespuestaPromedio(){
+float tiempoRespuestaPromedio(){
 	float time = 0;
 	int i;
 	int tamanio = list_size(tiemposDeRespuestas);
@@ -191,5 +196,21 @@ double tiempoRespuestaPromedio(){
 	if(time < 0)
 		time *= -1;
 		
-	return time/tamanio;
+	if(tamanio != 0)
+		return time/tamanio;
+	else
+		return 0;
+}
+
+float calcularMetricaExit(){
+	int cantPC = 0;
+	int tamanio = list_size(colaFinalizados->elements);
+	for(int i = 0; i < tamanio; i++){
+		DTB* dtb = (DTB*) list_get(colaReady->elements, i);
+		cantPC = dtb->PC;
+	}
+	if(tamanio != 0)
+		return cantPC/tamanio;
+	else
+		return 0;
 }

@@ -229,6 +229,9 @@ void receiptMessage(void * arguments)
 		free(packet_head);
 		free(packet_body);
 	}
+	free((args->connection)->ip);
+	free((args->connection)->data);
+	free(args->connection);
 	free(args);
 }
 
@@ -486,6 +489,7 @@ int createListen(int port, void (*fn_newClient)(), t_dictionary * fns, void (*fn
 	//Creo el hilo listen
 	pthread_t th_listenClient;
 	pthread_create(&th_listenClient, NULL, (void*)listenClients, args);
+	pthread_detach(th_listenClient);
 
 	return 1;
 }

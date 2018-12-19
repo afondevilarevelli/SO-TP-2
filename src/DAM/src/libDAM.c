@@ -176,6 +176,7 @@ void hiloCarga(parametrosCarga* params){
 	sprintf(string_transferSize, "%i", datosConfigDAM->transferSize);
 	runFunction(socketMDJ, "obtenerDatos", 7, params->idGDT, params->path, "0", string_transferSize, params->dummy, "1",params->socketCPU);
 //runFunction(socketFM9,"DAM_FM9_cargarBuffer",6, params->idGDT, "abrir hola.txt\nclose hola.txt\n", "ultima", params->dummy,"1",params->socketCPU);
+	free(params);
 }
 
 //args[0]: idGDT, args[1]: bytesLeidos, args[2]: estado, args[3]:path, args[4]: dummy, args[5]: primera o no

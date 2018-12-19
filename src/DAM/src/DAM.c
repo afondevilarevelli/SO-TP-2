@@ -16,39 +16,36 @@ int main(void){
 	datosConfigDAM =read_and_log_config("DAM.config");
 	//diccionarios
 
-        callableRemoteFunctionsMDJ = dictionary_create();
-	callableRemoteFunctionsFM9 = dictionary_create();
-	 callableRemoteFunctionsSAFA = dictionary_create();
-	callableRemoteFunctionsCPU = dictionary_create();
+        callableRemoteFunctions = dictionary_create();
 
   pthread_mutex_init(&m_pedido, NULL);
 	
 	//--------------------------------------------------------------------
 	//Dicionarios del mdj
-    dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_existeArchivo", &MDJ_DAM_existeArchivo);
-    dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_resultadoCreacionArchivo",&MDJ_DAM_resultadoCreacionArchivo);
-    dictionary_put(callableRemoteFunctionsMDJ,"MDJ_DAM_respuestaDatos",&MDJ_DAM_respuestaCargaGDT);
-    dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_resultadoBorradoArchivo",&MDJ_DAM_resultadoBorradoArchivo);
-    dictionary_put(callableRemoteFunctionsFM9, "MDJ_DAM_respuestaFlush", &MDJ_DAM_respuestaFlush);
-    dictionary_put(callableRemoteFunctionsMDJ, "MDJ_DAM_avisoSAFAResultadoDTBDummy",&MDJ_DAM_avisarResultadoDTB);
+    dictionary_put(callableRemoteFunctions, "MDJ_DAM_existeArchivo", &MDJ_DAM_existeArchivo);
+    dictionary_put(callableRemoteFunctions, "MDJ_DAM_resultadoCreacionArchivo",&MDJ_DAM_resultadoCreacionArchivo);
+    dictionary_put(callableRemoteFunctions,"MDJ_DAM_respuestaDatos",&MDJ_DAM_respuestaCargaGDT);
+    dictionary_put(callableRemoteFunctions, "MDJ_DAM_resultadoBorradoArchivo",&MDJ_DAM_resultadoBorradoArchivo);
+    dictionary_put(callableRemoteFunctions, "MDJ_DAM_respuestaFlush", &MDJ_DAM_respuestaFlush);
+    dictionary_put(callableRemoteFunctions, "MDJ_DAM_avisoSAFAResultadoDTBDummy",&MDJ_DAM_avisarResultadoDTB);
 	//--------------------------------------------------------------------
   //dicionarios de CPU
-      dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_solicitudCargaGDT", &CPU_DAM_solicitudCargaGDT);
-      dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_existeArchivo", &CPU_DAM_existeArchivo);
-      dictionary_put(callableRemoteFunctionsCPU, "identificarProcesoEnDAM", &identificarProceso);
-      dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_crearArchivo", &CPU_DAM_crearArchivo);
-      dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_borrarArchivo", &CPU_DAM_borrarArchivo); 
-      dictionary_put(callableRemoteFunctionsCPU, "CPU_DAM_solicitudDeFlush", &CPU_DAM_solicitudDeFlush);
+      dictionary_put(callableRemoteFunctions, "CPU_DAM_solicitudCargaGDT", &CPU_DAM_solicitudCargaGDT);
+      dictionary_put(callableRemoteFunctions, "CPU_DAM_existeArchivo", &CPU_DAM_existeArchivo);
+      dictionary_put(callableRemoteFunctions, "identificarProcesoEnDAM", &identificarProceso);
+      dictionary_put(callableRemoteFunctions, "CPU_DAM_crearArchivo", &CPU_DAM_crearArchivo);
+      dictionary_put(callableRemoteFunctions, "CPU_DAM_borrarArchivo", &CPU_DAM_borrarArchivo); 
+      dictionary_put(callableRemoteFunctions, "CPU_DAM_solicitudDeFlush", &CPU_DAM_solicitudDeFlush);
   //diccionarios de FM9
-      dictionary_put(callableRemoteFunctionsFM9, "FM9_DAM_archivoCargado", &FM9_DAM_archivoCargadoCorrectamente);
-      dictionary_put(callableRemoteFunctionsFM9, "FM9_DAM_respuestaFlush", &FM9_DAM_respuestaFlush);
+      dictionary_put(callableRemoteFunctions, "FM9_DAM_archivoCargado", &FM9_DAM_archivoCargadoCorrectamente);
+      dictionary_put(callableRemoteFunctions, "FM9_DAM_respuestaFlush", &FM9_DAM_respuestaFlush);
       
     
-	socketSAFA = connectServer("172.17.0.1", 8001,callableRemoteFunctionsSAFA, &disconnect, NULL);
+	socketSAFA = connectServer("172.17.0.1", 8001,callableRemoteFunctions, &disconnect, NULL);
   //CUANDO ME CONECTO AL SAFA LE DIGO QUE SOY EL PROCESO DAM (para manejar estadoCorrupto)
   runFunction(socketSAFA,"identificarNuevaConexion",1,"DAM"); 
-	socketFM9 = connectServer("172.17.0.1",8003, callableRemoteFunctionsFM9, &disconnect, NULL);
-	socketMDJ = connectServer("172.17.0.1", 8002, callableRemoteFunctionsMDJ, &disconnect, NULL);
+	socketFM9 = connectServer("172.17.0.1",8003, callableRemoteFunctions, &disconnect, NULL);
+	socketMDJ = connectServer("172.17.0.1", 8002, callableRemoteFunctions, &disconnect, NULL);
          
 	
 	if(socketSAFA== -1  ){
@@ -90,7 +87,7 @@ int main(void){
 
         log_info(logger,"voy a escuchar el puerto %d ",datosConfigDAM->puertoEscucha);
 
-	  createListen(datosConfigDAM->puertoEscucha, NULL,callableRemoteFunctionsCPU, &disconnect, NULL);
+	  createListen(datosConfigDAM->puertoEscucha, NULL,callableRemoteFunctions, &disconnect, NULL);
        
 
  	pthread_mutex_init(&mx_main, NULL);
@@ -110,9 +107,13 @@ void disconnect(socket_connection* socketInfo) {
 void cerrarPrograma() {
     log_info(logger, "Voy a cerrar DAM");
     close_logger();
-     dictionary_destroy(callableRemoteFunctionsSAFA);
-     dictionary_destroy(callableRemoteFunctionsFM9);
-     dictionary_destroy(callableRemoteFunctionsMDJ);
+     dictionary_destroy(callableRemoteFunctions);
+     if(datosConfigDAM->IPSAFA != NULL)
+      free(datosConfigDAM->IPSAFA);
+     if(datosConfigDAM->IPMDJ != NULL)
+      free(datosConfigDAM->IPMDJ);
+     if(datosConfigDAM->IPFM9 != NULL)
+      free(datosConfigDAM->IPFM9);
      free(datosConfigDAM);
      pthread_mutex_destroy(&m_pedido);
     pthread_mutex_unlock(&mx_main);

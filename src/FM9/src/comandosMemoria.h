@@ -18,7 +18,7 @@ typedef struct
 } Command;
 
 
-Command* 	cmd;
+//Command* 	cmd;
 t_list* 	commands;
 
 void loadCommands();

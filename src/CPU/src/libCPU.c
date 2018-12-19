@@ -369,13 +369,15 @@ void permisoDeEjecucion(parametros* params){
 	log_info(logger, "La ruta Script es: %s", rutaScript);
 	log_info(logger, "El Program Counter se encuentra en: %d", programCounter);
 	log_info(logger, "El flag de inicializacion es: %d", flagInicializado);
-	log_info(logger, "El quantum a ejecutar es: %d", quantumAEjecutar);
+	if(quantumAEjecutar != 100)
+		log_info(logger, "El quantum a ejecutar es: %d", quantumAEjecutar);
 
 	operacion_t sentencia;
 	if (flagInicializado == 0) { //DTB-Dummy
 		log_trace(logger,"Preparando la inicializacion de ejecucion del DTB Dummy\n");
 		runFunction(socketDAM, "CPU_DAM_solicitudCargaGDT", 3,string_idGDT, rutaScript, "1");
 		runFunction(socketSAFA, "finalizacionProcesamientoCPU",7, string_id, string_idGDT, "0", "bloquear", "0","0", "1");
+		free(params);
 		return;
 	}
 	else{
@@ -405,6 +407,7 @@ void permisoDeEjecucion(parametros* params){
 						runFunction(socketSAFA, "CPU_SAFA_pasarDTBAExit", 1, string_idGDT);
 						destruirOperacion(sentencia);
 						pthread_detach(hiloAbrir);
+						free(params);
 						return;
 					}
 					else{
@@ -420,6 +423,7 @@ void permisoDeEjecucion(parametros* params){
 							runFunction(socketDAM, "CPU_DAM_solicitudCargaGDT", 3,string_idGDT, sentencia.p1, "0");
 							destruirOperacion(sentencia);
 							pthread_detach(hiloAbrir);
+							free(params);
 							return;
 						}
 						runFunction(socketSAFA, "terminoClock", 1, string_id);
@@ -462,6 +466,7 @@ void permisoDeEjecucion(parametros* params){
 						runFunction(socketSAFA, "CPU_SAFA_pasarDTBAExit", 1,string_idGDT);
 						destruirOperacion(sentencia);
 						pthread_detach(hiloEjecucion);
+						free(params);
 						return;
 					}
 					break;
@@ -487,6 +492,7 @@ void permisoDeEjecucion(parametros* params){
 						destruirOperacion(sentencia);
 						runFunction(socketSAFA, "terminoClock", 1, string_id);
 						pthread_detach(hiloEjecucion);
+						free(params);
 						return ;
 					}	
 					runFunction(socketSAFA, "terminoClock", 1, string_id);
@@ -536,6 +542,7 @@ void permisoDeEjecucion(parametros* params){
 						pthread_detach(hiloEjecucion);
 						runFunction(socketSAFA, "terminoClock", 1, string_id);
 					}
+					free(params);
 					return;
 				case CLOSE:
 					runFunction(socketSAFA, "inicioClock", 1, string_id);
@@ -558,6 +565,7 @@ void permisoDeEjecucion(parametros* params){
 						destruirOperacion(sentencia);
 						pthread_detach(hiloEjecucion);
 						runFunction(socketSAFA, "terminoClock", 1, string_id);
+						free(params);
 						return;
 					}
 					else{
@@ -595,6 +603,7 @@ void permisoDeEjecucion(parametros* params){
 						runFunction(socketSAFA, "finalizacionProcesamientoCPU",7,string_id, string_idGDT,string_sentEjecutadas,"finalizar", "1","1", "0");
 					runFunction(socketDAM, "CPU_DAM_crearArchivo", 4, string_idGDT, sentencia.p1, sentencia.p2, string_id);
 					destruirOperacion(sentencia);
+					free(params);
 					return ;
 				case BORRAR:
 					runFunction(socketSAFA, "inicioClock", 1, string_id);
@@ -607,6 +616,7 @@ void permisoDeEjecucion(parametros* params){
 						runFunction(socketSAFA, "finalizacionProcesamientoCPU",7,string_id, string_idGDT,string_sentEjecutadas,"finalizar", "1", "1", "0"); 
 					runFunction(socketDAM, "CPU_DAM_borrarArchivo", 3, string_idGDT,sentencia.p1, string_id);
 					destruirOperacion(sentencia);
+					free(params);
 					return ;
 			}
 
@@ -630,7 +640,7 @@ void permisoDeEjecucion(parametros* params){
 			sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 			runFunction(socketSAFA, "finalizacionProcesamientoCPU",7, string_id,string_idGDT, string_sentEjecutadas, "continuar", "0", "0", "0");
 		}
-		
+		free(params);
 	}
 }
 

@@ -22,7 +22,8 @@ void pausarPlanificacion();
 void iteracionPausarCPUs(CPU* cpu);
 void continuarPlanificacion();
 void iteracionContinuarCPUs(CPU* cpu);
-double tiempoRespuestaPromedio();
+float tiempoRespuestaPromedio();
+float calcularMetricaExit();
 
 
 //  A medida que avanzamos puede que necesitemos cambiarles los
