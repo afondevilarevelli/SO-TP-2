@@ -16,7 +16,6 @@ log_error(logger,"No se puedo obtener el pto de montaje");
 return ptoMontaje;
 }
 
-//falta probar y hacer algunos free de los malloc.
 
 t_metadata_filesystem *  obtenerMetadata() {
 t_metadata_filesystem * fs = malloc(sizeof(t_metadata_filesystem));
@@ -123,6 +122,7 @@ closedir(directory);
 archivo->fd = verificarSiExisteArchivo(archivo->path);
 if(archivo->fd == -1)
 {
+pthread_mutex_lock(&mdjInterfaz);	
 sprintf(tam,"%i",tsize);
 string_append(&tamBloq,"TAMANIO=");
 string_append(&tamBloq,tam);
@@ -135,7 +135,6 @@ string_append(&pathMasArchivos,obtenerPtoMontaje());
 string_append(&pathMasArchivos,"/Archivos/");
 string_append(&pathMasArchivos,archivo->path);
 archivo-> fd = open(pathMasArchivos,O_RDWR|O_CREAT);
-flock(archivo->fd,LOCK_SH);	
 char *  nVeces = string_repeat('\n',archivo->size);
 lseek(archivo->fd,archivo->size, SEEK_SET);
 write(archivo->fd, "",1);
@@ -145,7 +144,6 @@ memcpy(file,tamBloq,strlen(tamBloq));
 memcpy(file,strcat(tamBloq,archivoBloques),strlen(archivoBloques)+strlen(tamBloq));
 msync(file,archivo->size,MS_SYNC);
 munmap(file,archivo->size);
-flock(archivo->fd,LOCK_UN);
 close(archivo->fd);
 char ** bloques = obtenerBloques(archivo->path);
 char temp2[200];
@@ -153,10 +151,9 @@ int * fd = malloc(sizeof(cantElementos2(bloques)));
 for( int i = 0;i < cantElementos2(bloques);i++){
 snprintf(temp2,sizeof(temp2),"%s%s%i.bin", obtenerPtoMontaje(), "/Bloques/",atoi(bloques[i]));
 fd[i] = open(temp2,O_RDWR);
-flock(fd[i],LOCK_SH);	
 ftruncate(fd[i],fs->tamanio_bloques);
-flock(fd[i],LOCK_UN);
 close(fd[i]);
+pthread_mutex_unlock(&mdjInterfaz);
 }
 log_trace(logger,"Archivo %s creado correctamente en %s/Archivos",archivo->path,obtenerPtoMontaje());
 archivo->estado = recienCreado;
@@ -208,6 +205,7 @@ if(bloqueInicial < 0)
 log_error(logger,"El offset no puede ser mayor al tamanio de %s",archivo->path);  
 }
 else{
+pthread_mutex_lock(&mdjInterfaz);	
 char * temp [200];
 while (bloqueInicial <= bloqueFinal && bloques[bloqueInicial] != NULL)
 {
@@ -231,13 +229,13 @@ free(bloques[bloqueInicial]);
 bloqueInicial++;
 tsize = tsize - longitud;
 }
+pthread_mutex_unlock(&mdjInterfaz);
 }
 log_trace(logger,"Se obtuvieron %d bytes: %s ",string_length(buffer),buffer);
 }
 aplicarRetardo();
-char * strEstado = string_itoa(archivo->estado); // cuando se setea ete valor si sale todo bien?
+char * strEstado = string_itoa(archivo->estado);
 runFunction(connection->socket,"MDJ_DAM_respuestaDatos",7,args[0],buffer,strEstado,archivo->path, args[4],args[5], args[6]);
-
 }
 
 //args[0]: path, args[1]: offset, args[2]: size, args[3]: datos, , args[4]: 1(ultimo) ó 0 (sigue)
@@ -252,17 +250,21 @@ char ** bloques = obtenerBloques(archivo->path);
 int bloqueInicial = obtenerBloqueInicial(archivo->path,offset);
 int bloqueFinal = (offset + size) / fs->tamanio_bloques;
 int offRestante = offset - (offset /fs->tamanio_bloques) * fs->tamanio_bloques;
-int longitud;  
+int longitud; 
+int estadoGuardado; 
 if(cantElementos2(bloques) == 0)
 {
- log_info(logger,"El archivo %s no existe",archivo->path);   
+ log_info(logger,"El archivo %s no existe",archivo->path);
+ estadoGuardado = -1;  
 }
 else if (obtenerBloqueInicial(archivo->path,offset) == -1)
 {
-log_error(logger,"El offset no puede ser mayor al tamanio del archivo"); 
+log_error(logger,"El offset no puede ser mayor al tamanio del archivo");
+estadoGuardado = -2;
 }
 else
 {
+pthread_mutex_lock(&mdjInterfaz);	
 if (size > fs->tamanio_bloques)
 {
 longitud = fs->tamanio_bloques;
@@ -296,8 +298,12 @@ while (bloqueInicial <= bloqueFinal && bloques[bloqueInicial] != NULL) {
 free(bloques);
 free(archivo);
 free(fs);
+pthread_mutex_unlock(&mdjInterfaz);
+estadoGuardado = 0;
 }
-//falta un funFunction al DAM para ver si hubo error o no
+aplicarRetardo();
+char * estado = string_itoa(estadoGuardado);
+runFunction(connection->socket,"MDJ_DAM_datosGuardados",3,args[0],estado,archivo->path);
 }
 
 
@@ -380,6 +386,7 @@ archivo->estado = noBorrado;
 }
 else
 {
+pthread_mutex_lock(&mdjInterfaz);
 char ** bloques = obtenerBloques(archivo->path);
 char aux[200];
 int * fd = malloc(sizeof(cantElementos2(bloques)));
@@ -420,6 +427,7 @@ rmdir(dir);
 free(auxx);
 free(dir);
 }
+pthread_mutex_unlock(&mdjInterfaz);
 }
 char * strEstado = string_itoa(archivo->estado);
 aplicarRetardo();

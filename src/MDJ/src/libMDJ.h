@@ -34,6 +34,7 @@ typedef struct {
 t_log * logger;
 t_dictionary *  fns;	/* Funciones de socket */
 pthread_mutex_t mx_main;	/* Semaforo de main */
+pthread_mutex_t mdjInterfaz;
 int portServer;
 t_config * conf;
 t_config_MDJ * datosConfMDJ;

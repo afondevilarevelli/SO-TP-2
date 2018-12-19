@@ -21,6 +21,7 @@ int main(void) {
 
      pthread_t hiloConsola;
 
+    pthread_mutex_init(&mdjInterfaz,NULL);
 
     pthread_create(&hiloConsola, NULL, (void*)&consolaMDJ, NULL);
 
