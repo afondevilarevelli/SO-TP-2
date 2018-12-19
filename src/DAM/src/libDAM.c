@@ -304,7 +304,6 @@ void FM9_DAM_respuestaFlush(socket_connection* connection, char** args){
 
 }
 
-
 //args[0]: idGDT, args[1]: bytesGuardados, args[2]: estado,
 //args[3]: socketCPU, args[4]: 1(ultimo) ó 0 (sigue)
 void MDJ_DAM_respuestaFlush(socket_connection* connection, char** args){

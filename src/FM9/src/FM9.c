@@ -51,7 +51,7 @@ int main(void) {
 	loadCommands();  
 
 	log_info(logger, "Estoy escuchando el puerto: %d", datosConfigFM9->puerto);
-
+/*
 	char* buffers[5] = {"linea"," 1\nli","nea 2","\nline","a 331\n"};
 	char* buffers2[4] = {"Soy re capo\n","Aguante\n","Chupam","ela"};
 	char* args1[5] = {"1", buffers[0], "sigue", "0", "1"};
@@ -89,25 +89,28 @@ int main(void) {
 	char** tt = args6;
 	obtenerDatosCPU(NULL, tt);
 
-	char* args7[7] = {"1","0","3","-1","0","-1","-1"};
+	char* args7[8] = {"1","0","3","1","0","0","4","-1"};
 	char** gg = args7;
-	char* args8[7] = {"1","3","3","-1","0","-1","-1"};
+	char* args8[8] = {"1","3","3","1","0","0","4","-1"}; 
 	char** gh = args8;
-	char* args9[7] = {"1","6","3","-1","0","-1","-1"};
+	//args[0]: idGDT, args[1]: inicio, args[2]: cantBytes, args[3]: pag,
+	//args[4]:baseSeg, args[5]:despl, args[6]: cantLineas, args[7]: socketCPU
+	char* args9[8] = {"1","6","3","1","0","0","4","-1"};
 	char** gi = args9;
-	char* args10[7] = {"1","9","3","-1","0","-1","-1"};
+	char* args10[8] = {"1","9","3","1","0","0","4","-1"};
 	char** gj = args10;
-	char* args11[7] = {"1","12","3","-1","0","-1","-1"};
+	char* args11[8] = {"1","12","3","1","0","0","4","-1"};
 	char** gk = args11;
-	char* args12[7] = {"1","15","3","-1","0","-1","-1"};
+	char* args12[8] = {"1","15","3","1","0","0","4","-1"};
 	char** gl = args12;
-	char* args13[7] = {"1","18","3","-1","0","-1","-1"};
+	char* args13[8] = {"1","18","3","1","0","0","4","-1"};
 	char** gm = args13;
-	char* args14[7] = {"1","21","3","-1","0","-1","-1"};
+	char* args14[8] = {"1","21","3","1","0","0","4","-1"};
 	char** gn = args14;
-	char* args15[7] = {"1","24","3","-1","0","-1","-1"};
+	char* args15[8] = {"1","24","3","1","0","0","4","-1"};
 	char** go = args15;
-/*
+
+
 	DAM_FM9_obtenerDatosFlush(NULL,gg);
 	DAM_FM9_obtenerDatosFlush(NULL,gh);
 	DAM_FM9_obtenerDatosFlush(NULL,gi);
@@ -116,7 +119,7 @@ int main(void) {
 	DAM_FM9_obtenerDatosFlush(NULL,gl);
 	DAM_FM9_obtenerDatosFlush(NULL,gm);
 	DAM_FM9_obtenerDatosFlush(NULL,gn);
-	DAM_FM9_obtenerDatosFlush(NULL,go); */
+	DAM_FM9_obtenerDatosFlush(NULL,go); 
 
 	char* args324[7] = {"1","3","-1","0","3","3","modifico esta linea"};
 	char** memo = args324;
@@ -126,7 +129,7 @@ int main(void) {
 
 	actualizarDatosDTB(NULL, memo);
 	cerrarArchivoDeDTB(NULL, memo443);
-
+*/
 
 	//conexion al servidor----------------------------
 	
