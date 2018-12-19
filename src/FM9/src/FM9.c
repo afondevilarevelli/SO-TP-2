@@ -64,7 +64,7 @@ int main(void) {
 	loadCommands();  
 
 	log_info(logger, "Estoy escuchando el puerto: %d", datosConfigFM9->puerto);
-/*
+
 	char* buffers[5] = {"linea"," 1\nli","nea 2","\nline","a 331\n"};
 	char* buffers2[4] = {"Soy re capo\n","Aguante\n","Chupam","ela"};
 	char* args1[5] = {"1", buffers[0], "sigue", "0", "1"};
@@ -119,7 +119,7 @@ int main(void) {
 	char* args14[7] = {"1","21","3","-1","0","-1","-1"};
 	char** gn = args14;
 	char* args15[7] = {"1","24","3","-1","0","-1","-1"};
-	char** go = args15;*/
+	char** go = args15;
 /*
 	DAM_FM9_obtenerDatosFlush(NULL,gg);
 	DAM_FM9_obtenerDatosFlush(NULL,gh);
@@ -131,9 +131,11 @@ int main(void) {
 	DAM_FM9_obtenerDatosFlush(NULL,gn);
 	DAM_FM9_obtenerDatosFlush(NULL,go); */
 
-	//char* args324[5] = {"1","1","-1","0","4","juanito.txt"};
-	//char** memo = args324;
+	char* args324[7] = {"1","0","-1","0","4","3","modifico esta linea"};
+	char** memo = args324;
 	//cerrarArchivoDeDTB(NULL, memo);
+
+	actualizarDatosDTB(NULL, memo);
 
 	//conexion al servidor----------------------------
 	
