@@ -143,73 +143,107 @@ retornoCargaTPI cargarArchivoTPI(char* arch, int idGDT){
 	int i, pagMasAlta = 0;
 	int tamanioArchivo = strlen(arch) + 1;
 	int cantLineas = cantidadDeLineas(arch);
-	int lineasRestantes = cantLineas, lineasParaCargar = cantLineas;
+	int lineasCargadas = 0;
+	int maximoLineasPagina = datosConfigFM9->tamanioPagina / datosConfigFM9->maximoLinea;
 	t_PaginasInvertidas* marcoAnterior = NULL;
-	for(i=0; i<list_size(tabla_paginasInvertidas); i++){
-		t_PaginasInvertidas* unMarco = (t_PaginasInvertidas*) list_get(tabla_paginasInvertidas, i);
-		if(unMarco->PID == idGDT){ 
-			if(pagMasAlta < unMarco->pagina)
-				pagMasAlta = unMarco->pagina;
-		}
+
+	bool _marcoLibre(void* elemento){
+		return ((t_PaginasInvertidas*) elemento)->libre ;
+	}
+	bool _pagsGDT(void* elemento){
+		return ((t_PaginasInvertidas*) elemento)->PID == idGDT;
 	}
 
-	for(i=0; i<list_size(tabla_paginasInvertidas); i++){
-		t_PaginasInvertidas* unMarco = (t_PaginasInvertidas*) list_get(tabla_paginasInvertidas, i);
-		if(unMarco->PID == idGDT && unMarco->tamanioOcupado < datosConfigFM9->tamanioPagina && unMarco->pagina == pagMasAlta){
+	t_list* listaPagsGDT = list_filter(tabla_paginasInvertidas, &_pagsGDT);
+	for(i=0; i<list_size(listaPagsGDT); i++){
+		t_PaginasInvertidas* unMarco = (t_PaginasInvertidas*) list_get(listaPagsGDT, i);
+		if(pagMasAlta < unMarco->pagina)
+			pagMasAlta = unMarco->pagina;	
+	}
+
+	for(i=0; i<list_size(listaPagsGDT); i++){
+		t_PaginasInvertidas* unMarco = (t_PaginasInvertidas*) list_get(listaPagsGDT, i);
+		if(unMarco->tamanioOcupado < datosConfigFM9->tamanioPagina && unMarco->pagina == pagMasAlta){
 			retorno.pagina = unMarco->pagina;
 			retorno.desplazamiento = unMarco->tamanioOcupado; 
 			retorno.marco = unMarco->marco;
 			if( ((datosConfigFM9->tamanioPagina - unMarco->tamanioOcupado) / datosConfigFM9->maximoLinea) >= cantLineas){
 				guardarDatosPorLinea(arch, unMarco->marco*datosConfigFM9->tamanioPagina + unMarco->tamanioOcupado);
 				unMarco->tamanioOcupado += cantLineas*datosConfigFM9->maximoLinea;
-				lineasRestantes = 0;
+				lineasCargadas = cantLineas;
 				retorno.cargaOK = true;
 				return retorno;
 			}
 			else{
-				lineasParaCargar = datosConfigFM9->tamanioPagina / datosConfigFM9->maximoLinea - unMarco->tamanioOcupado / datosConfigFM9->maximoLinea;
-				if(lineasParaCargar != 0){ 
+				lineasCargadas = datosConfigFM9->tamanioPagina / datosConfigFM9->maximoLinea - unMarco->tamanioOcupado / datosConfigFM9->maximoLinea;
+				if(lineasCargadas != 0){ 
 				guardarDatosDeLineas(arch, 
 									unMarco->marco*datosConfigFM9->tamanioPagina + unMarco->tamanioOcupado,
 									0,
-									lineasParaCargar);
+									lineasCargadas);
 				}
-				unMarco->tamanioOcupado += lineasParaCargar * datosConfigFM9->maximoLinea;
-				lineasRestantes = cantLineas - lineasParaCargar;
+				unMarco->tamanioOcupado += lineasCargadas * datosConfigFM9->maximoLinea;
 				marcoAnterior = unMarco;
+				retorno.pagina = unMarco->pagina;
+				retorno.desplazamiento = unMarco->tamanioOcupado;
+				retorno.marco = unMarco->marco;
 			}
 			break;
 		}
 	}
-
-	if(lineasRestantes != 0){ 
-		for(i=0; i<list_size(tabla_paginasInvertidas); i++){
-			t_PaginasInvertidas* unMarco = (t_PaginasInvertidas*) list_get(tabla_paginasInvertidas, i);
-			if(unMarco->libre){ 
-				int lineasACargarRestantes = lineasParaCargar - lineasRestantes;
-				if(lineasACargarRestantes < 0)
-					lineasACargarRestantes *= -1;
+	
+	int lineasParaCargar;
+	int contadorPagina = 0;
+	while(lineasCargadas < cantLineas){
+		t_PaginasInvertidas* unMarco = (t_PaginasInvertidas*) list_find(tabla_paginasInvertidas, &_marcoLibre);
+		lineasParaCargar = cantLineas - lineasCargadas;
+		if(unMarco != NULL){ 
+			if( ((datosConfigFM9->tamanioPagina - unMarco->tamanioOcupado) / datosConfigFM9->maximoLinea) >= lineasParaCargar){
 				guardarDatosDeLineas(arch, 
 									unMarco->marco*datosConfigFM9->tamanioPagina + unMarco->tamanioOcupado,
-									lineasACargarRestantes,
-									lineasRestantes);
+									lineasCargadas,
+									lineasParaCargar);
 				unMarco->PID = idGDT;
-				unMarco->pagina = pagMasAlta + 1;
+				unMarco->pagina = pagMasAlta + 1 + contadorPagina;
 				unMarco->libre = false;
-				unMarco->tamanioOcupado += lineasRestantes * datosConfigFM9->maximoLinea;
+				unMarco->tamanioOcupado += lineasParaCargar * datosConfigFM9->maximoLinea;
 				if(marcoAnterior != NULL)
 					marcoAnterior->siguiente = unMarco;
-				if(cantLineas == lineasRestantes){ 
-					retorno.pagina = pagMasAlta + 1;
+				if(contadorPagina == 0 && lineasCargadas == 0){ 
+					retorno.pagina = unMarco->pagina;
 					retorno.desplazamiento = 0;
 					retorno.marco = unMarco->marco;
 				}
 				retorno.cargaOK = true;
 				return retorno;
 			}
+			else{
+				guardarDatosDeLineas(arch, 
+									unMarco->marco*datosConfigFM9->tamanioPagina + unMarco->tamanioOcupado,
+									lineasCargadas,
+									maximoLineasPagina);
+				if(contadorPagina == 0 && lineasCargadas == 0){ 
+					retorno.pagina = pagMasAlta + 1 + contadorPagina;
+					retorno.desplazamiento = 0;
+					retorno.marco = unMarco->marco;
+				}
+				lineasCargadas += maximoLineasPagina;
+				unMarco->PID = idGDT;
+				unMarco->pagina = pagMasAlta + 1 + contadorPagina;
+				unMarco->libre = false;
+				unMarco->tamanioOcupado += maximoLineasPagina * datosConfigFM9->maximoLinea;
+				if(marcoAnterior != NULL)
+					marcoAnterior->siguiente = unMarco;
+				marcoAnterior = unMarco;
+				contadorPagina++;
+			}
+		}
+		else{
+			retorno.cargaOK = false;
+			break;
 		}
 	}
-	retorno.cargaOK = false;
+
 	return retorno;
 }
 
@@ -476,7 +510,7 @@ void actualizarDatosDTB(socket_connection* connection, char** args){ //La primer
 		log_info(logger, "Del GDT: %d, recibi los siguientes Datos:", idGDT);
 		log_info(logger, "	Pagina: %d, Desplazamiento: %d, Datos: %s",pagina, desplazamiento, datos);
 		
-		t_PaginasInvertidas* paginaInvertida = list_find(tabla_paginasInvertidas, _buscarPaginaInvertida);
+		t_PaginasInvertidas* paginaInvertida = list_find(tabla_paginasInvertidas, &_buscarPaginaInvertida);
 		if(paginaInvertida == NULL || linea > cantLineasArchivo){
 			log_error(logger, "Acceso denegado al GDT %d para actualizar datos", idGDT);
 			return;
@@ -578,6 +612,7 @@ void DAM_FM9_obtenerDatosFlush(socket_connection* connection, char** args){
 	int despl = atoi(args[5]);
 	int tamanio = atoi(args[2]);
 	int inicio = atoi(args[1]); 
+	int cantLineas = atoi(args[6]);
 	int contadorPosicion = 0;
 	int numLinea = 0;
 	int posicionLimite;
@@ -585,6 +620,9 @@ void DAM_FM9_obtenerDatosFlush(socket_connection* connection, char** args){
 
 	bool _buscarSegmento(void* elemento){
 		return buscarSegmento(elemento, &idGDT, &base);	
+	}
+	bool _buscarPaginaInvertida(void* elemento){
+		return buscarPaginaInvertida(elemento, &idGDT, &pagina);
 	}
 	if(strcmp(datosConfigFM9->modo,"SEG")==0){
 		t_tabla_segmentos* segmento = list_find(lista_tabla_segmentos, _buscarSegmento);
@@ -638,6 +676,39 @@ void DAM_FM9_obtenerDatosFlush(socket_connection* connection, char** args){
 
 		}
 	} else if(strcmp(datosConfigFM9->modo,"TPI")==0){
+		t_PaginasInvertidas* paginaInvertida = list_find(tabla_paginasInvertidas, _buscarPaginaInvertida);
+		if(paginaInvertida == NULL){
+			//runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, "", "0");
+		}
+		else{
+			char* linea = malloc(datosConfigFM9->maximoLinea);
+			pthread_mutex_lock(&m_memoria);
+			memcpy(linea, memoria + datosConfigFM9->tamanioPagina*paginaInvertida->marco + despl + numLinea*datosConfigFM9->maximoLinea, datosConfigFM9->maximoLinea);
+			log_info(logger, "Se obtuvieron los siguientes datos: '%s'", linea);
+			if( *(memoria + datosConfigFM9->tamanioPagina*paginaInvertida->marco + despl + numLinea*datosConfigFM9->maximoLinea + datosConfigFM9->maximoLinea) == '\0' ){ 
+				//runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, linea, "1");
+			}else{ 
+				//runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, linea, "0");
+			}
+			pthread_mutex_unlock(&m_memoria);
+			free(linea);
+		}
+
+		posicionLimite = (int) (memoria + segmento->base + segmento->limite);
+			char datosArchivo[tamanio + 1];
+			while(contadorPosicion < inicio){
+				if( *(memoria + segmento->base + contadorPosicion) == '\n'){ 
+					numLinea++;
+					inicio = numLinea * datosConfigFM9->maximoLinea + inicio - contadorPosicion - 1;
+					contadorPosicion = numLinea * datosConfigFM9->maximoLinea;	
+				}
+				else
+					contadorPosicion++;
+			} //salgo con contadorPosicion en el índice donde quiero empezar a leer
+
+
+
+
 
 	}
 	else{ //SPA
@@ -660,6 +731,13 @@ void cerrarArchivoDeDTB(socket_connection* connection, char** args){
 	bool _buscarPaginaInvertida(void* elemento){
 		return buscarPaginaInvertida(elemento, &idGDT, &pagina);
 	}
+	void _iteracionLiberar(void* elemento){
+		((t_PaginasInvertidas*)elemento)->pagina = 0;
+		((t_PaginasInvertidas*)elemento)->PID = 0;
+		((t_PaginasInvertidas*)elemento)->siguiente = NULL;
+		((t_PaginasInvertidas*)elemento)->tamanioOcupado = 0;
+		((t_PaginasInvertidas*)elemento)->libre = true;
+	}
 	if(strcmp(datosConfigFM9->modo,"SEG")==0){
 		t_tabla_segmentos* segmento = list_remove_by_condition(lista_tabla_segmentos, &_buscarSegmento);
 		if(segmento == NULL){
@@ -669,22 +747,25 @@ void cerrarArchivoDeDTB(socket_connection* connection, char** args){
 		else{ 
 			log_trace(logger, "Se ha cerrado el archivo %s y liberado la memoria que ocupaba",args[5]);
 			char basura[segmento->limite];
+			basura[0] = '\0';
 			memcpy(memoria+segmento->base, basura, segmento->limite); //lleno el espacio con basura
 			free(segmento);
 			//runFunction(connection->socket, "FM9_CPU_resultadoDeClose", 1 ,"1");
 		}
 	} else if(strcmp(datosConfigFM9->modo,"TPI")==0){
+		t_list* marcosLibres = list_create();
 		t_PaginasInvertidas* paginaInvertida = list_find(tabla_paginasInvertidas, _buscarPaginaInvertida);
 		if(paginaInvertida == NULL){
 			log_error(logger, "No se puede cerrar el archivo %s", args[5]);
 			//runFunction(connection->socket, "FM9_CPU_resultadoDeClose", 1 , "0");
 		}
-		else{ //cantLineasABorrar, despl
+		else{ 
 			int contador = 0;
 			for(int i=0; i<cantLineasABorrar; i++){
 				int j = i - contador;
 				if( despl + j*datosConfigFM9->maximoLinea < datosConfigFM9->tamanioPagina){//si no termina el marco 
 					char basura[datosConfigFM9->maximoLinea];
+					basura[0] = '\0';
 					memcpy(memoria+datosConfigFM9->tamanioPagina*paginaInvertida->marco + despl + j*datosConfigFM9->maximoLinea,
 					       basura, 
 					       datosConfigFM9->maximoLinea); //lleno el espacio con basura
@@ -692,34 +773,40 @@ void cerrarArchivoDeDTB(socket_connection* connection, char** args){
 				}
 				else{
 					if(paginaInvertida->tamanioOcupado == 0){
-						paginaInvertida->pagina = 0;
-						paginaInvertida->PID = -1; //id del GDT 
-						paginaInvertida->libre = true;
+						list_add(marcosLibres, (void*)paginaInvertida);
 					}
-					t_PaginasInvertidas* pagAnterior = paginaInvertida;
-					t_PaginasInvertidas* paginaInvertida = paginaInvertida->siguiente;
-					if(pagAnterior->tamanioOcupado == 0){
-						pagAnterior->siguiente = NULL;
-					}
+					if (paginaInvertida->siguiente != NULL)
+						paginaInvertida = paginaInvertida->siguiente;
+
 					if(paginaInvertida == NULL){//Si no salió del bucle es porque falta leer
 						//error
-						log_error(logger, "Fallo de memoria, no pide cerrar un archivo cuyas lineas son menores a las solicitadas");
+						log_error(logger, "Fallo de memoria, me pide cerrar un archivo cuyas lineas son menores a las solicitadas");
 						//runFunction(connection->socket, "FM9_CPU_resultadoDeClose", 1 , "0");
 						return;
 					}
 					else{
 						contador = i;
 						char basura[datosConfigFM9->maximoLinea];
+						basura[0] = '\0';
 						memcpy(memoria+datosConfigFM9->tamanioPagina*paginaInvertida->marco,
-					    basura, 
-					    datosConfigFM9->maximoLinea); //lleno el espacio con basura
+					   		   basura, 
+					           datosConfigFM9->maximoLinea); //lleno el espacio con basura
 						despl = 0;
+						paginaInvertida->tamanioOcupado -= datosConfigFM9->maximoLinea;
+						if(paginaInvertida->tamanioOcupado == 0){
+							list_add(marcosLibres, (void*)paginaInvertida);
+						}
 					}
 				}
+			}
+			if(paginaInvertida->tamanioOcupado == 0){
+				list_add(marcosLibres, (void*)paginaInvertida);
 			}
 			log_trace(logger, "Se ha cerrado el archivo %s y liberado la memoria que ocupaba",args[5]);
 			//runFunction(connection->socket, "FM9_CPU_resultadoDeClose", 1 ,"1");
 		}
+		list_iterate(marcosLibres, (void*)&_iteracionLiberar);
+		list_destroy(marcosLibres);
 	}
 	else{ //SPA
 

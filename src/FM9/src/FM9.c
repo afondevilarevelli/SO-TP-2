@@ -3,20 +3,7 @@
 #include <signal.h>
 #include "comandosMemoria.h"
 
-
-void cerrarPrograma() {
-	log_info(logger, "Voy a cerrar FM9");
-
-	close_logger();
-	free(datosConfigFM9);
-	free(memoria);
-	pthread_mutex_destroy(&m_memoria);
-	list_destroy(lista_tabla_segmentos);
-	list_destroy(tabla_paginasInvertidas);
-	dictionary_destroy(callableRemoteFunctions);
-	pthread_mutex_unlock(&mx_main);
-	pthread_mutex_destroy(&mx_main);
-}
+void cerrarPrograma();
 
 int main(void) {
 	pthread_t hiloConsola;
@@ -131,11 +118,15 @@ int main(void) {
 	DAM_FM9_obtenerDatosFlush(NULL,gn);
 	DAM_FM9_obtenerDatosFlush(NULL,go); */
 
-	char* args324[7] = {"1","0","-1","0","4","3","modifico esta linea"};
+	char* args324[7] = {"1","3","-1","0","3","3","modifico esta linea"};
 	char** memo = args324;
-	//cerrarArchivoDeDTB(NULL, memo);
+	char* args9999[6] = {"1","3","-1","0","3","pepito.txt"};
+	char** memo443 = args9999;
+	
 
 	actualizarDatosDTB(NULL, memo);
+	cerrarArchivoDeDTB(NULL, memo443);
+
 
 	//conexion al servidor----------------------------
 	
@@ -143,4 +134,19 @@ int main(void) {
 	pthread_mutex_lock(&mx_main);
 	pthread_mutex_lock(&mx_main); 
 	return EXIT_SUCCESS;
+}
+
+void cerrarPrograma() {
+	log_info(logger, "Voy a cerrar FM9");
+	free(datosConfigFM9);
+	free(memoria);
+	pthread_mutex_destroy(&m_memoria);
+	if(lista_tabla_segmentos != NULL)
+		list_destroy_and_destroy_elements(lista_tabla_segmentos, (void*)&free);
+	if(tabla_paginasInvertidas != NULL)
+		list_destroy_and_destroy_elements(tabla_paginasInvertidas, (void*)&free);
+	dictionary_destroy(callableRemoteFunctions);
+	close_logger();
+	pthread_mutex_unlock(&mx_main);
+	pthread_mutex_destroy(&mx_main);
 }
