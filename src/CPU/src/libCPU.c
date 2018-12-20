@@ -242,9 +242,9 @@ void ejecucionAsignar(socket_connection* connection, char** args){
 		paginaArchivo = malloc(strlen(args[1]) + 1);
 		strcpy(paginaArchivo, args[1]);
 		segmentoArchivo = malloc(strlen(args[2]) + 1);
-		strcpy(segmentoArchivo, args[1]);
+		strcpy(segmentoArchivo, args[2]);
 		desplazamientoArchivo = malloc(strlen(args[3]) + 1);
-		strcpy(desplazamientoArchivo, args[1]);
+		strcpy(desplazamientoArchivo, args[3]);
 		cantLineasArchivo = malloc(strlen(args[4]) + 1);
 		strcpy(cantLineasArchivo, args[4]);
 		archivoAbiertoAsignar = true;
@@ -264,9 +264,9 @@ void ejecucionFlush(socket_connection* connection, char** args){
 		paginaArchivo = malloc(strlen(args[1]) + 1);
 		strcpy(paginaArchivo, args[1]);
 		segmentoArchivo = malloc(strlen(args[2]) + 1);
-		strcpy(segmentoArchivo, args[1]);
+		strcpy(segmentoArchivo, args[2]);
 		desplazamientoArchivo = malloc(strlen(args[3]) + 1);
-		strcpy(desplazamientoArchivo, args[1]);
+		strcpy(desplazamientoArchivo, args[3]);
 		cantLineasArchivo = malloc(strlen(args[4]) + 1);
 		strcpy(cantLineasArchivo, args[4]);
 		archivoAbiertoFlush = true;
@@ -300,9 +300,9 @@ void ejecucionClose(socket_connection* connection, char** args){
 		paginaArchivo = malloc(strlen(args[1]) + 1);
 		strcpy(paginaArchivo, args[1]);
 		segmentoArchivo = malloc(strlen(args[2]) + 1);
-		strcpy(segmentoArchivo, args[1]);
+		strcpy(segmentoArchivo, args[2]);
 		desplazamientoArchivo = malloc(strlen(args[3]) + 1);
-		strcpy(desplazamientoArchivo, args[1]);
+		strcpy(desplazamientoArchivo, args[3]);
 		cantLineasArchivo = malloc(strlen(args[4]) + 1);
 		strcpy(cantLineasArchivo, args[4]);
 		archivoAbiertoClose = true;

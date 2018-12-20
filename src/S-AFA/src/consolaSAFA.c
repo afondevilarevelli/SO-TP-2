@@ -209,7 +209,8 @@ float calcularMetricaExit(){
 	int tamanio = list_size(colaFinalizados->elements);
 	for(int i = 0; i < tamanio; i++){
 		DTB* dtb = (DTB*) list_get(colaReady->elements, i);
-		cantPC = dtb->PC;
+		if(dtb != NULL)
+			cantPC = dtb->PC;
 	}
 	if(tamanio != 0)
 		return cantPC/tamanio;

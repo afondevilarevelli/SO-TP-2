@@ -255,6 +255,7 @@ void cargarBuffer(socket_connection* connection, char** args){
 		tamanioOcupadoBufferAux = 0;
 	}
 	if(strcmp(args[2], "ultima") == 0){
+		log_info(logger,"Agrego %d al buffer",args[1]);
 		memcpy(bufferAuxiliar + tamanioOcupadoBufferAux, args[1], strlen(args[1]) + 1);
 		bufferArchivoACargar = malloc(strlen(bufferAuxiliar) + 1);
 		strcpy(bufferArchivoACargar, bufferAuxiliar);
@@ -262,6 +263,7 @@ void cargarBuffer(socket_connection* connection, char** args){
 		cargarArchivo(args[0], args[3], args[5]);
 	}
 	else{
+		log_info(logger,"Agrego %d al buffer",args[1]);
 		memcpy(bufferAuxiliar + tamanioOcupadoBufferAux, args[1], strlen(args[1]) + 1);
 		tamanioOcupadoBufferAux += strlen(args[1]);
 	}
@@ -298,8 +300,7 @@ void cargarArchivo(char* idGDT, char* esDummy, char* cpuSocket)
 			list_sort(lista_tabla_segmentos, (void*)&ordenarTablaSegmentosDeMenorBaseAMayorBase);
 			log_info(logger, "Se actualizo correctamente la tabla de segmentos");
 
-			char string_segmento[2];
-			sprintf(string_segmento, "%i", pos);
+			char* string_segmento = string_itoa(pos);
 			char string_cantLineas[2];
 			sprintf(string_cantLineas, "%i", cantLineas);
 			free(bufferArchivoACargar);
@@ -313,13 +314,13 @@ void cargarArchivo(char* idGDT, char* esDummy, char* cpuSocket)
 		}
 	}
 	else if(strcmp(datosConfigFM9->modo,"TPI")==0){
+		log_info(logger, "Se van a guardar %d lineas",cantLineas);
 		retornoCargaTPI cargado = cargarArchivoTPI( bufferArchivoACargar, pid);
 		if(cargado.cargaOK){ 
 			log_info(logger, "Persisti el contenido para el GDT %d", pid);
 			log_info(logger, "Pagina: %d   Marco: %d   Desplazamiento: %d", cargado.pagina,cargado.marco, cargado.desplazamiento);
 			log_info(logger,"");
-			char string_despl[3];
-			sprintf(string_despl, "%i", cargado.desplazamiento);
+			char* string_despl = string_itoa(cargado.desplazamiento);
 			char string_pagina[3];
 			sprintf(string_pagina, "%i", cargado.pagina);
 			char string_cantLineas[2];
