@@ -8,6 +8,7 @@
 #include <pthread.h>
 #include <string.h>
 #include <commons/log.h>
+#include <commons/string.h>
 #include <commons/config.h>
 #include <commons/collections/dictionary.h>
 #include "../../sample-socket/socket.h"
@@ -29,7 +30,7 @@ typedef struct{
     char idGDT[2];
     char path[40]; 
     char dummy[1];
-    char socketCPU[2];
+    char* socketCPU;
 }parametrosCarga;
 
 typedef struct{
@@ -38,7 +39,7 @@ typedef struct{
     char pagina[3]; 
     char segmento[3];
     char desplazamiento[4];
-    char socketCPU[2];
+    char* socketCPU;
     char cantLineas[2];
 }parametrosFlush;
 //----------------------------//

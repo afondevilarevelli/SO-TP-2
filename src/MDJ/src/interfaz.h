@@ -80,6 +80,7 @@ void crearArchivo(socket_connection *,char **);
 void  obtenerDatos(socket_connection *,char **);
 void guardarDatos(socket_connection *,char **);
 void borrarArchivo(socket_connection *,char **);
+t_list* _list_duplicate(t_list* self);
 int verificarSiExisteArchivo(char * );
 int * crearBloques(int, char * ,size_t);
 char * obtenerPtoMontaje();

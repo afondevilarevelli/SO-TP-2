@@ -636,16 +636,22 @@ void mostrarInformacionDTB(DTB* unDTB){
 		printf("Cantidad de sentencias esperadas en estado NEW: %d\n", unDTB->cantSentEsperadasEnNew);
 		printf("Cantidad de I/O: %d\n", unDTB->cantIOs);
 		printf("Archivos abiertos: ");
-		if(list_size(unDTB->archivosAbiertos) == 0 || unDTB->archivosAbiertos == NULL)
+		if(unDTB->archivosAbiertos == NULL){
 			printf("No tiene archivos abiertos\n");
+		}
 		else{
-			int i;
-			for(i=0; i<list_size(unDTB->archivosAbiertos); i++){
-				archivo* arch = list_get(unDTB->archivosAbiertos, i);
-				printf("%s\n", arch->nombre);
-				printf("                   ");
+			if( list_size(unDTB->archivosAbiertos) == 0 || unDTB->status == FINISHED){
+				printf("No tiene archivos abiertos\n");
 			}
-			printf("\n");
+			else{
+				int i;
+				for(i=0; i<list_size(unDTB->archivosAbiertos); i++){
+					archivo* arch = list_get(unDTB->archivosAbiertos, i);
+					printf("%s\n", arch->nombre);
+					printf("                   ");
+				}
+				printf("\n");
+			}
 		}
     	printf("----------------------\n");
 

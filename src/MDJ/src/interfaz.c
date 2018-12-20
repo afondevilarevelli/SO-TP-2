@@ -183,16 +183,28 @@ free(pathMasArchivos);
 //args[0]: idGDT, args[1]: path, args[2]: offset, args[3]: size, args[4]: dummy, args[5]:primera o no,args[6]:socketCPU
 void obtenerDatos(socket_connection * connection,char ** args){
 t_archivo *  archivo= malloc(sizeof(t_archivo));
+char ultimaLectura[1] = "0";
 t_metadata_filesystem * fs = obtenerMetadata();
 archivo->path = args[1];
 off_t  offset = atoi(args[2]);
+int offsetDeBloque;
+if(offset < fs->tamanio_bloques)
+	offsetDeBloque = offset;
+else
+	offsetDeBloque = offset % fs->tamanio_bloques;
 size_t tsize =  atoi(args[3]);
+int tamanio = atoi(args[3]);
 archivo->size =  tsize;	
 archivo->fd = verificarSiExisteArchivo(archivo->path);
 int bloqueInicial = obtenerBloqueInicial(archivo->path,offset);
-int bloqueFinal = (offset + tsize) / fs->tamanio_bloques;
+int bloqueFinal;
+if( (offset + tsize - 1) > 0)
+	bloqueFinal = (offset + tsize - 1) / fs->tamanio_bloques;
+else
+	bloqueFinal = 0;
 char ** bloques = obtenerBloques(archivo->path);
 char * buffer = string_new();
+char * bufferBloques;
 if(archivo->fd == noExiste)
 {
 log_error(logger,"El archivo %s es inexistente",archivo->path);    
@@ -210,32 +222,39 @@ char * temp [200];
 while (bloqueInicial <= bloqueFinal && bloques[bloqueInicial] != NULL)
 {
 int posBloque = atoi(bloques[bloqueInicial]);
-char * bufferBloques = obtenerDatosBloque(posBloque);
+bufferBloques = obtenerDatosBloque(posBloque);
 int tamanioBufferBloques = string_length(bufferBloques);
 int longitud; 
-if (tsize - tamanioBufferBloques < 0) 
+if (offsetDeBloque + tsize <= tamanioBufferBloques ) 
 {
 longitud = tsize;
+//char * res  = string_substring(bufferBloques,offsetDeBloque, longitud);
 }
 else
 {
-longitud = tamanioBufferBloques;
+longitud = tamanioBufferBloques - tsize;
+if(longitud < 0)
+	longitud *= -1;
+//char * res  = string_substring(bufferBloques,offsetDeBloque, longitud);
+//offsetDeBloque = 0;
 }
-char * res  = string_substring_until(bufferBloques,longitud);
+char * res  = string_substring(bufferBloques,offsetDeBloque, longitud);
 string_append(&buffer,res);
-free(bufferBloques);
 free(res);
 free(bloques[bloqueInicial]);
+free(bufferBloques);
 bloqueInicial++;
 tsize = tsize - longitud;
 }
 pthread_mutex_unlock(&mdjInterfaz);
 }
+if(strlen(buffer) < tamanio)
+	ultimaLectura[0] = '1';
 log_trace(logger,"Se obtuvieron %d bytes: %s ",string_length(buffer),buffer);
 }
 aplicarRetardo();
-char * strEstado = string_itoa(archivo->estado);
-runFunction(connection->socket,"MDJ_DAM_respuestaDatos",7,args[0],buffer,strEstado,archivo->path, args[4],args[5], args[6]);
+char* strEstado = string_itoa(archivo->estado);
+runFunction(connection->socket,"MDJ_DAM_respuestaDatos",8,args[0],buffer,strEstado,archivo->path, args[4],args[5], args[6], ultimaLectura);
 }
 
 //args[0]: path, args[1]: offset, args[2]: size, args[3]: datos, , args[4]: 1(ultimo) ó 0 (sigue)
@@ -356,14 +375,9 @@ else if (offset == 0 || offset < fs->tamanio_bloques)
 }
 else
 {
-if(offset % fs->tamanio_bloques == 0)
-{
-  return offset / fs->tamanio_bloques;  
-}
-else
-{
-    return (offset / fs->tamanio_bloques) + 1;
-}
+int retorno;
+retorno = offset / fs->tamanio_bloques;
+return retorno;
 }
 }
 
@@ -527,8 +541,8 @@ else
 log_error(logger,"No hay bloques disponibles , vuelva a intentarlo");
 exit;
 }
-bloques->bloqLibres = list_duplicate(libres);
-bloques->bloqOcupados = list_duplicate(ocupados);
+bloques->bloqLibres = _list_duplicate(libres);
+bloques->bloqOcupados = _list_duplicate(ocupados);
 bloques->bloqArchivo = calloc(nBloques,sizeof(int));
 for (int i=0;i <list_size(temp);i++){
  bloques->bloqArchivo[i]=  (char)list_get(temp,i);
@@ -565,6 +579,12 @@ else
     return fd;
 }
 free(pathMasArchivos);
+}
+
+t_list* _list_duplicate(t_list* self) {
+	t_list* duplicated = list_create();
+	list_add_all(duplicated, self);
+	return duplicated;
 }
 
 

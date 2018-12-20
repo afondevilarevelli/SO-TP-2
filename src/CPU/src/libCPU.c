@@ -221,12 +221,12 @@ void ejecucionAbrir(socket_connection* connection, char** args){
 }
 
 //args[0]: -1 -> si no existe, 
-//			1 -> si existe
+//			0 -> si existe
 void ejecucionAbrirExistencia(socket_connection* connection, char** args){
 
 	int estadoSituacionArchivo = atoi(args[0]);
 
-	if(estadoSituacionArchivo == 1)
+	if(estadoSituacionArchivo == 0)
 		archivoExistente = true;
 	else
 		archivoExistente = false;
@@ -385,7 +385,7 @@ void permisoDeEjecucion(parametros* params){
 		while(sentenciasEjecutadas < quantumAEjecutar){
 			sleep(datosCPU->retardo);
 			pthread_mutex_lock(&m_puedeEjecutar);
-			sentencia = obtenerSentenciaParseada(idGDT, programCounter, pagina, segmento, desplazamiento);
+			sentencia = obtenerSentenciaParseada(idGDT, programCounter, pagina, segmento, desplazamiento, cantLineas);
 			pthread_mutex_unlock(&m_puedeEjecutar);
 			char string_sentEjecutadas[2];
 			char string_quantumAEjecutar[2];
@@ -394,7 +394,7 @@ void permisoDeEjecucion(parametros* params){
 				case ABRIR:
 					runFunction(socketSAFA, "inicioClock", 1, string_id);
 					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 4, string_id, string_idGDT, "abrir", sentencia.p1);
-					runFunction(socketDAM, "CPU_DAM_existeArchivo", 2,string_idGDT, rutaScript);
+					runFunction(socketDAM, "CPU_DAM_existeArchivo", 2,string_idGDT, sentencia.p1);
 					pthread_attr_init(&attr);
     				pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 					pthread_create(&hiloAbrir, &attr, (void*)&funcionHiloAbrir, NULL);
@@ -402,7 +402,7 @@ void permisoDeEjecucion(parametros* params){
 					pthread_join(hiloAbrir, NULL);
 
 					if(!archivoExistente){
-						log_trace(logger,"El archivo %s no existe y se va a abortar el GDT", rutaScript);
+						log_trace(logger,"El archivo %s no existe y se va a abortar el GDT", sentencia.p1);
 						runFunction(socketSAFA, "terminoClock", 1, string_id);
 						runFunction(socketSAFA, "CPU_SAFA_pasarDTBAExit", 1, string_idGDT);
 						destruirOperacion(sentencia);
@@ -549,9 +549,6 @@ void permisoDeEjecucion(parametros* params){
 					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
 					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 4, string_id, string_idGDT, "close", sentencia.p1);
 
-					sentenciasEjecutadas++;
-					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
-
 					pthread_attr_init(&attr);
     				pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 					pthread_create(&hiloEjecucion, &attr, (void*)funcionHiloClose, NULL);
@@ -624,7 +621,7 @@ void permisoDeEjecucion(parametros* params){
 			if(sentencia.ultimaSentencia){
 				log_trace(logger, "El GDT de id %d FINALIZA", idGDT);			
 				runFunction(socketSAFA, "finalizacionProcesamientoCPU",7, string_id, string_idGDT,"0", "finalizar", "0", "0", "0");
-				break;
+				return;
 			}
 
 			if(sentencia.palabraReservada == NUMERAL)
@@ -652,7 +649,7 @@ void establecerQuantumYID(socket_connection * connection ,char** args){
 }
 
 //SOLO PARA LOS SCRIPTS QUE CREAMOS NOSOTROS
-operacion_t obtenerSentenciaParseada(int idGDT, int programCounter, int pagina, int segmento, int desplazamiento){
+operacion_t obtenerSentenciaParseada(int idGDT, int programCounter, int pagina, int segmento, int desplazamiento, int cantLineas){
 	pthread_t hiloDatos;
 	pthread_attr_t attr;
 	operacion_t sentencia;
@@ -666,8 +663,10 @@ operacion_t obtenerSentenciaParseada(int idGDT, int programCounter, int pagina, 
 	sprintf(string_seg, "%i", segmento);
 	char string_despl[2];
 	sprintf(string_despl, "%i", desplazamiento);
+	char string_cantLineas[2];
+	sprintf(string_cantLineas, "%i", cantLineas);
 
-	runFunction(socketFM9, "CPU_FM9_obtenerDatos", 5, string_id, string_pc, string_pag, string_seg, string_despl);
+	runFunction(socketFM9, "CPU_FM9_obtenerDatos", 6, string_id, string_pc, string_pag, string_seg, string_despl, string_cantLineas);
 
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
@@ -676,6 +675,7 @@ operacion_t obtenerSentenciaParseada(int idGDT, int programCounter, int pagina, 
 	pthread_join(hiloDatos, NULL);
 
 	sentencia = parse(datosPedidos);
+	log_trace(logger, "SENTENCIA: %s ", datosPedidos);
 	if(ultimaSentencia)
 		sentencia.ultimaSentencia = true;
 	else

@@ -547,13 +547,14 @@ void actualizarDatosDTB(socket_connection* connection, char** args){ //La primer
 	runFunction(socketCPU, "avisarTerminoClock", 0);
 }
 
-//args[0]: idGDT, args[1]:Linea (0 es la primer linea), args[2]: pag, args[3]: baseSeg, args[4]: despl
+//args[0]: idGDT, args[1]:Linea (0 es la primer linea), args[2]: pag, args[3]: baseSeg, args[4]: despl, args[5]: cantLineas
 void obtenerDatosCPU(socket_connection* connection, char** args){
 	int idGDT = atoi(args[0]);
 	int base = atoi(args[3]);
 	int numLinea = atoi(args[1]);
 	int pagina = atoi(args[2]);
 	int despl = atoi(args[4]);
+	int cantLineas = atoi(args[5]);
 
 	bool _buscarSegmento(void* elemento){
 		return buscarSegmento(elemento, &idGDT, &base);	
@@ -571,7 +572,7 @@ void obtenerDatosCPU(socket_connection* connection, char** args){
 			pthread_mutex_lock(&m_memoria);
 			memcpy(linea, memoria + segmento->base + numLinea*datosConfigFM9->maximoLinea, datosConfigFM9->maximoLinea);
 			log_info(logger, "Se obtuvieron los siguientes datos: '%s'", linea);
-			if( *(memoria + segmento->base + numLinea*datosConfigFM9->maximoLinea + datosConfigFM9->maximoLinea) == '\0' ){ 
+			if( cantLineas - 2 == numLinea ){ 
 				runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, linea, "1");
 			}else{ 
 				runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, linea, "0");
@@ -581,15 +582,32 @@ void obtenerDatosCPU(socket_connection* connection, char** args){
 		}
 	} else if(strcmp(datosConfigFM9->modo,"TPI")==0){
 		t_PaginasInvertidas* paginaInvertida = list_find(tabla_paginasInvertidas, _buscarPaginaInvertida);
-		if(paginaInvertida == NULL){
+		if(paginaInvertida->PID != idGDT){
 			runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, "", "0");
 		}
 		else{
+			int j = 0;
+			int numLineaALeer = 0;
+			for(int i = 0; i < numLinea; i++){
+				if( (despl/datosConfigFM9->maximoLinea+j+1) == datosConfigFM9->tamanioPagina/datosConfigFM9->maximoLinea ){
+					paginaInvertida = paginaInvertida->siguiente;
+					if(paginaInvertida->PID != idGDT){
+						runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, "", "0");
+						return;
+					}
+					numLineaALeer = 0;
+					j = 0;
+					despl = 0;
+				}else{
+					j++;
+					numLineaALeer++;
+				}		
+			}
 			char* linea = malloc(datosConfigFM9->maximoLinea);
 			pthread_mutex_lock(&m_memoria);
-			memcpy(linea, memoria + datosConfigFM9->tamanioPagina*paginaInvertida->marco + despl + numLinea*datosConfigFM9->maximoLinea, datosConfigFM9->maximoLinea);
+			memcpy(linea, memoria + datosConfigFM9->tamanioPagina*paginaInvertida->marco + despl + numLineaALeer*datosConfigFM9->maximoLinea, datosConfigFM9->maximoLinea);
 			log_info(logger, "Se obtuvieron los siguientes datos: '%s'", linea);
-			if( *(memoria + datosConfigFM9->tamanioPagina*paginaInvertida->marco + despl + numLinea*datosConfigFM9->maximoLinea + datosConfigFM9->maximoLinea) == '\0' ){ 
+			if( cantLineas - 2 == numLinea ){ 
 				runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, linea, "1");
 			}else{ 
 				runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, linea, "0");
@@ -815,10 +833,10 @@ void cerrarArchivoDeDTB(socket_connection* connection, char** args){
 					if(paginaInvertida->tamanioOcupado == 0){
 						list_add(marcosLibres, (void*)paginaInvertida);
 					}
-					if (paginaInvertida->siguiente != NULL)
+					if ((paginaInvertida->siguiente)->PID == idGDT)
 						paginaInvertida = paginaInvertida->siguiente;
 
-					if(paginaInvertida == NULL){//Si no salió del bucle es porque falta leer
+					if(paginaInvertida->PID != idGDT){//Si no salió del bucle es porque falta leer
 						//error
 						log_error(logger, "Fallo de memoria, me pide cerrar un archivo cuyas lineas son menores a las solicitadas");
 						runFunction(connection->socket, "FM9_CPU_resultadoDeClose", 1 , "0");

@@ -162,7 +162,7 @@ void CPU_DAM_solicitudCargaGDT(socket_connection* connection, char ** args){
 	strcpy(params->path, args[1]);
 	params->dummy[0] = *(args[2]);
 	int socketCPU = connection->socket;
-	sprintf(params->socketCPU, "%i", socketCPU);
+	params->socketCPU = string_itoa(socketCPU);
 	log_trace(logger, "Voy a intentar cargar el archivo %s para el GDT de id %s",args[1], args[0]);	
 	pthread_create(&hilo, NULL, (void*)&hiloCarga, params);
 }
@@ -180,17 +180,17 @@ void hiloCarga(parametrosCarga* params){
 }
 
 //args[0]: idGDT, args[1]: bytesLeidos, args[2]: estado, args[3]:path, args[4]: dummy, args[5]: primera o no
-//args[6]: socketCPU
+//args[6]: socketCPU, args[7]: ultimaLectura(1) ó no(0)
 void MDJ_DAM_respuestaCargaGDT(socket_connection * connection,char ** args){
 	int cantBytesLeidos = strlen(args[1]) + 1;
 	int idGDT = atoi(args[0]); 
 	char* bytes = args[1];
-	int estado = atoi(args[2]);
 	char * path = args[3];
-	offsetAcumulado = cantBytesLeidos;
+	offsetAcumulado += cantBytesLeidos - 1;
 	int socketCPU = atoi(args[6]);
+	int estado = atoi(args[2]);
 
-	if (estado == -1){
+	if (estado < 0){
 		log_error(logger,"Archivo %s inexistente",path);
 		if(strcmp(args[4], "0") == 0)
 			runFunction(socketSAFA,"DAM_SAFA_pasarDTBAExit",1, args[0]);
@@ -198,15 +198,14 @@ void MDJ_DAM_respuestaCargaGDT(socket_connection * connection,char ** args){
 			runFunction(socketSAFA, "avisoDamDTB", 2, args[0], "error");
 	}
 	else{
-		log_trace(logger,"Se obtuvieron %i bytes  del archivo %s del MDJ",cantBytesLeidos, path);
+		log_trace(logger,"Se obtuvieron %i bytes  del archivo %s del MDJ",cantBytesLeidos-1, path);
 		log_trace(logger,"Bytes: %s",bytes);
-		if(cantBytesLeidos < datosConfigDAM->transferSize){
+		if(strcmp(args[7], "1") == 0){
 			runFunction(socketFM9,"DAM_FM9_cargarBuffer",6, args[0], bytes, "ultima", args[4],args[5],args[6]);
 		}
 		else{
-			char string_offset[2];
-			sprintf(string_offset, "%i", offsetAcumulado);
-			char string_transferSize[3];
+			char* string_offset = string_itoa(offsetAcumulado);
+			char string_transferSize[2];
 			sprintf(string_transferSize, "%i", datosConfigDAM->transferSize);
 			runFunction(socketFM9,"DAM_FM9_cargarBuffer",6, args[0], bytes, "sigue", args[4],args[5], args[6]);
 			runFunction(socketMDJ, "obtenerDatos", 7, args[0], ruta, string_offset, string_transferSize, args[4], "0",args[6]);
@@ -269,7 +268,7 @@ void CPU_DAM_existeArchivo(socket_connection* socket, char** args){
 	runFunction(socketMDJ,"validarArchivo",3,args[0],args[1], string_socket);
 }
 
-//args[0]: 1 -> si existe,   args[1]: socketCPU, args[2]: path, args[3]:idGDT
+//args[0]: 0 -> si existe,   args[1]: socketCPU, args[2]: path, args[3]:idGDT
 //		  -1 -> si NO existe
 void MDJ_DAM_existeArchivo(socket_connection* socket, char** args){
 	int socketCPU = atoi(args[1]); // HAY MUCHAS CPUs

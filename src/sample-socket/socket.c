@@ -229,8 +229,10 @@ void receiptMessage(void * arguments)
 		free(packet_head);
 		free(packet_body);
 	}
-	free((args->connection)->ip);
-	free((args->connection)->data);
+	if((args->connection)->ip != NULL)
+		free((args->connection)->ip);
+	if((args->connection)->data != NULL)
+		free((args->connection)->data);
 	free(args->connection);
 	free(args);
 }

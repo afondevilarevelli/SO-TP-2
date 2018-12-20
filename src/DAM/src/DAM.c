@@ -73,10 +73,10 @@ int main(void){
       runFunction(socketMDJ,"identificarProcesoEnMDJ",1,"DAM");
       //runFunction(socketMDJ,"crearArchivo",3,"0","asuanito.txt","200");
       //runFunction(socketMDJ,"crearArchivo",3,"0","equipos/juanito.txt","250");
-      char * buffer = "wait equipos ssssssssssssssssssssssssss";
+      /*char * buffer = "wait equipos ssssssssssssssssssssssssss";
       char size[3];
       sprintf(size,"%i",strlen(buffer)+1);
-      runFunction(socketMDJ,"guardarDatos",5,"0","equipos/juanito.txt","100","4","asd");
+      runFunction(socketMDJ,"guardarDatos",5,"0","equipos/juanito.txt","100","4","asd");*/
       //runFunction(socketMDJ,"obtenerDatos",4,"0","equipos/juanito.txt","120","200");
     //runFunction(socketMDJ,"borrarArchivo",2,"0","equipos/juanito.txt");
       //runFunction(socketMDJ,"borrarArchivo",2,"0","asuanito.txt");

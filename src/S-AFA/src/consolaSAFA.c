@@ -96,10 +96,12 @@ void ejecutar(char* rutaSc){
 	if(estadoCorrupto) {
 		log_error(logger,"SAFA en estado corrupto, no se admiten nuevos GDT´S");
 	}else{
-		log_trace(logger,"Se hace ingreso del script escriptorio de la ruta %s para su futura ejecucion\n", rutaSc);
+		char* nom = string_new();
+		string_append(&nom, "/scripts/");
+		string_append(&nom, rutaSc);
+		log_trace(logger,"Se hace ingreso del script escriptorio de la ruta %s para su futura ejecucion\n", nom);
 		archivo* archScript = malloc(sizeof(archivo));
-		archScript->nombre = malloc(strlen(rutaSc) + 1);
-		strcpy(archScript->nombre, rutaSc);
+		archScript->nombre = nom;
 		archScript->pagina = -1;
 		archScript->baseSegmento = -1;
 		archScript->cantLineas = 0;

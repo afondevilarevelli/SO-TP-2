@@ -43,16 +43,15 @@ t_config_MDJ *  read_and_log_config(char* path) {
       }
         t_config_MDJ  * datosMDJ = malloc(sizeof(t_config_MDJ));
 	datosMDJ->puerto = config_get_int_value(archivo_Config,"PUERTO");
-        char * ptoMontaje = string_new();
-	string_append(&ptoMontaje,config_get_string_value(archivo_Config,"PTO_MONTAJE"));
-        datosMDJ->ptoMontaje = ptoMontaje;
+	datosMDJ->ptoMontaje = malloc( strlen(config_get_string_value(archivo_Config,"PTO_MONTAJE")) + 1);
+	strcpy( datosMDJ->ptoMontaje, config_get_string_value(archivo_Config,"PTO_MONTAJE"));
 	datosMDJ->retardo= config_get_int_value(archivo_Config,"RETARDO");
 	log_info(logger, "	PUERTO: %d",datosMDJ->puerto);
 	log_info(logger, "	PTO_MONTAJE: %s",datosMDJ->ptoMontaje);
 	log_info(logger, "	RETARDO: %d",datosMDJ->retardo);
 	log_info(logger, "Fin de lectura");
         config_destroy(archivo_Config);
-       free(ptoMontaje);
+
        return datosMDJ;
 
 }

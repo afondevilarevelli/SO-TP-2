@@ -120,7 +120,7 @@ void* intentandoConexionConDAM(int );
 void* intentandoConexionConFM9(int );
 void disconnect();
 
-operacion_t obtenerSentenciaParseada(int, int, int, int, int);
+operacion_t obtenerSentenciaParseada(int, int, int, int, int, int);
 
 //PARSER
 operacion_t parse(char* line);
