@@ -141,7 +141,7 @@ void MDJ_DAM_resultadoBorradoArchivo(socket_connection * connection,char ** args
 	}
 }
 
-//args[0]: idGDT, args[1]: nomArch, args[2]: cantLineas, args[3]: socketCPU
+//args[0]: idGDT, args[1]: nomArch, args[2]: cantBytes, args[3]: socketCPU
 void CPU_DAM_crearArchivo(socket_connection* connection, char** args){
 	log_info(logger,"Envio al MDJ la solicitud de creacion del archivo %s por parte del GDT de id %s",args[1], args[0]);
 	runFunction(socketMDJ,"crearArchivo",4, args[0], args[1], args[2],args[3]);
@@ -175,7 +175,6 @@ void hiloCarga(parametrosCarga* params){
 	char string_transferSize[3];
 	sprintf(string_transferSize, "%i", datosConfigDAM->transferSize);
 	runFunction(socketMDJ, "obtenerDatos", 7, params->idGDT, params->path, "0", string_transferSize, params->dummy, "1",params->socketCPU);
-//runFunction(socketFM9,"DAM_FM9_cargarBuffer",6, params->idGDT, "abrir hola.txt\nclose hola.txt\n", "ultima", params->dummy,"1",params->socketCPU);
 	free(params);
 }
 
@@ -285,11 +284,22 @@ void CPU_DAM_solicitudDeFlush(socket_connection* connection, char** args)
 	strcpy(params->pagina, args[1]);
 	strcpy(params->segmento, args[2]);
 	strcpy(params->desplazamiento, args[3]);
+	params->path = malloc(strlen(args[5]) + 1);
 	strcpy(params->path, args[5]);
 	strcpy(params->cantLineas, args[4]);
+	
+	pagina = malloc(strlen(args[1]) + 1);
+	strcpy(pagina, args[1]);
+	baseSegmento = malloc(strlen(args[2]) + 1);
+	strcpy(baseSegmento, args[2]);
+	desplazamiento = malloc(strlen(args[3]) + 1);
+	strcpy(desplazamiento, args[3]);
+	cantidadDeLineas = malloc(strlen(args[4]) + 1);
+	strcpy(cantidadDeLineas, args[4]);
+
 	int socketCPU = connection->socket;
-	sprintf(params->socketCPU, "%i", socketCPU);
-	log_trace(logger, "Se va a hacer flush del archivo %s para el GDT de id %s",args[4], args[0]);	
+	params->socketCPU = string_itoa(socketCPU);
+	log_trace(logger, "Se va a hacer flush del archivo %s para el GDT de id %s",args[5], args[0]);	
 	pthread_create(&hilo, NULL, (void*)&hiloFlush, params);
 }
 
@@ -297,25 +307,45 @@ void CPU_DAM_solicitudDeFlush(socket_connection* connection, char** args)
 //args[3]: socketCPU, args[4]: 1(ultimo) ó 0 (sigue)
 void FM9_DAM_respuestaFlush(socket_connection* connection, char** args){
 	int idGDT = atoi(args[0]);
-	int cantBytesLeidos = strlen(args[1]) + 1;
-	offsetAcumulado += cantBytesLeidos;
+	int cantBytesLeidos = strlen(args[1]);
+	char* string_offset = string_itoa(offsetAcumulado);
+	char* string_bytes = string_itoa(cantBytesLeidos);
 
-	runFunction(socketMDJ,"guardarDatos",4,ruta, offsetAcumulado, cantBytesLeidos, args[1], args[4]);
-
+	log_info(logger, "Bytes leidos desde FM9: '%s'",args[1]);
+	runFunction(socketMDJ,"guardarDatos",7,ruta, string_offset, string_bytes, args[1], args[4], args[3],args[0]);
 }
 
-//args[0]: idGDT, args[1]: bytesGuardados, args[2]: estado,
+//args[0]: idGDT, args[1]: bytesGuardados, args[2]: ok(0), noExisteArch(-1) ó error(-2),
 //args[3]: socketCPU, args[4]: 1(ultimo) ó 0 (sigue)
 void MDJ_DAM_respuestaFlush(socket_connection* connection, char** args){
+	int cantBytesLeidos = strlen(args[1]);
+	offsetAcumulado += cantBytesLeidos;
+	int estado = atoi(args[2]);
+	log_info(logger, "Se guardaron los siguientes bytes en MDJ '%s'",args[1]);
 	if(strcmp(args[4], "1") == 0){ 
 		if(strcmp(args[2],"1") == 0)
 			runFunction(socketSAFA,"DAM_SAFA_desbloquearDTB",1, args[0]);
 		else
 			runFunction(socketSAFA,"DAM_SAFA_pasarDTBAExit",1, args[0]);
+		free(pagina);
+		free(baseSegmento);
+		free(desplazamiento);
+		free(cantidadDeLineas);
+		free(ruta);
 		pthread_mutex_unlock(&m_pedido);
 	}
 	else{
-
+		char* string_offset = string_itoa(offsetAcumulado);
+		char string_transferSize[3];
+		sprintf(string_transferSize, "%i", datosConfigDAM->transferSize);
+		runFunction(socketFM9,"DAM_FM9_obtenerDatosFlush",8,args[0], 
+														string_offset, 
+													    string_transferSize,
+														pagina,
+														baseSegmento,
+														desplazamiento,
+														cantidadDeLineas,
+														args[3]);
 	}
 } 
 
@@ -335,4 +365,6 @@ void hiloFlush(parametrosFlush* params){
 														params->desplazamiento,
 														params->cantLineas,
 														params->socketCPU);
+	free(params->path);
+	free(params);
 }

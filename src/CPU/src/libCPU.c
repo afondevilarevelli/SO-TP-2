@@ -383,7 +383,7 @@ void permisoDeEjecucion(parametros* params){
 	else{
 		int sentenciasEjecutadas = 0;
 		while(sentenciasEjecutadas < quantumAEjecutar){
-			sleep(datosCPU->retardo);
+			sleep(datosCPU->retardo/1000);
 			pthread_mutex_lock(&m_puedeEjecutar);
 			sentencia = obtenerSentenciaParseada(idGDT, programCounter, pagina, segmento, desplazamiento, cantLineas);
 			pthread_mutex_unlock(&m_puedeEjecutar);
@@ -431,7 +431,7 @@ void permisoDeEjecucion(parametros* params){
 
 					break;
 				case CONCENTRAR:
-					sleep(datosCPU->retardo);
+					sleep(datosCPU->retardo/1000);
 					break; 
 				case ASIGNAR:
 					runFunction(socketSAFA, "inicioClock", 1, string_id);
@@ -523,17 +523,18 @@ void permisoDeEjecucion(parametros* params){
 							runFunction(socketSAFA, "finalizacionProcesamientoCPU", 7,string_id, string_idGDT, string_sentEjecutadas ,"bloquear", "0", "1", "0");
 						else
 							runFunction(socketSAFA, "finalizacionProcesamientoCPU", 7,string_id, string_idGDT, string_sentEjecutadas ,"finalizar", "0", "1", "0");
-						runFunction(socketDAM, "CPU_DAM_solicitudDeFlush", 5, string_idGDT, paginaArchivo,
+						runFunction(socketDAM, "CPU_DAM_solicitudDeFlush", 6, string_idGDT, paginaArchivo,
 																							segmentoArchivo,
 																							desplazamientoArchivo,
 																							cantLineasArchivo,
 																							sentencia.p1);
-						destruirOperacion(sentencia);
+						
 						pthread_detach(hiloEjecucion);
 						free(paginaArchivo);
 						free(segmentoArchivo);
 						free(desplazamientoArchivo);
 						free(cantLineasArchivo);
+						destruirOperacion(sentencia);
 					}
 					else{
 						log_error(logger, "El Archivo Solicitado: %s No Se Encuentra Abierto", sentencia.p1);

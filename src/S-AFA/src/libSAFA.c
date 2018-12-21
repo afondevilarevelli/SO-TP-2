@@ -414,6 +414,12 @@ void pasarDTBAExit(socket_connection* connection, char** msgs){
 	DTB* dtb = get_and_remove_DTB_by_ID(listaEjecutando, idDTB);
 	pthread_mutex_unlock(&m_listaEjecutando);
 
+	if(dtb == NULL){
+		pthread_mutex_lock(&m_colaBloqueados);
+		dtb = get_and_remove_DTB_by_ID(colaBloqueados->elements, idDTB);
+		pthread_mutex_unlock(&m_colaBloqueados);
+	}
+
 	if(dtb != NULL){
 		log_trace(logger,"Se va a abortar al GDT de id: %d", idDTB);
 		finalizarDTB(dtb);
@@ -632,7 +638,6 @@ void mostrarInformacionDTB(DTB* unDTB){
     	printf("Flag Inicializado: %d\n", unDTB->flagInicializado);
     	estado = stringFromState(unDTB->status);
     	printf("Estado: %s\n", estado);
-		printf("Quantum faltante: %d\n", unDTB->quantumFaltante);
 		printf("Cantidad de sentencias esperadas en estado NEW: %d\n", unDTB->cantSentEsperadasEnNew);
 		printf("Cantidad de I/O: %d\n", unDTB->cantIOs);
 		printf("Archivos abiertos: ");

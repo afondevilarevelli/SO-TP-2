@@ -51,7 +51,8 @@ void cerrarPrograma() {
     log_info(logger, "Voy a cerrar MDJ");
     close_logger();
     dictionary_destroy(fns);
-    //free(datosConfMDJ->ptoMontaje);
+    if( datosConfMDJ->ptoMontaje!=NULL)
+        free(datosConfMDJ->ptoMontaje);
     free(datosConfMDJ);
     pthread_mutex_unlock(&mx_main);
     pthread_mutex_destroy(&mx_main);

@@ -255,7 +255,7 @@ void cargarBuffer(socket_connection* connection, char** args){
 		tamanioOcupadoBufferAux = 0;
 	}
 	if(strcmp(args[2], "ultima") == 0){
-		log_info(logger,"Agrego %d al buffer",args[1]);
+		log_info(logger,"Agrego '%s' al buffer",args[1]);
 		memcpy(bufferAuxiliar + tamanioOcupadoBufferAux, args[1], strlen(args[1]) + 1);
 		bufferArchivoACargar = malloc(strlen(bufferAuxiliar) + 1);
 		strcpy(bufferArchivoACargar, bufferAuxiliar);
@@ -263,7 +263,7 @@ void cargarBuffer(socket_connection* connection, char** args){
 		cargarArchivo(args[0], args[3], args[5]);
 	}
 	else{
-		log_info(logger,"Agrego %d al buffer",args[1]);
+		log_info(logger,"Agrego '%s' al buffer",args[1]);
 		memcpy(bufferAuxiliar + tamanioOcupadoBufferAux, args[1], strlen(args[1]) + 1);
 		tamanioOcupadoBufferAux += strlen(args[1]);
 	}
@@ -497,6 +497,8 @@ void actualizarDatosDTB(socket_connection* connection, char** args){ //La primer
 		if( datosSegmento->limite / datosConfigFM9->maximoLinea >= linea){ //La primer linea es la 1!!!
 			char datosLinea[datosConfigFM9->maximoLinea];
 			strcpy(datosLinea, datos);
+			datosLinea[strlen(datos)] = '\n';
+			datosLinea[strlen(datos) + 1] = '\0';
 			pthread_mutex_lock(&m_memoria);
 			memcpy(memoria+base+(linea-1)*datosConfigFM9->maximoLinea, datosLinea, datosConfigFM9->maximoLinea);
 			pthread_mutex_unlock(&m_memoria);
@@ -535,9 +537,13 @@ void actualizarDatosDTB(socket_connection* connection, char** args){ //La primer
 		}//salgo del bucle con el puntero a la pagina (paginaInvertida) y
 		//el desplazamiento dentro la misma para escribir (desplLineaNuevaPag),
 		//siendo desplLineaNuevaPag = 0 la primer linea de la pagina.
+		char datosLinea[datosConfigFM9->maximoLinea];
+		strcpy(datosLinea, datos);
+		datosLinea[strlen(datos)] = '\n';
+		datosLinea[strlen(datos) + 1] = '\0';
 		pthread_mutex_lock(&m_memoria);
 		memcpy(memoria + datosConfigFM9->tamanioPagina*paginaInvertida->marco + desplLineaNuevaPag*datosConfigFM9->maximoLinea,
-			   datos,
+			   datosLinea,
 			   datosConfigFM9->maximoLinea);
 		pthread_mutex_unlock(&m_memoria);
 		log_trace(logger, "Se ha actualizado la linea con el valor: %s", datos);
@@ -646,7 +652,7 @@ void DAM_FM9_obtenerDatosFlush(socket_connection* connection, char** args){
 	if(strcmp(datosConfigFM9->modo,"SEG")==0){
 		t_tabla_segmentos* segmento = list_find(lista_tabla_segmentos, _buscarSegmento);
 		if(segmento == NULL){
-			runFunction(connection->socket, "FM9_DAM_respuestaFlush", 2, "0", "", "0");
+			runFunction(connection->socket, "FM9_DAM_respuestaFlush", 5, args[0], "", "0",args[7], "ultimo");
 		}
 		else{ 
 			posicionLimite = (int) (memoria + segmento->base + segmento->limite);
@@ -664,7 +670,7 @@ void DAM_FM9_obtenerDatosFlush(socket_connection* connection, char** args){
 			int j = 0;
 			int i;
 			for(i=0; i<tamanio; i++){
-				if( posicionLimite <= (int) (memoria + segmento->base + contadorPosicion + j) || *(memoria + segmento->base + contadorPosicion + j) == '\0'){
+				if( posicionLimite <= (int) (memoria + segmento->base + contadorPosicion + j) /*|| *(memoria + segmento->base + contadorPosicion + j) == '\0'*/){
 					ultima[0] = '1';
 					break;
 				}

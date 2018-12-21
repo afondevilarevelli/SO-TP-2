@@ -21,7 +21,7 @@ void planificarSegunRR(CPU* cpu){
 			}
       
 			sem_wait(&cantProcesosEnReady);
-			sleep(1);
+			sleep(datosConfigSAFA->retardo / 1000);
 
             pthread_mutex_lock(&m_puedePlanificar);
 			dtbAEjecutar = obtenerDTBAEjecutarSegunRR();
@@ -88,7 +88,7 @@ void planificarSegunVRR(CPU* cpu){
 				log_trace(logger, "Se espera a que haya GDT's en la cola Ready");
 			}
 			sem_wait(&cantProcesosEnReady);
-			sleep(1);
+			sleep(datosConfigSAFA->retardo / 1000);
 
             pthread_mutex_lock(&m_puedePlanificar);
 			dtbAEjecutar = obtenerDTBAEjecutarSegunVRR();
@@ -159,7 +159,7 @@ void planificarSegunIOBF(CPU* cpu){
 				log_trace(logger, "Se espera a que haya GDT's en la cola Ready");
 			}
 			sem_wait(&cantProcesosEnReady);
-			sleep(1);
+			sleep(datosConfigSAFA->retardo / 1000);
 
             pthread_mutex_lock(&m_puedePlanificar);
 			dtbAEjecutar = obtenerDTBAEjecutarSegunIOBF();

@@ -35,9 +35,9 @@ typedef struct{
 
 typedef struct{
     char idGDT[2];
-    char path[60];
+    char* path;
     char pagina[3]; 
-    char segmento[3];
+    char segmento[4];
     char desplazamiento[4];
     char* socketCPU;
     char cantLineas[2];
