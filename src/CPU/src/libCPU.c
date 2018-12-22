@@ -615,7 +615,7 @@ void permisoDeEjecucion(parametros* params){
 						runFunction(socketSAFA, "finalizacionProcesamientoCPU",7,string_id, string_idGDT,string_sentEjecutadas,"bloquear", "1","1", "0");
 					else
 						runFunction(socketSAFA, "finalizacionProcesamientoCPU",7,string_id, string_idGDT,string_sentEjecutadas,"finalizar", "1","1", "0");
-					runFunction(socketDAM, "CPU_DAM_crearArchivo", 4, string_idGDT, sentencia.p1, sentencia.p2, string_id);
+					runFunction(socketDAM, "CPU_DAM_crearArchivo", 3, string_idGDT, sentencia.p1, sentencia.p2);
 					destruirOperacion(sentencia);
 					free(params);
 					return ;
@@ -628,7 +628,7 @@ void permisoDeEjecucion(parametros* params){
 						runFunction(socketSAFA, "finalizacionProcesamientoCPU",7,string_id, string_idGDT,string_sentEjecutadas,"bloquear", "1", "1", "0"); 
 					else
 						runFunction(socketSAFA, "finalizacionProcesamientoCPU",7,string_id, string_idGDT,string_sentEjecutadas,"finalizar", "1", "1", "0"); 
-					runFunction(socketDAM, "CPU_DAM_borrarArchivo", 3, string_idGDT,sentencia.p1, string_id);
+					runFunction(socketDAM, "CPU_DAM_borrarArchivo", 2, string_idGDT,sentencia.p1);
 					destruirOperacion(sentencia);
 					free(params);
 					return ;
@@ -679,9 +679,8 @@ operacion_t obtenerSentenciaParseada(int idGDT, int programCounter, int pagina, 
 	char string_id[strlen(string_idImpostor) + 1];
 	strcpy(string_id, string_idImpostor);
 
-	char* string_pcImpostor = string_itoa(programCounter);
-	char string_pc[strlen(string_pcImpostor) + 1];
-	strcpy(string_pc, string_pcImpostor);
+	char string_pc[2];
+	sprintf(string_pc, "%i", programCounter);
 
 	char* string_pagImpostor = string_itoa(pagina);
 	char string_pag[strlen(string_pagImpostor) + 1];
@@ -699,8 +698,8 @@ operacion_t obtenerSentenciaParseada(int idGDT, int programCounter, int pagina, 
 	char string_cantLineas[strlen(string_cantLineasImpostor) + 1];
 	strcpy(string_cantLineas, string_cantLineasImpostor);
 
-	log_trace(logger,"Se va a buscar la sentencia para el GDT %s: PAG: %s, SEGM: %s, DESPL: %s, CANT_LINEAS: %s",
-	string_id,string_pag, string_seg,string_despl, string_cantLineas);
+	log_trace(logger,"Se va a buscar la sentencia %s para el GDT %s: PAG: %s, SEGM: %s, DESPL: %s, CANT_LINEAS: %s",
+	 string_pc,string_id,string_pag, string_seg,string_despl, string_cantLineas);
 
 	runFunction(socketFM9, "CPU_FM9_obtenerDatos", 6, string_id, string_pc, string_pag, string_seg, string_despl, string_cantLineas);
 

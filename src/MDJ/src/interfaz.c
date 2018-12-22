@@ -81,6 +81,19 @@ void cicloSeteoBloques(){
 }
 cicloSeteoBloques();
 t_bloques * bitmapBloques = asignarBloques(bloquesLibres,bloquesOcupados,archivo->size);
+
+if(bitmapBloques == NULL){
+	list_destroy(bloquesLibres);
+	list_destroy(bloquesOcupados);
+	runFunction(connection->socket,"MDJ_DAM_resultadoCreacionArchivo",4,args[0],"-1",archivo->path, args[3]);
+	free(archivo);
+	free(bitMap);
+	free(dir);
+	free(aux);
+	free(tam);
+	free(pathMasArchivos);
+	return;
+}
 int s;
 for(s=0; s < bitmapBloques->bloques;s++){
 	string_append_with_format(&temp,"%s,",bitmapBloques->bloqArchivo[s]);
@@ -157,7 +170,6 @@ list_destroy(bloquesLibres);
 list_destroy(bloquesOcupados);
 free(archivo);
 free(bitMap);
-free(fs);
 free(bitmapBloques->bloqArchivo);
 free(bitmapBloques);
 free(dir);
@@ -663,7 +675,6 @@ pthread_mutex_unlock(&mdjInterfaz);
 char * strEstado = string_itoa(archivo->estado);
 aplicarRetardo();
 runFunction(connection->socket,"MDJ_DAM_resultadoBorradoArchivo",4,args[0], strEstado, archivo->path, args[2]);
-free(fs);
 free(bitarray);
 free(temp);
 free(archivo);
@@ -701,6 +712,8 @@ return bitarray;
 int cantElementos2(char ** array)
 {
 int cont = 0;
+if(array == NULL)
+	return 0;
 while (array[cont] != NULL){
 cont = cont + 1;	
 }	
@@ -762,7 +775,7 @@ list_add_all(ocupados,temp);
 else
 {
 log_error(logger,"No hay bloques disponibles , vuelva a intentarlo");
-exit;
+return NULL;
 }
 bloques->bloqLibres = _list_duplicate(libres);
 bloques->bloqOcupados = _list_duplicate(ocupados);

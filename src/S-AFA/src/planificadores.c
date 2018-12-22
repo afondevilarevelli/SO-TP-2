@@ -41,7 +41,7 @@ void planificarSegunRR(CPU* cpu){
                 char string_flagInicializacion[2];
                 sprintf(string_flagInicializacion, "%i", dtbAEjecutar->flagInicializado); 
 
-                char string_pc[2];
+                char string_pc[3];
                 sprintf(string_pc, "%i", dtbAEjecutar->PC);
 
                 char string_quantumAEjecutar[2];
@@ -108,7 +108,7 @@ void planificarSegunVRR(CPU* cpu){
             char string_flagInicializacion[2];
             sprintf(string_flagInicializacion, "%i", dtbAEjecutar->flagInicializado); 
 
-            char string_pc[2];
+            char string_pc[3];
             sprintf(string_pc, "%i", dtbAEjecutar->PC);
 
             char string_quantumAEjecutar[2];
@@ -179,7 +179,7 @@ void planificarSegunIOBF(CPU* cpu){
             char string_flagInicializacion[2];
             sprintf(string_flagInicializacion, "%i", dtbAEjecutar->flagInicializado); 
 
-            char string_pc[2];
+            char string_pc[3];
             sprintf(string_pc, "%i", dtbAEjecutar->PC);
 
             char string_pagina[3];

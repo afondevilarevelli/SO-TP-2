@@ -109,15 +109,15 @@ void MDJ_DAM_resultadoCreacionArchivo(socket_connection* conenction,char ** args
 	else
 	{
 		if(estadoCreacion == 0)
-			log_error(logger,"Archivo %s previamente existia",args[2]);
+			log_error(logger,"Archivo %s previamente existia, el GDT %s va a ser abortado",args[2], args[0]);
 		else
-			log_error(logger,"Error al crear el archivo %s",args[2]);
+			log_error(logger,"Error al crear el archivo %s, el GDT %s va a ser abortado",args[2], args[0]);
 		runFunction(socketCPU, "avisarTerminoClock", 0);
 		runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, args[0]);
 	}	
 }
 
-//args[0]: idGDT, args[1]: 0(yaCreado), 1(recienCreado), -1(errorCreado), args[2]: arch,  args[3]: socketCPU
+//args[0]: idGDT, args[1]: 0(recienBorrado), -1(noBorrado), -2(errorBorrado), args[2]: arch,  args[3]: socketCPU
 void MDJ_DAM_resultadoBorradoArchivo(socket_connection * connection,char ** args){
 	estadoBorrado = atoi(args[1]);
 	int socketCPU = atoi(args[3]);
@@ -129,28 +129,30 @@ void MDJ_DAM_resultadoBorradoArchivo(socket_connection * connection,char ** args
 	}
 	else if (estadoBorrado == -1)
 	{
-		log_error(logger,"El archivo %s es inexistente",args[2]);
+		log_error(logger,"El archivo %s es inexistente, el GDT %s va a ser abortado",args[2], args[0]);
 		runFunction(socketCPU, "avisarTerminoClock", 0);
 		runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1,args[0]);
 	}
 	else
 	{
-		log_error(logger,"Ocurrio un error al querer borrar el archivo %s",args[2]);
+		log_error(logger,"Error al querer borrar el archivo %s, el GDT %s va a ser abortado",args[2], args[0]);
 		runFunction(socketCPU, "avisarTerminoClock", 0);
 		runFunction(socketSAFA, "DAM_SAFA_pasarDTBAExit",1, args[0]);	
 	}
 }
 
-//args[0]: idGDT, args[1]: nomArch, args[2]: cantBytes, args[3]: socketCPU
+//args[0]: idGDT, args[1]: nomArch, args[2]: cantBytes
 void CPU_DAM_crearArchivo(socket_connection* connection, char** args){
+	char* string_socket = string_itoa(connection->socket);
 	log_info(logger,"Envio al MDJ la solicitud de creacion del archivo %s por parte del GDT de id %s",args[1], args[0]);
-	runFunction(socketMDJ,"crearArchivo",4, args[0], args[1], args[2],args[3]);
+	runFunction(socketMDJ,"crearArchivo",4, args[0], args[1], args[2],string_socket);
 }
 
-//args[0]: idGDT, args[1]: arch, args[2]: socketCPU
+//args[0]: idGDT, args[1]: arch
 void CPU_DAM_borrarArchivo(socket_connection* connection, char** args){
+	char* string_socket = string_itoa(connection->socket);
 	log_info(logger,"Envio al MDJ la solicitud de borrado del archivo %s por parte del GDT de id %s",args[1], args[0]);
-	runFunction(socketMDJ,"borrarArchivo",3, args[0], args[1], args[2]);
+	runFunction(socketMDJ,"borrarArchivo",3, args[0], args[1], string_socket);
 }
 
 //Comunicacion entre CPU-DAM para Cargar GDT

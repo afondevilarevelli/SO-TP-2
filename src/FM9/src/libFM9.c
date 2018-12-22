@@ -211,7 +211,7 @@ retornoCargaTPI cargarArchivoTPI(char* arch, int idGDT){
 				if(marcoAnterior != NULL)
 					marcoAnterior->siguiente = unMarco;
 				if(contadorPagina == 0 && lineasCargadas == 0){ 
-					retorno.pagina = unMarco->pagina;
+					retorno.pagina = pagMasAlta + 1;
 					retorno.desplazamiento = 0;
 					retorno.marco = unMarco->marco;
 				}
@@ -224,7 +224,7 @@ retornoCargaTPI cargarArchivoTPI(char* arch, int idGDT){
 									lineasCargadas,
 									maximoLineasPagina);
 				if(contadorPagina == 0 && lineasCargadas == 0){ 
-					retorno.pagina = pagMasAlta + 1 + contadorPagina;
+					retorno.pagina = pagMasAlta + 1;
 					retorno.desplazamiento = 0;
 					retorno.marco = unMarco->marco;
 				}
@@ -336,10 +336,8 @@ void cargarArchivo(char* idGDT, char* esDummy, char* cpuSocket)
 		if(cargado.cargaOK){ 
 			log_trace(logger, "Persisti el contenido para el GDT %d", pid);
 			log_trace(logger, "Pagina: %d   Marco: %d   Desplazamiento: %d", cargado.pagina,cargado.marco, cargado.desplazamiento);
-			log_info(logger,"");
 			char* string_despl = string_itoa(cargado.desplazamiento);
-			char string_pagina[3];
-			sprintf(string_pagina, "%i", cargado.pagina);
+			char* string_pagina = string_itoa(cargado.pagina);
 			char string_cantLineas[2];
 			sprintf(string_cantLineas, "%i", cantLineas);
 			free(bufferArchivoACargar);
@@ -448,16 +446,12 @@ void guardarDatosDeLineas(char* datos, int pos, int lineaInicial, int cantLineas
 	}	
 	else{
 		lineaFiltrada[0] = '\0';
-		pthread_mutex_lock(&m_memoria);
 		memcpy(memoria + pos, lineaFiltrada, datosConfigFM9->maximoLinea);
-		pthread_mutex_unlock(&m_memoria);
 		return;
 	}
 
 	for(int m = 0; m < cantLineasEnAdelante; m++){
-		pthread_mutex_lock(&m_memoria);
 		memcpy(memoria + pos + m * datosConfigFM9->maximoLinea, datosFiltrados[m], datosConfigFM9->maximoLinea);
-		pthread_mutex_unlock(&m_memoria);
 	}
 }
 
@@ -533,10 +527,10 @@ void actualizarDatosDTB(socket_connection* connection, char** args){ //La primer
 			return;
 		}
 
-		int sumaPag = 0;
+		int sumaPag = desplazamiento;
 		pthread_mutex_lock(&m_listaPaginasInvertidas);
 		for(int m = 0; m<(linea-1); m++){
-			int j = m - sumaPag;
+			int j = m + sumaPag;
 			if( j*datosConfigFM9->maximoLinea >= datosConfigFM9->tamanioPagina){
 				paginaInvertida = paginaInvertida->siguiente;
 				if(paginaInvertida == NULL){
