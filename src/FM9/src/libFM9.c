@@ -183,10 +183,11 @@ retornoCargaTPI cargarArchivoTPI(char* arch, int idGDT){
 									0,
 									lineasCargadas);
 				}
+				retorno.desplazamiento = unMarco->tamanioOcupado;
 				unMarco->tamanioOcupado += lineasCargadas * datosConfigFM9->maximoLinea;
 				marcoAnterior = unMarco;
 				retorno.pagina = unMarco->pagina;
-				retorno.desplazamiento = unMarco->tamanioOcupado;
+				
 				retorno.marco = unMarco->marco;
 			}
 			break;
@@ -281,7 +282,11 @@ void cargarArchivo(char* idGDT, char* esDummy, char* cpuSocket)
 	int pid = atoi(idGDT);
 	int tamanioArchivo = strlen(bufferArchivoACargar)+1;
 	int cantLineas = cantidadDeLineas(bufferArchivoACargar);
+	int pagina;
 	log_trace(logger, "Voy a persistir: '%s' cuyo tamanio es %d", bufferArchivoACargar, tamanioArchivo-1);
+	bool _buscarPaginaInvertida(void* elemento){
+		return buscarPaginaInvertida(elemento, &pid, &pagina);
+	}
 	if(strcmp(datosConfigFM9->modo,"SEG")==0){ 	
 		int tamanioReal;	
 		tamanioReal = cantLineas * datosConfigFM9->maximoLinea;
@@ -333,7 +338,20 @@ void cargarArchivo(char* idGDT, char* esDummy, char* cpuSocket)
 		retornoCargaTPI cargado = cargarArchivoTPI( bufferArchivoACargar, pid);
 		pthread_mutex_unlock(&m_memoria);
 		pthread_mutex_unlock(&m_listaPaginasInvertidas);
-		if(cargado.cargaOK){ 
+		if(cargado.cargaOK){
+			if(cargado.desplazamiento == datosConfigFM9->maximoLinea){
+				pagina = cargado.pagina;
+				pthread_mutex_lock(&m_listaPaginasInvertidas);
+				t_PaginasInvertidas* paginaInvertida = list_find(tabla_paginasInvertidas, &_buscarPaginaInvertida);
+				pthread_mutex_unlock(&m_listaPaginasInvertidas);
+				if(paginaInvertida != NULL){
+					if (paginaInvertida->siguiente != NULL){
+						cargado.pagina = (paginaInvertida->siguiente)->pagina;
+						cargado.marco = (paginaInvertida->siguiente)->marco;
+						cargado.desplazamiento = 0;
+					}
+				}
+			} 
 			log_trace(logger, "Persisti el contenido para el GDT %d", pid);
 			log_trace(logger, "Pagina: %d   Marco: %d   Desplazamiento: %d", cargado.pagina,cargado.marco, cargado.desplazamiento);
 			char* string_despl = string_itoa(cargado.desplazamiento);
