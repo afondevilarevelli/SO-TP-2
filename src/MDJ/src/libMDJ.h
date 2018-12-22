@@ -21,11 +21,7 @@
 #include <commons/collections/list.h>
 
 //ESTRUCTURAS
-typedef struct {
-	int puerto;
-	char * ptoMontaje;
-	int  retardo;
-} t_config_MDJ;
+
 
 
 
@@ -37,9 +33,6 @@ pthread_mutex_t mx_main;	/* Semaforo de main */
 pthread_mutex_t mdjInterfaz;
 int portServer;
 t_config * conf;
-t_config_MDJ * datosConfMDJ;
-
-
 
 //FUNCIONES
 void configure_logger();

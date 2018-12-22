@@ -5,32 +5,15 @@
 
 
 char * obtenerPtoMontaje()
-{
+{/*
 t_config* fileConfig  = config_create("MDJ.config");
 char * ptoMontaje = string_new();
 string_append(&ptoMontaje,config_get_string_value(fileConfig,"PTO_MONTAJE"));
 config_destroy(fileConfig);
 if( strcmp(ptoMontaje,"") == 0){
 log_error(logger,"No se puedo obtener el pto de montaje");
-}
-return ptoMontaje;
-}
-
-
-t_metadata_filesystem *  obtenerMetadata() {
-t_metadata_filesystem * fs = malloc(sizeof(t_metadata_filesystem));
-char * motanjeMasBin = string_new();
-string_append(&motanjeMasBin,obtenerPtoMontaje());
-string_append(&motanjeMasBin,"/Metadata/Metadata.bin");
-t_config * metadata = config_create(motanjeMasBin);
-fs->tamanio_bloques = config_get_int_value(metadata,"TAMANIO_BLOQUES");
-fs->cantidad_bloques = config_get_int_value(metadata,"CANTIDAD_BLOQUES");
-char * magic_number = string_new();
-string_append(&magic_number,config_get_string_value(metadata,"MAGIC_NUMBER"));
-fs->magic_number = magic_number;
-config_destroy(metadata);
-free(magic_number);
-return fs;
+}*/
+return datosConfMDJ->ptoMontaje;
 }
 
 void aplicarRetardo()
@@ -66,7 +49,6 @@ void crearArchivo(socket_connection * connection ,char** args)
 {
 t_archivo *  archivo= malloc(sizeof(t_archivo));
 t_metadata_bitmap * bitMap = malloc(sizeof(t_metadata_bitmap));	
-t_metadata_filesystem * fs = obtenerMetadata();
 archivo->path = args[1];
 size_t tsize = atoi(args[2]);
 t_list * bloquesLibres = list_create();
@@ -98,7 +80,8 @@ cicloSeteoBloques();
 t_bloques * bitmapBloques = asignarBloques(bloquesLibres,bloquesOcupados,archivo->size);
 int s;
 for(s=0; s < bitmapBloques->bloques;s++){
-	string_append_with_format(&temp,"%s,",string_itoa(bitmapBloques->bloqArchivo[s]));
+	string_append_with_format(&temp,"%s,",bitmapBloques->bloqArchivo[s]);
+	free(bitmapBloques->bloqArchivo[s]);
 }
 char * archTemp = string_new();
 archTemp = string_substring(temp,0,strlen(temp) - 1);
@@ -111,7 +94,7 @@ string_append(&dir,strtok(aux,"/"));
 DIR * directory = opendir(dir);
 if (directory == NULL)
 {  
-mkdir(dir,S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+mkdir(dir,S_IRWXU | S_IRWXG | S_IRWXO );
 }
 closedir(directory);  
 }    
@@ -130,7 +113,8 @@ string_append(&archivoBloques,"]");
 string_append(&pathMasArchivos,obtenerPtoMontaje());
 string_append(&pathMasArchivos,"/Archivos");
 string_append(&pathMasArchivos,archivo->path);
-archivo-> fd = open(pathMasArchivos,O_RDWR|O_CREAT);
+archivo-> fd = open(pathMasArchivos,O_RDWR|O_CREAT, S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
+
 char *  nVeces = string_repeat('\n',archivo->size);
 string_append(&tamBloq, archivoBloques);
 lseek(archivo->fd,0, SEEK_SET);
@@ -171,6 +155,7 @@ list_destroy(bloquesOcupados);
 free(archivo);
 free(bitMap);
 free(fs);
+free(bitmapBloques->bloqArchivo);
 free(bitmapBloques);
 free(dir);
 free(aux);
@@ -183,7 +168,6 @@ free(pathMasArchivos);
 void obtenerDatos(socket_connection * connection,char ** args){
 t_archivo *  archivo= malloc(sizeof(t_archivo));
 char ultimaLectura[1] = "0";
-t_metadata_filesystem * fs = obtenerMetadata();
 archivo->path = args[1];
 off_t  offset = atoi(args[2]);
 int offsetDeBloque;
@@ -246,6 +230,7 @@ free(bufferBloques);
 bloqueInicial++;
 tsize = tsize - longitud;
 }
+archivo->estado = existe;
 pthread_mutex_unlock(&mdjInterfaz);
 }
 char * temp = string_new();
@@ -258,6 +243,7 @@ free(temp);
 if(offset + sizePosta >= tamBytesArchivo)
 	ultimaLectura[0] = '1';
 log_trace(logger,"Se obtuvieron %d bytes: %s ",string_length(buffer),buffer);
+config_destroy(config);
 }
 aplicarRetardo();
 char* strEstado = string_itoa(archivo->estado);
@@ -268,9 +254,13 @@ runFunction(connection->socket,"MDJ_DAM_respuestaDatos",8,args[0],buffer,strEsta
 //args[0]: path, args[1]: offset, args[2]: size, args[3]: datos, , args[4]: 1(ultimo) ó 0 (sigue)
 //args[5]:socketCPU, args[6]: idGDT
 void guardarDatos(socket_connection* connection,char ** args){ //LA IMPOSTORA
-	t_archivo *  archivo= malloc(sizeof(t_archivo));
+int cambiar = 1;
+t_metadata_bitmap * bitMap = malloc(sizeof(t_metadata_bitmap));	
+t_bloques * bitmapBloques = NULL;
+t_archivo *  archivo= malloc(sizeof(t_archivo));
+t_list * bloquesLibres = list_create();
+t_list * bloquesOcupados = list_create();
 char estadoGuardado[2] = "0";
-t_metadata_filesystem * fs = obtenerMetadata();
 char* datos = args[3];
 archivo->path = args[0];
 off_t  offset = atoi(args[1]);
@@ -292,20 +282,90 @@ else
 char ** bloques = obtenerBloques(archivo->path);
 char * buffer = string_new();
 char * bufferBloques;
+bitMap->bitarray = crearBitmap(fs->cantidad_bloques);
+void cicloSeteoBloques(){ 
+	for(int i = 0; i < fs->cantidad_bloques; i++)
+	{
+		if(bitarray_test_bit(bitMap->bitarray,i) == 0)
+		{
+			list_add(bloquesLibres,(void * ) i);    
+		}
+		else
+		{
+ 			list_add(bloquesOcupados,(void * ) i);  
+		}
+	}
+}
+pthread_mutex_lock(&mdjInterfaz);
 if(archivo->fd == -1)
 {
  log_info(logger,"El archivo %s no existe",archivo->path);
  estadoGuardado[0] = '-';
 estadoGuardado[1] = '1';
+runFunction(connection->socket,"MDJ_DAM_respuestaFlush",5,args[6],datos,estadoGuardado, args[5],args[4]);
+list_destroy(bloquesLibres);
+list_destroy(bloquesOcupados);
+aplicarRetardo();
+pthread_mutex_unlock(&mdjInterfaz);
+return;
 }
-else if (bloqueInicial == -1)
-{
-log_error(logger,"El offset no puede ser mayor al tamanio del archivo");
-estadoGuardado[0] = '-';
-estadoGuardado[1] = '2';
+else if (bloqueInicial == -1 || bloqueFinal >= cantElementos2(bloques))
+{	
+	cicloSeteoBloques();
+	if(bloqueInicial != -1){
+bitmapBloques = asignarBloques(bloquesLibres,bloquesOcupados,(bloqueFinal-bloqueInicial)*fs->tamanio_bloques);
+	}
+	else{
+bitmapBloques = asignarBloques(bloquesLibres,bloquesOcupados,tsize);
+	}
+
+char* temp = string_new();
+string_append(&temp, "[");
+for(int l =0; l< cantElementos2(bloques); l++){
+	string_append(&temp, bloques[l]);
+	string_append(&temp, ",");
 }
-else{
-pthread_mutex_lock(&mdjInterfaz);	
+if(bitmapBloques != NULL){
+	for(int s=0; s < bitmapBloques->bloques;s++){
+		string_append_with_format(&temp,"%s,",bitmapBloques->bloqArchivo[s]);
+		free(bitmapBloques->bloqArchivo[s]);
+	}
+}
+char * archTemp = string_new();
+archTemp = string_substring(temp,0,strlen(temp) - 1);
+string_append(&archTemp, "]");
+
+char * rutaArchConf = string_new();
+char* tamanioConfig = string_new();
+
+string_append(&rutaArchConf,obtenerPtoMontaje());
+string_append(&rutaArchConf,"/Archivos");
+string_append(&rutaArchConf,archivo->path);
+t_config * config = config_create(rutaArchConf);
+int tamanio = config_get_int_value(config, "TAMANIO");
+config_destroy(config);
+
+char string_tam[4];
+sprintf(string_tam, "%i", tamanio + tsize);
+string_append(&tamanioConfig,"TAMANIO=");
+string_append(&tamanioConfig,string_tam);
+string_append(&tamanioConfig,"\n");
+string_append(&tamanioConfig,"BLOQUES=");
+string_append(&tamanioConfig,archTemp);
+
+char* stringNuletes = string_repeat('\n', fs->tamanio_bloques);
+archivo-> fd = open(rutaArchConf,O_RDWR);
+lseek(archivo->fd,0, SEEK_SET);
+write(archivo->fd, stringNuletes,fs->tamanio_bloques);
+lseek(archivo->fd,0, SEEK_SET);
+write(archivo->fd, tamanioConfig,strlen(tamanioConfig));
+close(archivo-> fd);
+
+bloques = obtenerBloques(archivo->path);
+bloqueInicial = obtenerBloqueInicial(archivo->path,offset);
+cambiar = 0;
+}
+
 while (tamanioGuardado < tsize)//bloqueInicial <= bloqueFinal && bloques[bloqueInicial] != NULL)
 {
 int posBloque = atoi(bloques[bloqueInicial]);
@@ -321,19 +381,77 @@ else
 		longitud *= -1;
 }
 char* datosAEscribir = string_substring(datos,tamanioGuardado,longitud);
-escribirBloque(atoi(bloques[bloqueInicial]), offsetDeBloque,longitud, datosAEscribir);
-free(bloques[bloqueInicial]);
+int bloquecito = atoi(bloques[bloqueInicial]);
+escribirBloque(bloquecito, offsetDeBloque,longitud, datosAEscribir);
 bloqueInicial++;
 tamanioGuardado += longitud;
 offsetDeBloque = 0;
+}
+if(cambiar){
+char* temp = string_new();
+string_append(&temp, "[");
+for(int l =0; l< cantElementos2(bloques); l++){
+	string_append(&temp, bloques[l]);
+	string_append(&temp, ",");
+}
+if(bitmapBloques != NULL){
+	for(int s=0; s < bitmapBloques->bloques;s++){
+		string_append_with_format(&temp,"%s,",bitmapBloques->bloqArchivo[s]);
+		free(bitmapBloques->bloqArchivo[s]);
+	}
+}
+char * archTemp = string_new();
+archTemp = string_substring(temp,0,strlen(temp) - 1);
+string_append(&archTemp, "]");
+
+char * rutaArchConf = string_new();
+char* tamanioConfig = string_new();
+
+string_append(&rutaArchConf,obtenerPtoMontaje());
+string_append(&rutaArchConf,"/Archivos");
+string_append(&rutaArchConf,archivo->path);
+t_config * config = config_create(rutaArchConf);
+int tamanio = config_get_int_value(config, "TAMANIO");
+config_destroy(config);
+
+char string_tam[4];
+sprintf(string_tam, "%i", tamanio + tsize);
+string_append(&tamanioConfig,"TAMANIO=");
+string_append(&tamanioConfig,string_tam);
+string_append(&tamanioConfig,"\n");
+string_append(&tamanioConfig,"BLOQUES=");
+string_append(&tamanioConfig,archTemp);
+/*
+char* stringNuletes = string_repeat('\n', fs->tamanio_bloques);
+archivo-> fd = open(rutaArchConf,O_RDWR);
+lseek(archivo->fd,0, SEEK_SET);
+write(archivo->fd, stringNuletes,fs->tamanio_bloques);
+lseek(archivo->fd,0, SEEK_SET);
+write(archivo->fd, tamanioConfig,strlen(tamanioConfig));
+close(archivo-> fd);*/
+
+char* stringNuletes = string_repeat('\n', fs->tamanio_bloques);
+FILE* archivoBloque = fopen(rutaArchConf,"r+");
+fseek(archivoBloque, 0, SEEK_SET);
+fwrite(stringNuletes, fs->tamanio_bloques, 1, archivoBloque);
+fseek(archivoBloque, 0, SEEK_SET);
+fwrite(tamanioConfig, strlen(tamanioConfig), 1, archivoBloque);
+fclose(archivoBloque);
+}
+
+for(int h=0; h<cantElementos2(bloques); h++){
+	free(bloques[h]);
 }
 estadoGuardado[0] = '0';
 estadoGuardado[1] = '\0';
 log_trace(logger,"Se guardaron %d bytes: '%s' ",string_length(datos),datos);
 pthread_mutex_unlock(&mdjInterfaz);
-}
+
 aplicarRetardo();
 runFunction(connection->socket,"MDJ_DAM_respuestaFlush",5,args[6],datos,estadoGuardado, args[5],args[4]);
+list_destroy(bloquesLibres);
+list_destroy(bloquesOcupados);
+free(bitmapBloques);
 }
 
 
@@ -453,7 +571,6 @@ char * obtenerDatosBloque (int bloque) {
 int obtenerBloqueInicial(char * path,off_t offset)
 {
 t_archivo * archivo = malloc(sizeof(t_archivo));
-t_metadata_filesystem * fs = obtenerMetadata();
 char * pathMasArchivos = string_new();
 string_append(&pathMasArchivos,obtenerPtoMontaje());
 string_append(&pathMasArchivos,"/Archivos/");
@@ -481,7 +598,6 @@ return retorno;
 void borrarArchivo(socket_connection* connection,char ** args){
 t_archivo * archivo= malloc(sizeof(t_archivo));
 archivo->path = args[1];
-t_metadata_filesystem * fs = obtenerMetadata();
 t_bitarray * bitarray = crearBitmap(fs->cantidad_bloques);
 archivo->fd = verificarSiExisteArchivo(archivo->path);
 char * temp = string_new();
@@ -612,9 +728,15 @@ else{
 }
 }
 
+char ** obtenerBloquesDesdeConsola(char * path){
+t_config * config = config_create(path);
+char **  bloques = config_get_array_value(config,"BLOQUES");
+config_destroy(config);
+return bloques;
+}
+
 t_bloques *  asignarBloques(t_list * libres,t_list * ocupados ,size_t size)
 {
-t_metadata_filesystem * fs = obtenerMetadata();
 t_bloques * bloques = malloc(sizeof(t_bloques));
 t_list * temp = list_create();
 t_bitarray * bitarray = crearBitmap(fs->cantidad_bloques);
@@ -638,16 +760,20 @@ exit;
 }
 bloques->bloqLibres = _list_duplicate(libres);
 bloques->bloqOcupados = _list_duplicate(ocupados);
-bloques->bloqArchivo = calloc(nBloques,sizeof(int));
-for (int i=0;i <list_size(temp);i++){
- bloques->bloqArchivo[i]=  (char)list_get(temp,i);
+bloques->bloqArchivo = calloc(nBloques,sizeof(char*));
+//t_list* listaBloq = list_create();
+for(int i = 0; i <list_size(temp); i++){
+	int blo = (int)list_get(temp,i);
+	char* charBloq = string_itoa(blo);
+	bloques->bloqArchivo[i] = malloc(strlen(charBloq) + 1);
+	strcpy(bloques->bloqArchivo[i], charBloq);
 }
 for(int i = 0;i < nBloques;i++){
-bitarray_set_bit(bitarray,bloques->bloqArchivo[i]);	
+	int bitInd = atoi(bloques->bloqArchivo[i]);
+	bitarray_set_bit(bitarray,(off_t)bitInd);	
 }
 bloques->bloques = nBloques;
 return bloques;
-
 }
 
 void liberarLista(t_list *lista) {

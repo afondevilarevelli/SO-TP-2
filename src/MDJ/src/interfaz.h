@@ -35,7 +35,7 @@ char ** args;
 typedef struct {
 t_list *  bloqLibres;
 t_list * bloqOcupados;
-char * bloqArchivo;
+char ** bloqArchivo;
 int bloques;
 }t_bloques;
 
@@ -68,8 +68,14 @@ size_t  tamanio_archivo_enBytes;
 int  * bloques;
 }t_metadata_filemetadata;
 
+typedef struct {
+	int puerto;
+	char * ptoMontaje;
+	int  retardo;
+} t_config_MDJ;
 
-
+t_config_MDJ * datosConfMDJ;
+t_metadata_filesystem * fs;
 char * directorioMontaje;
 void aplicarRetardo();
 // devuelve un true(1) si el archivo existe, u falso(0)  si no existe
@@ -85,7 +91,6 @@ int verificarSiExisteArchivo(char * );
 int * crearBloques(int, char * ,size_t);
 char * obtenerPtoMontaje();
 t_bitarray * crearBitmap(int);
-t_metadata_filesystem * obtenerMetadata ();
 t_bloques * asignarBloques(t_list * , t_list *,size_t);
 char ** obtenerBloques(char *);
 int cantElementos2(char **);
@@ -95,4 +100,5 @@ char * obtenerDatosBloque(int);
 int is_regular_file(const char *);
 void escribirBloque(int bloque, int offset, int length, char * buffer);
 int obtenerBloqueInicial(char * path,off_t offset);
+char ** obtenerBloquesDesdeConsola(char * path);
 #endif

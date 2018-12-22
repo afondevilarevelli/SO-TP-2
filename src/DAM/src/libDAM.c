@@ -323,10 +323,14 @@ void MDJ_DAM_respuestaFlush(socket_connection* connection, char** args){
 	int estado = atoi(args[2]);
 	log_info(logger, "Se guardaron los siguientes bytes en MDJ '%s'",args[1]);
 	if(strcmp(args[4], "1") == 0){ 
-		if(strcmp(args[2],"1") == 0)
+		if(strcmp(args[2],"0") == 0){
+			log_trace(logger, "Se ha finalizado la peticion de FLUSH para el GDT %s",args[0]);
 			runFunction(socketSAFA,"DAM_SAFA_desbloquearDTB",1, args[0]);
-		else
+		}	
+		else{
+			log_error(logger, "La peticion de FLUSH para el GDT %s ha finalizado con error",args[1]);
 			runFunction(socketSAFA,"DAM_SAFA_pasarDTBAExit",1, args[0]);
+		}
 		free(pagina);
 		free(baseSegmento);
 		free(desplazamiento);

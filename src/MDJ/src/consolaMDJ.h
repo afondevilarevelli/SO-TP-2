@@ -17,6 +17,7 @@
 #include <errno.h>
 #include <readline/history.h>
 #include <commons/log.h>
+#include "interfaz.h"
 
 t_log * logger;
 

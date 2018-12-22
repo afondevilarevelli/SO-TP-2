@@ -19,6 +19,17 @@ int main(void) {
      dictionary_put(fns,"guardarDatos",&guardarDatos);
      dictionary_put(fns,"obtenerDatos",&obtenerDatos);
 
+   fs = malloc(sizeof(t_metadata_filesystem));
+char * motanjeMasBin = string_new();
+string_append(&motanjeMasBin,obtenerPtoMontaje());
+string_append(&motanjeMasBin,"/Metadata/Metadata.bin");
+t_config * metadata = config_create(motanjeMasBin);
+fs->tamanio_bloques = (size_t) config_get_int_value(metadata,"TAMANIO_BLOQUES");
+fs->cantidad_bloques = config_get_int_value(metadata,"CANTIDAD_BLOQUES");
+fs->magic_number = malloc(strlen(config_get_string_value(metadata,"MAGIC_NUMBER")) + 1);
+strcpy(fs->magic_number,config_get_string_value(metadata,"MAGIC_NUMBER"));
+config_destroy(metadata);
+
      pthread_t hiloConsola;
 
     pthread_mutex_init(&mdjInterfaz,NULL);
@@ -54,6 +65,9 @@ void cerrarPrograma() {
     if( datosConfMDJ->ptoMontaje!=NULL)
         free(datosConfMDJ->ptoMontaje);
     free(datosConfMDJ);
+    if(fs->magic_number != NULL)
+        free(fs->magic_number);
+    free(fs);
     pthread_mutex_unlock(&mx_main);
     pthread_mutex_destroy(&mx_main);
 }

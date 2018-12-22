@@ -166,7 +166,7 @@ void metricas(int idGDT){
 	float tiempoRespProm = tiempoRespuestaPromedio();
 	float porcSentDiego;
 	float cantExit = calcularMetricaExit();
-	if(cantSentenciasEjecutadas < 0)
+	if(cantSentenciasEjecutadas != 0)
 		porcSentDiego = cantSentConDiego*100/cantSentenciasEjecutadas;
 	else
 		porcSentDiego = 0;
@@ -210,7 +210,7 @@ float calcularMetricaExit(){
 	for(int i = 0; i < tamanio; i++){
 		DTB* dtb = (DTB*) list_get(colaReady->elements, i);
 		if(dtb != NULL)
-			cantPC = dtb->PC;
+			cantPC += dtb->PC;
 	}
 	if(tamanio != 0)
 		return cantPC/tamanio;

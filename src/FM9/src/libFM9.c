@@ -579,7 +579,7 @@ void obtenerDatosCPU(socket_connection* connection, char** args){
 			pthread_mutex_lock(&m_memoria);
 			memcpy(linea, memoria + segmento->base + numLinea*datosConfigFM9->maximoLinea, datosConfigFM9->maximoLinea);
 			log_info(logger, "Se obtuvieron los siguientes datos: '%s'", linea);
-			if( cantLineas - 2 == numLinea ){ 
+			if( cantLineas - 3 == numLinea ){ 
 				runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, linea, "1");
 			}else{ 
 				runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, linea, "0");
@@ -614,7 +614,7 @@ void obtenerDatosCPU(socket_connection* connection, char** args){
 			pthread_mutex_lock(&m_memoria);
 			memcpy(linea, memoria + datosConfigFM9->tamanioPagina*paginaInvertida->marco + despl + numLineaALeer*datosConfigFM9->maximoLinea, datosConfigFM9->maximoLinea);
 			log_info(logger, "Se obtuvieron los siguientes datos: '%s'", linea);
-			if( cantLineas - 2 == numLinea ){ 
+			if( cantLineas - 3 == numLinea ){ 
 				runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, linea, "1");
 			}else{ 
 				runFunction(connection->socket, "FM9_CPU_resultadoDatos", 2, linea, "0");
@@ -649,6 +649,7 @@ void DAM_FM9_obtenerDatosFlush(socket_connection* connection, char** args){
 	bool _buscarPaginaInvertida(void* elemento){
 		return buscarPaginaInvertida(elemento, &idGDT, &pagina);
 	}
+	log_trace(logger, "Solicitud de flush por parte del GDT %s", args[0]);
 	if(strcmp(datosConfigFM9->modo,"SEG")==0){
 		t_tabla_segmentos* segmento = list_find(lista_tabla_segmentos, _buscarSegmento);
 		if(segmento == NULL){
