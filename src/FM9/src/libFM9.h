@@ -65,6 +65,10 @@ int tamanioOcupadoBufferAux;
 t_list* lista_tabla_segmentos;
 t_list* tabla_paginasInvertidas;
 
+pthread_mutex_t m_listaSegmentos;
+pthread_mutex_t m_listaPaginasInvertidas;
+pthread_mutex_t m_buffer;
+
 //t_list* lista_archivos;
 
 //FUNCIONES

@@ -62,7 +62,8 @@ typedef enum{
 	CLOSE, 
 	CREAR, //I/O
 	BORRAR, 
-	NUMERAL //para comentarios
+	NUMERAL, //para comentarios
+	ERROR
 }palabraReservada_t;
 
 typedef struct{   

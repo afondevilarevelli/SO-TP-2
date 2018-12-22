@@ -6,15 +6,13 @@
 #define MAX_CMD_LEN  128
 #define HISTORY_COUNT 20
 
- char bufferDirAct[150];
- char bufferDirRaiz[100];
+
 
 void consolaMDJ(){
 	char* linea=NULL;
 	char espaBlan[4]=" \n\t";
 	int debeContinuar = 1; //TRUE
         getcwd( bufferDirAct, sizeof( bufferDirAct));
-        strcpy(bufferDirRaiz, bufferDirAct);
         strcat(bufferDirAct,">");
  
 	do{
@@ -142,35 +140,89 @@ void md5(char* pathA){
 
 
 void cat(char* pathA){
+char *buffer = NULL;
+int string_size, read_size;
+FILE * handler = fopen(pathA, "r");
+log_info(logger,"Voy a intentar mostrar el contenido de %s",pathA);
+ if (handler) {
+       fseek(handler, 0, SEEK_END);
+       //Ofsset desde el primer byte hasta el ultimo... el tam del archivo
+       string_size = ftell(handler);
+       //Hago que vuelva al principio
+       rewind(handler);
+       buffer = (char*) malloc(sizeof(char) * (string_size + 1) );
+       read_size = fread(buffer, sizeof(char), string_size, handler);
+       buffer[string_size] = '\0';
+       if (string_size != read_size)
+       {
+           buffer = NULL;
+       }
+       fclose(handler);
+     log_trace(logger,"Archivo %s leido correctamente",pathA);  
+     printf("\e[1m\e[37m%s\e[0m\e[0m", buffer);
+    }
+  else
+   {
+    log_error(logger,"No pudo leerse el archivo %s ",pathA);
+    printf("%sNo pudo leerse el archivo %s\n ", bufferDirAct, pathA);
+    
+    }
+    free(buffer);
+}
+
+
+/*
+void cat(char* pathA){
 char* pathArch = string_new();
-char* lolete = string_new();
 pathArch = string_substring(bufferDirAct,0,strlen(bufferDirAct) - 1);
-lolete = string_substring(bufferDirAct,0,strlen(bufferDirAct) - 1);
 string_append(&pathArch, "/");
 string_append(&pathArch, pathA);
 int string_size;
 FILE * handler = fopen(pathA, "r");
 log_info(logger,"Voy a intentar mostrar el contenido de %s",pathA);
-char bufferDirRaizAux[200];
+int lolete = 1;
+
 int h;
 for( h=0; h<strlen(bufferDirRaiz);h++){
         bufferDirRaizAux[h] = bufferDirRaiz[h];
 }
-bufferDirRaizAux[h] = '\0';
+bufferDirRaizAux[h] = '/';
+bufferDirRaizAux[h+1] = '\0'; 
 
  if (handler) {
          char ** bloques = obtenerBloquesDesdeConsola(pathArch);
          fclose(handler);
+         char rutaBloq[300];
          for(int i=0; i<cantElementos2(bloques); i++){
                  char buffer[fs->tamanio_bloques];
-                 //char* rutaBloq = bufferDirRaizAux;
-                 strcat(bufferDirRaizAux, "/");
-                 strcat(bufferDirRaizAux, datosConfMDJ->ptoMontaje);
-                 strcat(bufferDirRaizAux, "/Bloques/");
-                 strcat(bufferDirRaizAux, bloques[i]);
-                 strcat(bufferDirRaizAux, ".bin");
+                 char* bufferDirRaizAux = malloc( strlen(bufferDirRaiz)+1 + strlen(datosConfMDJ->ptoMontaje)+1 + 2 + 10 );
+                strcpy(bufferDirRaizAux, bufferDirRaiz);
+                strcat(bufferDirRaizAux, "/");
+                strcat(bufferDirRaizAux, datosConfMDJ->ptoMontaje);
+                strcat(bufferDirRaizAux, "/Bloques/");
 
-                FILE * archBloque = fopen(bufferDirRaizAux, "r");
+                 
+                //rutaBloq = malloc(strlen(bufferDirRaizAux) + strlen(bloques[i]) + 7);
+                 strcpy(rutaBloq, bufferDirRaizAux);              
+                 strcat(rutaBloq, bloques[i]);
+                 strcat(rutaBloq, ".bin");
+                 for(int q=0; q<strlen(bufferDirRaizAux);q++){
+                         rutaBloq[q] = *(bufferDirRaizAux + q);
+                 }
+                 for(int q=0; q<strlen(datosConfMDJ->ptoMontaje);q++){
+                         rutaBloq[strlen(bufferDirRaiz)+q] = *(datosConfMDJ->ptoMontaje + q);
+                 }
+                 for(int r=0; r<strlen(bloquesString);r++){
+                        rutaBloq[strlen(bufferDirRaiz)+strlen(bufferDirRaiz)+r] = *(bloquesString + r);
+                 }
+                  for(int r=0; r<strlen(bloques[i]);r++){
+                        rutaBloq[strlen(bufferDirRaiz)+strlen(bufferDirRaiz)+strlen(bloquesString)+r] = *(bloques[i] + r);
+                 }
+                 for(int r=0; r<strlen(elbin);r++){
+                        rutaBloq[strlen(bufferDirRaiz)+strlen(bufferDirRaiz)+strlen(bloquesString)+strlen(bloques[i])+r] = *(elbin + r);
+                 }
+
+                FILE * archBloque = fopen(rutaBloq, "r");
                 fseek(archBloque, 0, SEEK_END);
                 //Ofsset desde el primer byte hasta el ultimo... el tam del archivo
                 string_size = ftell(archBloque);
@@ -179,7 +231,8 @@ bufferDirRaizAux[h] = '\0';
                 log_trace(logger,"Bloque %s:", bloques[i]);
                 printf("%s\n", buffer);
                 fclose(archBloque);
-
+                //free(rutaBloq);
+                free(bufferDirRaizAux);
          }
      log_trace(logger,"Archivo %s leido correctamente",pathA);  
     }
@@ -189,8 +242,9 @@ bufferDirRaizAux[h] = '\0';
     printf("%sNo pudo leerse el archivo %s\n ", bufferDirAct, pathA);
     
     }
+    
      
-}
+}*/
 
 void print_md5_sum(unsigned char* md) {
     int i;

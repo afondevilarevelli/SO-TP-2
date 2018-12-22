@@ -47,16 +47,16 @@ void planificarSegunRR(CPU* cpu){
                 char string_quantumAEjecutar[2];
                 sprintf(string_quantumAEjecutar, "%i", datosConfigSAFA->quantum);
 
-                char string_pagina[2];
+                char string_pagina[3];
                 sprintf(string_pagina, "%i", (dtbAEjecutar->script)->pagina);
 
-                char string_segmento[2];
+                char string_segmento[4];
                 sprintf(string_segmento, "%i", (dtbAEjecutar->script)->baseSegmento);
 
-                char string_desplazamiento[2];
+                char string_desplazamiento[4];
                 sprintf(string_desplazamiento, "%i", (dtbAEjecutar->script)->desplazamiento);
 
-                char string_cantLineas[2];
+                char string_cantLineas[3];
                 sprintf(string_cantLineas, "%i", (dtbAEjecutar->script)->cantLineas);
 
                 pthread_mutex_lock(&m_listaEjecutando);
@@ -117,16 +117,16 @@ void planificarSegunVRR(CPU* cpu){
             else
                 sprintf(string_quantumAEjecutar, "%i", dtbAEjecutar->quantumFaltante);
 
-            char string_pagina[2];
+            char string_pagina[3];
             sprintf(string_pagina, "%i", (dtbAEjecutar->script)->pagina);
 
-            char string_segmento[2];
+            char string_segmento[4];
             sprintf(string_segmento, "%i", (dtbAEjecutar->script)->baseSegmento);
 
-            char string_desplazamiento[2];
+            char string_desplazamiento[4];
             sprintf(string_desplazamiento, "%i", (dtbAEjecutar->script)->desplazamiento);
 
-            char string_cantLineas[2];
+            char string_cantLineas[3];
             sprintf(string_cantLineas, "%i", (dtbAEjecutar->script)->cantLineas);
 
             pthread_mutex_lock(&m_listaEjecutando);
@@ -182,16 +182,16 @@ void planificarSegunIOBF(CPU* cpu){
             char string_pc[2];
             sprintf(string_pc, "%i", dtbAEjecutar->PC);
 
-            char string_pagina[2];
+            char string_pagina[3];
             sprintf(string_pagina, "%i", (dtbAEjecutar->script)->pagina);
 
-            char string_segmento[2];
+            char string_segmento[4];
             sprintf(string_segmento, "%i", (dtbAEjecutar->script)->baseSegmento);
 
-            char string_desplazamiento[2];
+            char string_desplazamiento[4];
             sprintf(string_desplazamiento, "%i", (dtbAEjecutar->script)->desplazamiento);
 
-            char string_cantLineas[2];
+            char string_cantLineas[3];
             sprintf(string_cantLineas, "%i", (dtbAEjecutar->script)->cantLineas);
 
             pthread_mutex_lock(&m_listaEjecutando);

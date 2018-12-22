@@ -334,7 +334,7 @@ void finalizacionProcesamientoCPU(socket_connection* socketInfo, char** msg){
 				encolarDTB(colaReady, dtb, m_colaReady);
 				sem_post(&cantProcesosEnReady);
 				pthread_mutex_lock(&m_cantSent);
-				cantSentenciasEjecutadas++;
+				cantSentenciasEjecutadas+=quantumEjecutado;
 				pthread_mutex_unlock(&m_cantSent);
 
 			} else{ // "bloquear"
@@ -460,9 +460,10 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 			archivo* arch = list_find(dtb->archivosAbiertos, &condicionArchivoAbierto);
 			char string_pag[3];
 			sprintf(string_pag,"%i", arch->pagina);
-			char string_seg[3];
-			sprintf(string_seg,"%i", arch->baseSegmento);
-			char string_despl[3];
+			char* string_segmentoImpostor = string_itoa(arch->baseSegmento);
+			char string_seg[strlen(string_segmentoImpostor)];
+			strcpy( string_seg, string_segmentoImpostor);
+			char string_despl[4];
 			sprintf(string_despl,"%i", arch->desplazamiento);
 			char string_cantLineas[3];
 			sprintf(string_cantLineas,"%i", arch->cantLineas);
@@ -482,9 +483,10 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 			archivo* arch = list_find(dtb->archivosAbiertos, &condicionArchivoAbierto);
 			char string_pag[3];
 			sprintf(string_pag,"%i", arch->pagina);
-			char string_seg[3];
-			sprintf(string_seg,"%i", arch->baseSegmento);
-			char string_despl[3];
+			char* string_segmentoImpostor = string_itoa(arch->baseSegmento);
+			char string_seg[strlen(string_segmentoImpostor)];
+			strcpy( string_seg, string_segmentoImpostor);
+			char string_despl[4];
 			sprintf(string_despl,"%i", arch->desplazamiento);
 			char string_cantLineas[3];
 			sprintf(string_cantLineas,"%i", arch->cantLineas);
@@ -505,9 +507,10 @@ void verificarEstadoArchivo(socket_connection* connection, char** msgs){
 			archivo* arch = list_find(dtb->archivosAbiertos, &condicionArchivoAbierto);
 			char string_pag[3];
 			sprintf(string_pag,"%i", arch->pagina);
-			char string_seg[3];
-			sprintf(string_seg,"%i", arch->baseSegmento);
-			char string_despl[3];
+			char* string_segmentoImpostor = string_itoa(arch->baseSegmento);
+			char string_seg[strlen(string_segmentoImpostor)];
+			strcpy( string_seg, string_segmentoImpostor);
+			char string_despl[4];
 			sprintf(string_despl,"%i", arch->desplazamiento);
 			char string_cantLineas[3];
 			sprintf(string_cantLineas,"%i", arch->cantLineas);

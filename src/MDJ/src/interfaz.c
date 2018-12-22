@@ -3,7 +3,6 @@
 // Con esto se maneja cada mensaje que se le mando al dam, si es 0 es porque es false, si es 1 es porque es true
 //t_metadata_filemetadata * metadata;
 
-
 char * obtenerPtoMontaje()
 {/*
 t_config* fileConfig  = config_create("MDJ.config");
@@ -26,15 +25,18 @@ config_destroy(fileConfig);
 
 //args[0]:idGDT ,args[1]: path, args[2]: socketCPU
 void  validarArchivo(socket_connection * connection,char ** args){
+log_info(logger,"Se va a verificar que el archivo %s exista", args[1]);
 char strEstado[2];
 t_archivo *  archivo = malloc(sizeof(t_archivo));	
 archivo->path = args[1];
 archivo->fd = verificarSiExisteArchivo(archivo->path);
 if(archivo->fd == noExiste){
 archivo->estado = noExiste;
+log_trace(logger,"El archivo %s NO existe", args[1]);
 }
 else {
 archivo->estado=  existe;
+log_trace(logger,"El archivo %s SI existe", args[1]);
 }
 sprintf(strEstado,"%i", archivo->estado);
 aplicarRetardo();
@@ -47,6 +49,7 @@ runFunction(connection->socket,"MDJ_DAM_existeArchivo",4, strEstado, args[2], ar
 //args[0]: idGDT, args[1]: rutaDelArchivo, args[2]: cant de bytes, args[3]: socketCPU
 void crearArchivo(socket_connection * connection ,char** args)
 {
+log_info(logger,"Se va a crear el archivo %s con %s lineas", args[1], args[2]);
 t_archivo *  archivo= malloc(sizeof(t_archivo));
 t_metadata_bitmap * bitMap = malloc(sizeof(t_metadata_bitmap));	
 archivo->path = args[1];
@@ -54,7 +57,7 @@ size_t tsize = atoi(args[2]);
 t_list * bloquesLibres = list_create();
 t_list * bloquesOcupados = list_create();
 archivo->size = (size_t) tsize;
-size_t tamanioBloques = fs->tamanio_bloques;
+size_t tamanioBloques = TAM_BLOQUE;
 char * pathMasArchivos = string_new();
 char * tam = string_new(); 
 char * tamBloq = string_new();
@@ -62,9 +65,9 @@ char * archivoBloques = string_new();
 char * temp = string_new();
 char * aux = string_new();
 char * dir = string_new();
-bitMap->bitarray = crearBitmap(fs->cantidad_bloques);
+bitMap->bitarray = crearBitmap(CANT_BLOQUES);
 void cicloSeteoBloques(){ 
-	for(int i = 0; i < fs->cantidad_bloques; i++)
+	for(int i = 0; i < CANT_BLOQUES; i++)
 	{
 	if(bitarray_test_bit(bitMap->bitarray,i) == 0)
 	{
@@ -132,9 +135,9 @@ int restante = archivo->size;
 for( int i = 0;i < cantElementos2(bloques);i++){
 snprintf(temp2,sizeof(temp2),"%s%s%i.bin", obtenerPtoMontaje(), "/Bloques/",atoi(bloques[i]));
 fd[i] = open(temp2,O_RDWR);
-ftruncate(fd[i],fs->tamanio_bloques);
+ftruncate(fd[i],TAM_BLOQUE);
 write(archivo->fd, nVeces,restante);
-restante -= fs->tamanio_bloques;
+restante -= TAM_BLOQUE;
 close(fd[i]);
 pthread_mutex_unlock(&mdjInterfaz);
 }
@@ -145,7 +148,7 @@ free(fd);
 else
 {
 archivo->estado = yaCreado;
-log_info(logger,"Archivo %s ya creado",archivo->path);
+log_trace(logger,"El archivo %s previamente ya existia",archivo->path);
 }
 char * strEstado = string_itoa(archivo->estado);
 aplicarRetardo();
@@ -166,15 +169,16 @@ free(pathMasArchivos);
 
 //args[0]: idGDT, args[1]: path, args[2]: offset, args[3]: size, args[4]: dummy, args[5]:primera o no,args[6]:socketCPU
 void obtenerDatos(socket_connection * connection,char ** args){
+log_info(logger,"Se quieren obtener datos del archivo %s",args[1]);
 t_archivo *  archivo= malloc(sizeof(t_archivo));
 char ultimaLectura[1] = "0";
 archivo->path = args[1];
 off_t  offset = atoi(args[2]);
 int offsetDeBloque;
-if(offset < fs->tamanio_bloques)
+if(offset < TAM_BLOQUE)
 	offsetDeBloque = offset;
 else
-	offsetDeBloque = offset % fs->tamanio_bloques;
+	offsetDeBloque = offset % TAM_BLOQUE;
 size_t tsize =  atoi(args[3]);
 size_t sizePosta =  atoi(args[3]);
 int tamanio = atoi(args[3]);
@@ -183,7 +187,7 @@ archivo->fd = verificarSiExisteArchivo(archivo->path);
 int bloqueInicial = obtenerBloqueInicial(archivo->path,offset);
 int bloqueFinal;
 if( (offset + tsize - 1) > 0)
-	bloqueFinal = (offset + tsize - 1) / fs->tamanio_bloques;
+	bloqueFinal = (offset + tsize - 1) / TAM_BLOQUE;
 else
 	bloqueFinal = 0;
 char ** bloques = obtenerBloques(archivo->path);
@@ -198,7 +202,7 @@ else
 {
 if(bloqueInicial < 0)
 {
-log_error(logger,"El offset no puede ser mayor al tamanio de %s",archivo->path);  
+log_error(logger,"El offset no puede ser mayor al tamanio del archivo %s",archivo->path);  
 }
 else{
 pthread_mutex_lock(&mdjInterfaz);	
@@ -253,7 +257,8 @@ runFunction(connection->socket,"MDJ_DAM_respuestaDatos",8,args[0],buffer,strEsta
 
 //args[0]: path, args[1]: offset, args[2]: size, args[3]: datos, , args[4]: 1(ultimo) ó 0 (sigue)
 //args[5]:socketCPU, args[6]: idGDT
-void guardarDatos(socket_connection* connection,char ** args){ //LA IMPOSTORA
+void guardarDatos(socket_connection* connection,char ** args){ 
+log_info(logger,"Se intentara guardar datos en el archivo %s",args[0]);
 int cambiar = 1;
 t_metadata_bitmap * bitMap = malloc(sizeof(t_metadata_bitmap));	
 t_bloques * bitmapBloques = NULL;
@@ -265,10 +270,10 @@ char* datos = args[3];
 archivo->path = args[0];
 off_t  offset = atoi(args[1]);
 int offsetDeBloque;
-if(offset < fs->tamanio_bloques)
+if(offset < TAM_BLOQUE)
 	offsetDeBloque = offset;
 else
-	offsetDeBloque = offset % fs->tamanio_bloques;
+	offsetDeBloque = offset % TAM_BLOQUE;
 size_t tsize =  atoi(args[2]);
 int tamanioGuardado = 0;
 archivo->size =  tsize;	
@@ -276,15 +281,15 @@ archivo->fd = verificarSiExisteArchivo(archivo->path);
 int bloqueInicial = obtenerBloqueInicial(archivo->path,offset);
 int bloqueFinal;
 if( (offset + tsize - 1) > 0)
-	bloqueFinal = (offset + tsize - 1) / fs->tamanio_bloques;
+	bloqueFinal = (offset + tsize - 1) / TAM_BLOQUE;
 else
 	bloqueFinal = 0;
 char ** bloques = obtenerBloques(archivo->path);
 char * buffer = string_new();
 char * bufferBloques;
-bitMap->bitarray = crearBitmap(fs->cantidad_bloques);
+bitMap->bitarray = crearBitmap(CANT_BLOQUES);
 void cicloSeteoBloques(){ 
-	for(int i = 0; i < fs->cantidad_bloques; i++)
+	for(int i = 0; i < CANT_BLOQUES; i++)
 	{
 		if(bitarray_test_bit(bitMap->bitarray,i) == 0)
 		{
@@ -313,7 +318,7 @@ else if (bloqueInicial == -1 || bloqueFinal >= cantElementos2(bloques))
 {	
 	cicloSeteoBloques();
 	if(bloqueInicial != -1){
-bitmapBloques = asignarBloques(bloquesLibres,bloquesOcupados,(bloqueFinal-bloqueInicial)*fs->tamanio_bloques);
+bitmapBloques = asignarBloques(bloquesLibres,bloquesOcupados,(bloqueFinal-bloqueInicial)*TAM_BLOQUE);
 	}
 	else{
 bitmapBloques = asignarBloques(bloquesLibres,bloquesOcupados,tsize);
@@ -353,10 +358,10 @@ string_append(&tamanioConfig,"\n");
 string_append(&tamanioConfig,"BLOQUES=");
 string_append(&tamanioConfig,archTemp);
 
-char* stringNuletes = string_repeat('\n', fs->tamanio_bloques);
+char* stringNuletes = string_repeat('\n', strlen(tamanioConfig)+1);
 archivo-> fd = open(rutaArchConf,O_RDWR);
 lseek(archivo->fd,0, SEEK_SET);
-write(archivo->fd, stringNuletes,fs->tamanio_bloques);
+write(archivo->fd, stringNuletes,strlen(tamanioConfig)+1);
 lseek(archivo->fd,0, SEEK_SET);
 write(archivo->fd, tamanioConfig,strlen(tamanioConfig));
 close(archivo-> fd);
@@ -370,13 +375,13 @@ while (tamanioGuardado < tsize)//bloqueInicial <= bloqueFinal && bloques[bloqueI
 {
 int posBloque = atoi(bloques[bloqueInicial]);
 int longitud; 
-if (offsetDeBloque + (tsize-tamanioGuardado) <= fs->tamanio_bloques ) 
+if (offsetDeBloque + (tsize-tamanioGuardado) <= TAM_BLOQUE ) 
 {
 	longitud = tsize-tamanioGuardado;
 }
 else
 {
-	longitud = fs->tamanio_bloques - offsetDeBloque;
+	longitud = TAM_BLOQUE - offsetDeBloque;
 	if(longitud < 0)
 		longitud *= -1;
 }
@@ -430,10 +435,10 @@ lseek(archivo->fd,0, SEEK_SET);
 write(archivo->fd, tamanioConfig,strlen(tamanioConfig));
 close(archivo-> fd);*/
 
-char* stringNuletes = string_repeat('\n', fs->tamanio_bloques);
+char* stringNuletes = string_repeat('\n', strlen(tamanioConfig)+1);
 FILE* archivoBloque = fopen(rutaArchConf,"r+");
 fseek(archivoBloque, 0, SEEK_SET);
-fwrite(stringNuletes, fs->tamanio_bloques, 1, archivoBloque);
+fwrite(stringNuletes, strlen(tamanioConfig)+1, 1, archivoBloque);
 fseek(archivoBloque, 0, SEEK_SET);
 fwrite(tamanioConfig, strlen(tamanioConfig), 1, archivoBloque);
 fclose(archivoBloque);
@@ -444,7 +449,7 @@ for(int h=0; h<cantElementos2(bloques); h++){
 }
 estadoGuardado[0] = '0';
 estadoGuardado[1] = '\0';
-log_trace(logger,"Se guardaron %d bytes: '%s' ",string_length(datos),datos);
+log_trace(logger,"Se guardaron correctamente %d bytes: '%s' ",string_length(datos),datos);
 pthread_mutex_unlock(&mdjInterfaz);
 
 aplicarRetardo();
@@ -581,14 +586,15 @@ if(offset > tamanio)
 {
    return -1;
 }
-else if (offset == 0 || offset < fs->tamanio_bloques)
+else if (offset == 0 || offset < TAM_BLOQUE)
 {
     return 0;
 }
 else
 {
 int retorno;
-retorno = offset / fs->tamanio_bloques;
+retorno = offset / TAM_BLOQUE;
+config_destroy(config);
 return retorno;
 }
 }
@@ -598,7 +604,7 @@ return retorno;
 void borrarArchivo(socket_connection* connection,char ** args){
 t_archivo * archivo= malloc(sizeof(t_archivo));
 archivo->path = args[1];
-t_bitarray * bitarray = crearBitmap(fs->cantidad_bloques);
+t_bitarray * bitarray = crearBitmap(CANT_BLOQUES);
 archivo->fd = verificarSiExisteArchivo(archivo->path);
 char * temp = string_new();
 string_append(&temp,obtenerPtoMontaje());
@@ -739,15 +745,15 @@ t_bloques *  asignarBloques(t_list * libres,t_list * ocupados ,size_t size)
 {
 t_bloques * bloques = malloc(sizeof(t_bloques));
 t_list * temp = list_create();
-t_bitarray * bitarray = crearBitmap(fs->cantidad_bloques);
+t_bitarray * bitarray = crearBitmap(CANT_BLOQUES);
 int nBloques = 0;
-if(size % fs->tamanio_bloques == 0)
+if(size % TAM_BLOQUE == 0)
 {
-nBloques = size / fs->tamanio_bloques;
+nBloques = size / TAM_BLOQUE;
 }
 else
 {
-nBloques = (size / fs->tamanio_bloques) + 1;    
+nBloques = (size / TAM_BLOQUE) + 1;    
 }
 if (list_size(libres) >= nBloques){
 temp  = list_take_and_remove(libres,nBloques);
@@ -807,155 +813,3 @@ t_list* _list_duplicate(t_list* self) {
 	list_add_all(duplicated, self);
 	return duplicated;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

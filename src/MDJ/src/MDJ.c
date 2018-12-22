@@ -30,6 +30,9 @@ fs->magic_number = malloc(strlen(config_get_string_value(metadata,"MAGIC_NUMBER"
 strcpy(fs->magic_number,config_get_string_value(metadata,"MAGIC_NUMBER"));
 config_destroy(metadata);
 
+TAM_BLOQUE = fs->tamanio_bloques;
+CANT_BLOQUES = fs->cantidad_bloques;
+
      pthread_t hiloConsola;
 
     pthread_mutex_init(&mdjInterfaz,NULL);

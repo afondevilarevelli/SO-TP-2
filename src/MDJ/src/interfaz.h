@@ -74,6 +74,9 @@ typedef struct {
 	int  retardo;
 } t_config_MDJ;
 
+int TAM_BLOQUE;
+int CANT_BLOQUES;
+
 t_config_MDJ * datosConfMDJ;
 t_metadata_filesystem * fs;
 char * directorioMontaje;

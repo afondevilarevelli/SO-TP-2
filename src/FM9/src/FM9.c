@@ -18,9 +18,11 @@ int main(void) {
 	//Me fijo el modo
 	if(strcmp(datosConfigFM9->modo,"SEG")==0){
 		log_info(logger, "Modo segmentacion");
+		pthread_mutex_init(&m_listaSegmentos, NULL);
 		inicializarMemoriaConSegmentacion();
 	}else{
 		if(strcmp(datosConfigFM9->modo, "TPI")==0){
+			pthread_mutex_init(&m_listaPaginasInvertidas, NULL);
 			inicializarMemoriaConPaginacionInvertida();
 		}else{
 			if(strcmp(datosConfigFM9->modo, "SPA")==0){
@@ -34,6 +36,8 @@ int main(void) {
 		}
 	}
 	pthread_mutex_init(&m_memoria, NULL);
+	pthread_mutex_init(&m_buffer, NULL);
+	
 	callableRemoteFunctions = dictionary_create();
 
 	dictionary_put(callableRemoteFunctions, "identificarProcesoEnFM9", &identificarProceso);
@@ -141,10 +145,17 @@ int main(void) {
 
 void cerrarPrograma() {
 	log_info(logger, "Voy a cerrar FM9");
-	free(datosConfigFM9->modo);
-	free(datosConfigFM9);
 	free(memoria);
 	pthread_mutex_destroy(&m_memoria);
+	pthread_mutex_destroy(&m_buffer);
+	if(strcmp(datosConfigFM9->modo,"SEG")==0){
+		pthread_mutex_destroy(&m_listaSegmentos);
+	}
+	else if(strcmp(datosConfigFM9->modo,"TPI")==0){
+		pthread_mutex_destroy(&m_listaPaginasInvertidas);
+	}
+	free(datosConfigFM9->modo);
+	free(datosConfigFM9);
 	if(lista_tabla_segmentos != NULL)
 		list_destroy_and_destroy_elements(lista_tabla_segmentos, (void*)&free);
 	if(tabla_paginasInvertidas != NULL)

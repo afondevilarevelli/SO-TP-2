@@ -11,7 +11,7 @@ void destruirOperacion(operacion_t op){
 
 operacion_t parse(char* line){
     operacion_t retorno;
-
+if(strcmp(line, " ") != 0){
 	char* auxLine = string_duplicate(line);
 	string_trim(&auxLine);
 	char** split = string_n_split(auxLine, 4, " ");
@@ -77,7 +77,16 @@ operacion_t parse(char* line){
 	free(split[0]);
 	free(split);
 	free(auxLine);
-	return retorno;
+
+}
+else{
+	retorno.palabraReservada = ERROR;
+		retorno.p1 = NULL;
+        retorno.p2 = NULL;
+        retorno.p3 = NULL;
+		
+}
+return retorno;
 }
 
 void configure_loggerCPU() {
@@ -392,6 +401,7 @@ void permisoDeEjecucion(parametros* params){
 
 			switch(sentencia.palabraReservada){
 				case ABRIR:
+				sleep(datosCPU->retardo/1000);
 					runFunction(socketSAFA, "inicioClock", 1, string_id);
 					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 4, string_id, string_idGDT, "abrir", sentencia.p1);
 					runFunction(socketDAM, "CPU_DAM_existeArchivo", 2,string_idGDT, sentencia.p1);
@@ -434,6 +444,7 @@ void permisoDeEjecucion(parametros* params){
 					sleep(datosCPU->retardo/1000);
 					break; 
 				case ASIGNAR:
+				sleep(datosCPU->retardo/1000);
 					runFunction(socketSAFA, "inicioClock", 1, string_id);
 					pthread_attr_init(&attr);
     				pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
@@ -471,6 +482,7 @@ void permisoDeEjecucion(parametros* params){
 					}
 					break;
 				case WAIT:
+				sleep(datosCPU->retardo/1000);
 					runFunction(socketSAFA, "inicioClock", 1, string_id);
 					pthread_attr_init(&attr);
     				pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
@@ -499,12 +511,14 @@ void permisoDeEjecucion(parametros* params){
 					log_trace(logger,"Recurso asignado");
 					break;	
 			    case SIGNAL:
+				sleep(datosCPU->retardo/1000);
 					runFunction(socketSAFA, "inicioClock", 1, string_id);
 					runFunction(socketSAFA, "signalRecurso",3,string_id, string_idGDT, sentencia.p1);
 					log_trace(logger,"Recurso liberado");
 					runFunction(socketSAFA, "terminoClock", 1, string_id);	
 					break;		
 				case FLUSH:
+				sleep(datosCPU->retardo/1000);
 					runFunction(socketSAFA, "inicioClock", 1, string_id);
 					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
 					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 4, string_id, string_idGDT, "flush", sentencia.p1);
@@ -520,9 +534,9 @@ void permisoDeEjecucion(parametros* params){
 						sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 
 						if(!sentencia.ultimaSentencia)
-							runFunction(socketSAFA, "finalizacionProcesamientoCPU", 7,string_id, string_idGDT, string_sentEjecutadas ,"bloquear", "0", "1", "0");
+							runFunction(socketSAFA, "finalizacionProcesamientoCPU", 7,string_id, string_idGDT, string_sentEjecutadas ,"bloquear", "1", "1", "0");
 						else
-							runFunction(socketSAFA, "finalizacionProcesamientoCPU", 7,string_id, string_idGDT, string_sentEjecutadas ,"finalizar", "0", "1", "0");
+							runFunction(socketSAFA, "finalizacionProcesamientoCPU", 7,string_id, string_idGDT, string_sentEjecutadas ,"finalizar", "1", "1", "0");
 						runFunction(socketDAM, "CPU_DAM_solicitudDeFlush", 6, string_idGDT, paginaArchivo,
 																							segmentoArchivo,
 																							desplazamientoArchivo,
@@ -546,6 +560,7 @@ void permisoDeEjecucion(parametros* params){
 					free(params);
 					return;
 				case CLOSE:
+				sleep(datosCPU->retardo/1000);
 					runFunction(socketSAFA, "inicioClock", 1, string_id);
 					sprintf(string_quantumAEjecutar, "%i", quantumAEjecutar);
 					runFunction(socketSAFA, "CPU_SAFA_verificarEstadoArchivo", 4, string_id, string_idGDT, "close", sentencia.p1);
@@ -592,6 +607,7 @@ void permisoDeEjecucion(parametros* params){
 
 					break;
 				case CREAR:
+				sleep(datosCPU->retardo/1000);
 					runFunction(socketSAFA, "inicioClock", 1, string_id);
 					sentenciasEjecutadas++;
 					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
@@ -604,9 +620,9 @@ void permisoDeEjecucion(parametros* params){
 					free(params);
 					return ;
 				case BORRAR:
+				sleep(datosCPU->retardo/1000);
 					runFunction(socketSAFA, "inicioClock", 1, string_id);
 					sentenciasEjecutadas++;
-					string_sentEjecutadas[2];
 					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
 					if(!sentencia.ultimaSentencia)
 						runFunction(socketSAFA, "finalizacionProcesamientoCPU",7,string_id, string_idGDT,string_sentEjecutadas,"bloquear", "1", "1", "0"); 
@@ -616,6 +632,10 @@ void permisoDeEjecucion(parametros* params){
 					destruirOperacion(sentencia);
 					free(params);
 					return ;
+				case ERROR:
+					log_error(logger,"Sentencia del GDT %s no reconocida",string_idGDT );
+					sprintf(string_sentEjecutadas, "%i", sentenciasEjecutadas+cantComentarios);
+					runFunction(socketSAFA, "finalizacionProcesamientoCPU",7,string_id, string_idGDT,string_sentEjecutadas,"finalizar", "0", "0", "0"); 
 			}
 
 			programCounter++;
@@ -654,18 +674,33 @@ operacion_t obtenerSentenciaParseada(int idGDT, int programCounter, int pagina, 
 	pthread_t hiloDatos;
 	pthread_attr_t attr;
 	operacion_t sentencia;
-	char string_id[2];
-	sprintf(string_id, "%i", idGDT);
-	char string_pc[2];
-	sprintf(string_pc, "%i", programCounter);
-	char string_pag[3];
-	sprintf(string_pag, "%i", pagina);
-	char string_seg[3];
-	sprintf(string_seg, "%i", segmento);
-	char string_despl[2];
-	sprintf(string_despl, "%i", desplazamiento);
-	char string_cantLineas[2];
-	sprintf(string_cantLineas, "%i", cantLineas);
+	
+	char* string_idImpostor = string_itoa(idGDT);
+	char string_id[strlen(string_idImpostor) + 1];
+	strcpy(string_id, string_idImpostor);
+
+	char* string_pcImpostor = string_itoa(programCounter);
+	char string_pc[strlen(string_pcImpostor) + 1];
+	strcpy(string_pc, string_pcImpostor);
+
+	char* string_pagImpostor = string_itoa(pagina);
+	char string_pag[strlen(string_pagImpostor) + 1];
+	strcpy(string_pag, string_pagImpostor);
+
+	char* string_segImpostor = string_itoa(segmento);
+	char string_seg[strlen(string_segImpostor) + 1];
+	strcpy(string_seg, string_segImpostor);
+
+	char* string_desplImpostor = string_itoa(desplazamiento);
+	char string_despl[strlen(string_desplImpostor) + 1];
+	strcpy(string_despl, string_desplImpostor);
+
+	char* string_cantLineasImpostor = string_itoa(cantLineas);
+	char string_cantLineas[strlen(string_cantLineasImpostor) + 1];
+	strcpy(string_cantLineas, string_cantLineasImpostor);
+
+	log_trace(logger,"Se va a buscar la sentencia para el GDT %s: PAG: %s, SEGM: %s, DESPL: %s, CANT_LINEAS: %s",
+	string_id,string_pag, string_seg,string_despl, string_cantLineas);
 
 	runFunction(socketFM9, "CPU_FM9_obtenerDatos", 6, string_id, string_pc, string_pag, string_seg, string_despl, string_cantLineas);
 

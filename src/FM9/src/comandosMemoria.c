@@ -78,7 +78,7 @@ void dump(char** args)
 				int cantLineas = pag->tamanioOcupado / datosConfigFM9->maximoLinea;
 				char* linea;
 				linea = malloc(datosConfigFM9->maximoLinea);
-				log_info(logger, "Marco: %d   Pagina: %d   PID: %d", pag->marco, pag->pagina, pag->PID);
+				log_trace(logger, "Marco: %d   Pagina: %d   PID: %d", pag->marco, pag->pagina, pag->PID);
 				log_info(logger, "Datos almacenados:");
 				for(int i=0; i<cantLineas; i++){
 					memcpy(linea, memoria + datosConfigFM9->tamanioPagina*pag->marco + i*datosConfigFM9->maximoLinea , datosConfigFM9->maximoLinea);
@@ -150,7 +150,7 @@ void mostrarDatosPid(t_tabla_segmentos* unNodo){
 	int cantLineas = unNodo->limite / datosConfigFM9->maximoLinea;
 	char* linea;
 	linea = malloc(datosConfigFM9->maximoLinea);
-	log_info(logger, "PID: %d  Base: %d	  Offset: %d", unNodo->pid, unNodo->base, unNodo->limite);
+	log_trace(logger, "PID: %d  Base: %d   Offset: %d", unNodo->pid, unNodo->base, unNodo->limite);
 	log_info(logger, "Datos almacenados:");
 	for(int i=0; i<cantLineas; i++){
 		memcpy(linea, memoria + unNodo->base + i*datosConfigFM9->maximoLinea , datosConfigFM9->maximoLinea);

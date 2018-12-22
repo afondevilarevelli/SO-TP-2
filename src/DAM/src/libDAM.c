@@ -221,28 +221,18 @@ void FM9_DAM_archivoCargadoCorrectamente(socket_connection* connection, char** a
 	int socketCPU = atoi(args[7]);
 
 	if(strcmp(estadoCarga, "ok") == 0 ){
-		pagina = malloc(strlen(args[3]) + 1);
-		strcpy(pagina, args[3]);
-		baseSegmento = malloc(strlen(args[4]) + 1);
-		strcpy(baseSegmento, args[4]);
-		desplazamiento = malloc(strlen(args[5]) + 1);
-		strcpy(desplazamiento, args[5]);
-		cantidadDeLineas = malloc(strlen(args[6]) + 1);
-		strcpy(cantidadDeLineas, args[6]);
 
 		if(*(args[2]) == '1')
-			runFunction(socketSAFA, "avisoDamDTB", 6, args[0], "ok", pagina, baseSegmento, desplazamiento, cantidadDeLineas);
+			runFunction(socketSAFA, "avisoDamDTB", 6, args[0], "ok", args[3], args[4], args[5], args[6]);
 		else{ 
-			runFunction(socketSAFA, "aperturaArchivo", 6, args[0], ruta, pagina, baseSegmento, desplazamiento, cantidadDeLineas);
-			runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB", 1, args[0]);
+			runFunction(socketSAFA, "aperturaArchivo", 6, args[0], ruta, args[3], args[4], args[5], args[6]);
+			sleep(1);
 			runFunction(socketCPU, "avisarTerminoClock", 0);
+			runFunction(socketSAFA, "DAM_SAFA_desbloquearDTB", 1, args[0]);
+			
 		}
 		if(ruta != NULL)
 			free(ruta);
-		free(pagina);
-		free(baseSegmento);
-		free(desplazamiento);
-		free(cantidadDeLineas);
 		pthread_mutex_unlock(&m_pedido);
 
 	}

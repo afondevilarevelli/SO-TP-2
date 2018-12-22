@@ -21,6 +21,8 @@
 
 t_log * logger;
 
+ char bufferDirAct[150];
+
 //definicion de funciones
 void consolaMDJ();
 void ls(char *);
